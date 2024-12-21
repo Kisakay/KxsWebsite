@@ -91,9 +91,44 @@
                 border-radius: 10px;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             }
+
+            .audio-player {
+                margin: 2rem 0;
+            }
+
+            .audio-player audio {
+                width: 100%;
+                max-width: 300px;
+                outline: none;
+            }
+
+            .audio-control {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+            }
+
+            .audio-control button {
+                padding: 0.5rem 1rem;
+                font-size: 1rem;
+                font-weight: bold;
+                color: #fff;
+                background: #007bff;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+
+            .audio-control button:hover {
+                background-color: #0056b3;
+            }
         </style>
     </head>
     <body>
+        <div class="audio-control">
+            <button id="audioToggle">Pause</button>
+        </div>
         <div class="container">
             <h1>The Future of Survev.io</h1>
             <p>
@@ -108,7 +143,18 @@
                     Your browser does not support the video tag.
                 </video>
             </div>
-            <a href="#" class="cta-button">Stay Updated</a>
+            <div class="audio-player">
+                <audio id="backgroundAudio" autoplay loop>
+                    <source
+                        src="assets/Stranger_Things_Theme_Song_C418_REMIX.mp3"
+                        type="audio/mpeg"
+                    />
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <a href="https://discord.gg/JshbHHq8uf" class="cta-button"
+                >Stay Updated</a
+            >
             <a href="download/latest-dev.js" class="cta-button"
                 >Download Alpha Version</a
             >
@@ -117,5 +163,20 @@
             Made with ♥ by
             <a href="https://github.com/Kisakay" target="_blank">Kisakay</a>
         </footer>
+
+        <script>
+            const audioElement = document.getElementById("backgroundAudio");
+            const audioToggle = document.getElementById("audioToggle");
+
+            audioToggle.addEventListener("click", () => {
+                if (audioElement.paused) {
+                    audioElement.play();
+                    audioToggle.textContent = "Pause";
+                } else {
+                    audioElement.pause();
+                    audioToggle.textContent = "Play";
+                }
+            });
+        </script>
     </body>
 </html>
