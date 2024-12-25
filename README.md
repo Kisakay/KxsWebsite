@@ -1,2 +1,2 @@
-# KxS-Website
+# KxsWebsite
  Survev.io Client Website

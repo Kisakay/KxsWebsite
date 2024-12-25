@@ -1854,7 +1854,7 @@ class KxsClient {
         var startRowHeader = document.querySelector("#start-row-header");
         if (startRowHeader) {
             startRowHeader.style.backgroundImage =
-                'url("https://kisakay.github.io/KxS-Website/assets/KysClient.gif")';
+                'url("https://kisakay.github.io/KxsWebsite/assets/KysClient.gif")';
         }
     }
     updateLocalStorage() {
@@ -1903,7 +1903,7 @@ class KxsClient {
     handlePlayerDeath() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             if (this.isDeathSoundEnabled) {
-                const audio = new Audio("https://kisakay.github.io/KxS-Website/assets/dead.m4a");
+                const audio = new Audio("https://kisakay.github.io/KxsWebsite/assets/dead.m4a");
                 audio.volume = 0.3;
                 audio.play().catch((err) => false);
             }
@@ -1994,7 +1994,7 @@ class KxsClient {
             }
         }, 100);
         if (this.isWinSoundEnabled) {
-            const audio = new Audio("https://kisakay.github.io/KxS-Website/assets/win.m4a");
+            const audio = new Audio("https://kisakay.github.io/KxsWebsite/assets/win.m4a");
             audio.play().catch((err) => console.error("Erreur lecture:", err));
         }
         setTimeout(() => {
@@ -2252,13 +2252,12 @@ class KxsClient {
 
 
 
-
 const packageInfo = __webpack_require__(330);
-const background_song = "https://kisakay.github.io/KxS-Website/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
-const kxs_logo = "https://kisakay.github.io/KxS-Website/assets/KysClientLogo.png";
+const background_song = "https://kisakay.github.io/KxsWebsite/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
+const kxs_logo = "https://kisakay.github.io/KxsWebsite/assets/KysClientLogo.png";
 const backgroundElement = document.getElementById("background");
 if (backgroundElement)
-    backgroundElement.style.backgroundImage = `url("https://kisakay.github.io/KxS-Website/assets/background.jpg")`;
+    backgroundElement.style.backgroundImage = `url("https://kisakay.github.io/KxsWebsite/assets/background.jpg")`;
 const favicon = document.createElement('link');
 favicon.rel = 'icon';
 favicon.type = 'image/png';
@@ -2268,8 +2267,8 @@ document.title = "KxsClient";
 intercept("audio/ambient/menu_music_01.mp3", background_song);
 intercept("img/icon_app.png", kxs_logo);
 intercept("/favicon.ico", kxs_logo);
-intercept("https://survev.io/changelog", "https://kisakay.github.io/KxS-Website");
-const newChangelogUrl = "https://kisakay.github.io/KxS-Website";
+intercept("https://survev.io/changelog", "https://kisakay.github.io/KxsWebsite");
+const newChangelogUrl = "https://kisakay.github.io/KxsWebsite";
 const startBottomMiddle = document.getElementById("start-bottom-middle");
 if (startBottomMiddle) {
     const links = startBottomMiddle.getElementsByTagName("a");
