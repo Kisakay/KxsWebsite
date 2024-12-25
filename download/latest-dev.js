@@ -598,6 +598,16 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        let pluginsSection = this.addSection("Plugins");
+        this.addOption(pluginsSection, {
+            label: "Heal Warning",
+            value: this.kxsClient.isHealthWarningEnabled,
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isHealthWarningEnabled = !this.kxsClient.isHealthWarningEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
     }
     clearMenu() {
         this.sections.forEach((section) => {
@@ -1221,7 +1231,7 @@ class KxsClientHUD {
     updateHealthBars() {
         const healthBars = document.querySelectorAll("#ui-health-container");
         healthBars.forEach((container) => {
-            var _a;
+            var _a, _b;
             const bar = container.querySelector("#ui-health-actual");
             if (bar) {
                 const currentHealth = Math.round(parseFloat(bar.style.width));
@@ -1250,7 +1260,12 @@ class KxsClientHUD {
                     }
                     this.lastHealthValue = currentHealth;
                 }
-                (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.update(currentHealth);
+                if (this.kxsClient.isHealthWarningEnabled) {
+                    (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.update(currentHealth);
+                }
+                else {
+                    (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
+                }
                 percentageText.textContent = `${currentHealth}%`;
                 // Update animations
                 this.updateHealthAnimations();
@@ -1332,10 +1347,11 @@ function intercept(link, targetUrl) {
 
 ;// ./src/HealthWarning.ts
 class HealthWarning {
-    constructor() {
+    constructor(kxsClient) {
         this.offsetX = 20; // Distance depuis le curseur
         this.offsetY = 20;
         this.warningElement = null;
+        this.kxsClient = kxsClient;
         this.createWarningElement();
         this.initMouseTracking();
     }
@@ -1829,6 +1845,7 @@ class KxsClient {
         this.isXrayEnable = false;
         this.isDeathSoundEnabled = true;
         this.isWinSoundEnabled = true;
+        this.isHealthWarningEnabled = true;
         this.counters = {};
         this.defaultPositions = {
             fps: { left: 20, top: 220 },
@@ -1844,7 +1861,7 @@ class KxsClient {
         this.loadLocalStorage();
         this.changeSurvevLogo();
         this.kill_leader = new KillLeaderTracker(this);
-        this.healWarning = new HealthWarning();
+        this.healWarning = new HealthWarning(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
@@ -1867,6 +1884,7 @@ class KxsClient {
             discordWebhookUrl: this.discordWebhookUrl,
             isDeathSoundEnabled: this.isDeathSoundEnabled,
             isWinSoundEnabled: this.isWinSoundEnabled,
+            isHealthWarningEnabled: this.isHealthWarningEnabled,
         }));
     }
     ;
@@ -2206,7 +2224,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -2217,6 +2235,7 @@ class KxsClient {
             this.isKillsVisible = (_d = savedSettings.isKillsVisible) !== null && _d !== void 0 ? _d : this.isKillsVisible;
             this.isXrayEnable = (_e = savedSettings.isXrayEnable) !== null && _e !== void 0 ? _e : this.isXrayEnable;
             this.discordWebhookUrl = (_f = savedSettings.discordWebhookUrl) !== null && _f !== void 0 ? _f : this.discordWebhookUrl;
+            this.isHealthWarningEnabled = (_g = savedSettings.isHealthWarningEnabled) !== null && _g !== void 0 ? _g : this.isHealthWarningEnabled;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
@@ -2248,6 +2267,7 @@ class KxsClient {
 }
 
 ;// ./src/index.ts
+
 
 
 
