@@ -391,6 +391,16 @@ class KxsMainClientMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        // this.menuManager.addToggleButton({
+        //   id: "xray",
+        //   text: `X-Ray`,
+        //   initialState: this.kxsClient.isXrayEnable,
+        //   onClick: () => {
+        //     this.kxsClient.isXrayEnable = !this.kxsClient.isXrayEnable;
+        //     window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        //     this.kxsClient.updateLocalStorage();
+        //   },
+        // });
         this.menuManager.addToggleButton({
             id: "kills",
             text: `Show Kills`,
@@ -1816,6 +1826,7 @@ class KxsClient {
         this.isFpsVisible = true;
         this.isPingVisible = true;
         this.isKillsVisible = true;
+        this.isXrayEnable = false;
         this.isDeathSoundEnabled = true;
         this.isWinSoundEnabled = true;
         this.counters = {};
@@ -1843,7 +1854,7 @@ class KxsClient {
         var startRowHeader = document.querySelector("#start-row-header");
         if (startRowHeader) {
             startRowHeader.style.backgroundImage =
-                'url("https://kisakay.github.io/KxS-Website/assets/KysClient.gif")';
+                'url("https://kxs.rip/assets/KysClient.gif")';
         }
     }
     updateLocalStorage() {
@@ -1852,6 +1863,7 @@ class KxsClient {
             isPingVisible: this.isPingVisible,
             isFpsUncapped: this.isFpsUncapped,
             isKillsVisible: this.isKillsVisible,
+            isXrayEnable: this.isXrayEnable,
             discordWebhookUrl: this.discordWebhookUrl,
             isDeathSoundEnabled: this.isDeathSoundEnabled,
             isWinSoundEnabled: this.isWinSoundEnabled,
@@ -1891,7 +1903,7 @@ class KxsClient {
     handlePlayerDeath() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             if (this.isDeathSoundEnabled) {
-                const audio = new Audio("https://kisakay.github.io/KxS-Website/assets/dead.m4a");
+                const audio = new Audio("https://kxs.rip/assets/dead.m4a");
                 audio.volume = 0.3;
                 audio.play().catch((err) => false);
             }
@@ -1982,7 +1994,7 @@ class KxsClient {
             }
         }, 100);
         if (this.isWinSoundEnabled) {
-            const audio = new Audio("https://kisakay.github.io/KxS-Website/assets/win.m4a");
+            const audio = new Audio("https://kxs.rip/assets/win.m4a");
             audio.play().catch((err) => console.error("Erreur lecture:", err));
         }
         setTimeout(() => {
@@ -2203,6 +2215,7 @@ class KxsClient {
             this.isPingVisible = (_b = savedSettings.isPingVisible) !== null && _b !== void 0 ? _b : this.isPingVisible;
             this.isFpsUncapped = (_c = savedSettings.isFpsUncapped) !== null && _c !== void 0 ? _c : this.isFpsUncapped;
             this.isKillsVisible = (_d = savedSettings.isKillsVisible) !== null && _d !== void 0 ? _d : this.isKillsVisible;
+            this.isXrayEnable = (_e = savedSettings.isXrayEnable) !== null && _e !== void 0 ? _e : this.isXrayEnable;
             this.discordWebhookUrl = (_f = savedSettings.discordWebhookUrl) !== null && _f !== void 0 ? _f : this.discordWebhookUrl;
         }
         this.updateKillsVisibility();
@@ -2241,11 +2254,11 @@ class KxsClient {
 
 
 const packageInfo = __webpack_require__(330);
-const background_song = "https://kisakay.github.io/KxS-Website/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
-const kxs_logo = "https://kisakay.github.io/KxS-Website/assets/KysClientLogo.png";
+const background_song = "https://kxs.rip/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
+const kxs_logo = "https://kxs.rip/assets/KysClientLogo.png";
 const backgroundElement = document.getElementById("background");
 if (backgroundElement)
-    backgroundElement.style.backgroundImage = `url("https://kisakay.github.io/KxS-Website/assets/background.jpg")`;
+    backgroundElement.style.backgroundImage = `url("https://kxs.rip/assets/background.jpg")`;
 const favicon = document.createElement('link');
 favicon.rel = 'icon';
 favicon.type = 'image/png';
@@ -2255,8 +2268,8 @@ document.title = "KxsClient";
 intercept("audio/ambient/menu_music_01.mp3", background_song);
 intercept("img/icon_app.png", kxs_logo);
 intercept("/favicon.ico", kxs_logo);
-intercept("https://survev.io/changelog", "https://example.com/new_changelog");
-const newChangelogUrl = "https://kisakay.github.io/KxS-Website/";
+intercept("https://survev.io/changelog", "https://kxs.rip");
+const newChangelogUrl = "https://kxs.rip";
 const startBottomMiddle = document.getElementById("start-bottom-middle");
 if (startBottomMiddle) {
     const links = startBottomMiddle.getElementsByTagName("a");
