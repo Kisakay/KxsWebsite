@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.8
+// @version      1.0.9
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
-// @require      https://update.greasyfork.org/scripts/391611/743919/WSHook.js
 // @run-at       document-end
 // @downloadURL  https://kxs.rip/download/latest-dev.js
 // @match        *://survev.io/*
@@ -33,7 +32,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","match":
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -985,8 +984,8 @@ class KxsClientHUD {
             }
             if (this.kxsClient.isPingVisible &&
                 this.kxsClient.counters.ping &&
-                this.pingTest) {
-                const result = this.pingTest.getPingResult();
+                this.pingManager) {
+                const result = this.pingManager.getPingResult();
                 this.kxsClient.counters.ping.textContent = `PING: ${result.ping} ms`;
             }
         }
