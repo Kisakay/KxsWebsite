@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.3
+// @version      1.0.8
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -33,7 +33,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","match":
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -341,11 +341,6 @@ class KxsMainClientMenu {
         this.setupKeyListeners();
         this.initMenu();
     }
-    toggleFpsUncap() {
-        this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
-        this.kxsClient.setAnimationFrameCallback();
-        this.kxsClient.saveFpsUncappedToLocalStorage();
-    }
     initMenu() {
         this.menu.id = "kxsMenu";
         Object.assign(this.menu.style, {
@@ -428,7 +423,7 @@ class KxsMainClientMenu {
             initialState: this.kxsClient.isFpsUncapped,
             onClick: () => {
                 this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
-                this.toggleFpsUncap();
+                this.kxsClient.toggleFpsUncap();
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -616,6 +611,25 @@ class KxsClientSecondaryMenu {
             type: "toggle",
             onChange: (value) => {
                 this.kxsClient.isHealthWarningEnabled = !this.kxsClient.isHealthWarningEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(pluginsSection, {
+            label: "Update Checker",
+            value: this.kxsClient.isAutoUpdateEnabled,
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isAutoUpdateEnabled = !this.kxsClient.isAutoUpdateEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(pluginsSection, {
+            label: `Uncap FPS`,
+            value: this.kxsClient.isFpsUncapped,
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
+                this.kxsClient.toggleFpsUncap();
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -988,13 +1002,10 @@ class KxsClientHUD {
     initCounter(name, label, initialText) {
         const counter = document.createElement("div");
         counter.id = `${name}Counter`;
-        // Create a unique container for each counter
         const counterContainer = document.createElement("div");
         counterContainer.id = `${name}CounterContainer`;
         Object.assign(counterContainer.style, {
-            position: "absolute",
-            left: `${this.kxsClient.defaultPositions[name].left}px`,
-            top: `${this.kxsClient.defaultPositions[name].top}px`,
+            position: "relative",
             zIndex: "10000",
         });
         Object.assign(counter.style, {
@@ -1016,20 +1027,20 @@ class KxsClientHUD {
         });
         counter.textContent = `${label}: ${initialText}`;
         counterContainer.appendChild(counter);
-        document.body.appendChild(counterContainer);
-        // Adjust font size based on container size
+        const uiTopLeft = document.getElementById("ui-top-left");
+        if (uiTopLeft) {
+            uiTopLeft.appendChild(counterContainer);
+        }
         const adjustFontSize = () => {
             const { width, height } = counter.getBoundingClientRect();
-            const size = Math.min(width, height) * 0.4; // Reduced from 0.6 to 0.4 for better fit
+            const size = Math.min(width, height) * 0.4;
             counter.style.fontSize = `${size}px`;
         };
         new ResizeObserver(adjustFontSize).observe(counter);
-        // Middle click to reset INDIVIDUAL counter
         counter.addEventListener("mousedown", (event) => {
             if (event.button === 1) {
-                // Middle click
                 this.resetCounter(name, label, initialText);
-                event.preventDefault(); // Prevent default middle-click behavior
+                event.preventDefault();
             }
         });
         this.kxsClient.makeDraggable(counterContainer, `${name}CounterPosition`);
@@ -1593,23 +1604,20 @@ class KillLeaderTracker {
         if (!killLeaderElement)
             return;
         const amKillLeader = this.isKillLeader();
-        if (myKills < this.MINIMUM_KILLS_FOR_LEADER) {
-            this.wasKillLeader = false;
-            return;
-        }
-        // Check if player was kill leader and is now dethroned
-        if (this.wasKillLeader && !amKillLeader) {
-            this.showEncouragement(0, true);
-            this.wasKillLeader = false;
-        }
-        // Show encouragement only on new kills when not kill leader
-        else if (myKills > this.lastKnownKills && !amKillLeader) {
-            const killsNeeded = this.killLeaderKillCount + 1 - myKills;
-            this.showEncouragement(killsNeeded);
-            // Check if this kill made them kill leader
-            if (myKills > this.killLeaderKillCount) {
+        if (myKills > this.lastKnownKills) {
+            if (amKillLeader) {
+                this.showEncouragement(0);
                 this.wasKillLeader = true;
             }
+            else {
+                const killsNeeded = this.killLeaderKillCount + 1 - myKills;
+                this.showEncouragement(killsNeeded);
+            }
+        }
+        else if (this.wasKillLeader && !amKillLeader) {
+            // Détroné
+            this.showEncouragement(0, true);
+            this.wasKillLeader = false;
         }
         this.lastKnownKills = myKills;
     }
@@ -1842,6 +1850,176 @@ class StatsParser {
 }
 
 
+;// ./src/UpdateChecker.ts
+var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const packageInfo = __webpack_require__(330);
+const config = __webpack_require__(272);
+class UpdateChecker {
+    constructor(kxsClient) {
+        this.remoteScriptUrl = config.base_url + "/download/latest-dev.js";
+        this.kxsClient = kxsClient;
+        if (this.kxsClient.isAutoUpdateEnabled) {
+            this.checkForUpdate();
+        }
+    }
+    getNewScriptVersion() {
+        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                GM.xmlHttpRequest({
+                    method: "GET",
+                    url: this.remoteScriptUrl,
+                    headers: {
+                        "Cache-Control": "no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache",
+                        "Expires": "0"
+                    },
+                    nocache: true,
+                    onload: (response) => {
+                        if (response.status === 200) {
+                            const scriptContent = response.responseText;
+                            const versionMatch = scriptContent.match(/\/\/\s*@version\s+([\d.]+)/);
+                            if (versionMatch && versionMatch[1]) {
+                                resolve(versionMatch[1]);
+                            }
+                            else {
+                                reject(new Error("Script version was not found in the file."));
+                            }
+                        }
+                        else {
+                            reject(new Error("Error retrieving remote script: " + response.statusText));
+                        }
+                    },
+                    onerror: (error) => {
+                        reject(new Error("Error during remote script request: " + error));
+                    }
+                });
+            });
+        });
+    }
+    checkForUpdate() {
+        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
+            const localScriptVersion = yield this.getCurrentScriptVersion();
+            const hostedScriptVersion = yield this.getNewScriptVersion();
+            this.hostedScriptVersion = hostedScriptVersion;
+            if (localScriptVersion !== hostedScriptVersion) {
+                this.displayUpdateNotification();
+            }
+            else {
+                this.showTemporaryNotification("Client is up to date", "success", 2300);
+            }
+        });
+    }
+    displayUpdateNotification() {
+        const modal = document.createElement("div");
+        modal.style.position = "fixed";
+        modal.style.top = "50%";
+        modal.style.left = "50%";
+        modal.style.transform = "translate(-50%, -50%)";
+        modal.style.backgroundColor = "rgb(250, 250, 250)";
+        modal.style.borderRadius = "10px";
+        modal.style.padding = "20px";
+        modal.style.width = "400px";
+        modal.style.boxShadow = "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)";
+        modal.style.border = "1px solid rgb(229, 229, 229)";
+        const header = document.createElement("div");
+        header.style.display = "flex";
+        header.style.alignItems = "center";
+        header.style.marginBottom = "15px";
+        const title = document.createElement("h3");
+        title.textContent = "Update Available";
+        title.style.margin = "0";
+        title.style.fontSize = "16px";
+        title.style.fontWeight = "600";
+        header.appendChild(title);
+        const closeButton = document.createElement("button");
+        closeButton.innerHTML = "×";
+        closeButton.style.marginLeft = "auto";
+        closeButton.style.border = "none";
+        closeButton.style.background = "none";
+        closeButton.style.fontSize = "20px";
+        closeButton.style.cursor = "pointer";
+        closeButton.style.padding = "0 5px";
+        closeButton.onclick = () => modal.remove();
+        header.appendChild(closeButton);
+        const content = document.createElement("div");
+        content.innerHTML = `A new version of KxsClient is available!<br>
+    Locale: ${this.getCurrentScriptVersion()} | On web: ${this.hostedScriptVersion}<br>
+    Click the button below to update now.`;
+        content.style.marginBottom = "20px";
+        content.style.color = "rgb(75, 85, 99)";
+        const updateButton = document.createElement("button");
+        updateButton.textContent = "Update Now";
+        updateButton.style.backgroundColor = "rgb(59, 130, 246)";
+        updateButton.style.color = "white";
+        updateButton.style.padding = "8px 16px";
+        updateButton.style.borderRadius = "6px";
+        updateButton.style.border = "none";
+        updateButton.style.cursor = "pointer";
+        updateButton.style.width = "100%";
+        updateButton.onclick = () => {
+            window.open(this.remoteScriptUrl, "_blank");
+            modal.remove();
+        };
+        modal.appendChild(header);
+        modal.appendChild(content);
+        modal.appendChild(updateButton);
+        document.body.appendChild(modal);
+    }
+    showTemporaryNotification(message, type = 'info', duration = 5000) {
+        const notification = document.createElement("div");
+        notification.style.position = "fixed";
+        notification.style.top = "20px";
+        notification.style.left = "20px";
+        notification.style.padding = "12px 20px";
+        notification.style.backgroundColor = "#333333";
+        notification.style.color = "white";
+        notification.style.zIndex = "9999";
+        notification.style.transition = "opacity 0.5s ease-in-out";
+        notification.style.minWidth = "200px";
+        notification.style.borderRadius = "2px";
+        const messageDiv = document.createElement("div");
+        messageDiv.textContent = message;
+        const progressBar = document.createElement("div");
+        progressBar.style.height = "4px";
+        progressBar.style.backgroundColor = "#e6f3ff";
+        progressBar.style.width = "100%";
+        progressBar.style.position = "absolute";
+        progressBar.style.bottom = "0";
+        progressBar.style.left = "0";
+        progressBar.style.animation = `slideLeft ${duration}ms linear forwards`;
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = `
+          @keyframes slideLeft {
+              from { transform-origin: right; transform: scaleX(1); }
+              to { transform-origin: right; transform: scaleX(0); }
+          }
+      `;
+        notification.appendChild(messageDiv);
+        notification.appendChild(progressBar);
+        document.head.appendChild(styleSheet);
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = "0";
+            setTimeout(() => {
+                notification.remove();
+                styleSheet.remove();
+            }, 500);
+        }, duration);
+    }
+    getCurrentScriptVersion() {
+        return packageInfo.version;
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1852,6 +2030,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -1871,11 +2050,12 @@ class KxsClient {
         this.isDeathSoundEnabled = true;
         this.isWinSoundEnabled = true;
         this.isHealthWarningEnabled = true;
+        this.isAutoUpdateEnabled = true;
         this.counters = {};
         this.defaultPositions = {
-            fps: { left: 20, top: 220 },
+            fps: { left: 20, top: 180 },
             ping: { left: 20, top: 280 },
-            kills: { left: 20, top: 340 },
+            kills: { left: 20, top: 260 },
         };
         this.defaultSizes = {
             fps: { width: 100, height: 30 },
@@ -1885,6 +2065,7 @@ class KxsClient {
         // Before all, load local storage
         this.loadLocalStorage();
         this.changeSurvevLogo();
+        this.updater = new UpdateChecker(this);
         this.kill_leader = new KillLeaderTracker(this);
         this.healWarning = new HealthWarning(this);
         this.setAnimationFrameCallback();
@@ -1917,6 +2098,7 @@ class KxsClient {
             isDeathSoundEnabled: this.isDeathSoundEnabled,
             isWinSoundEnabled: this.isWinSoundEnabled,
             isHealthWarningEnabled: this.isHealthWarningEnabled,
+            isAutoUpdateEnabled: this.isAutoUpdateEnabled,
         }));
     }
     ;
@@ -2256,7 +2438,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -2268,6 +2450,7 @@ class KxsClient {
             this.isXrayEnable = (_e = savedSettings.isXrayEnable) !== null && _e !== void 0 ? _e : this.isXrayEnable;
             this.discordWebhookUrl = (_f = savedSettings.discordWebhookUrl) !== null && _f !== void 0 ? _f : this.discordWebhookUrl;
             this.isHealthWarningEnabled = (_g = savedSettings.isHealthWarningEnabled) !== null && _g !== void 0 ? _g : this.isHealthWarningEnabled;
+            this.isAutoUpdateEnabled = (_h = savedSettings.isAutoUpdateEnabled) !== null && _h !== void 0 ? _h : this.isAutoUpdateEnabled;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
@@ -2296,171 +2479,12 @@ class KxsClient {
                 : "transparent";
         }
     }
-}
-
-;// ./src/UpdateChecker.ts
-var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const packageInfo = __webpack_require__(330);
-const config = __webpack_require__(272);
-class UpdateChecker {
-    constructor() {
-        this.remoteScriptUrl = config.base_url + "/download/latest-dev.js";
-        this.checkForUpdate();
-    }
-    getNewScriptVersion() {
-        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                GM.xmlHttpRequest({
-                    method: "GET",
-                    url: this.remoteScriptUrl,
-                    headers: {
-                        "Cache-Control": "no-cache, no-store, must-revalidate",
-                        "Pragma": "no-cache",
-                        "Expires": "0"
-                    },
-                    nocache: true,
-                    onload: (response) => {
-                        if (response.status === 200) {
-                            const scriptContent = response.responseText;
-                            const versionMatch = scriptContent.match(/\/\/\s*@version\s+([\d.]+)/);
-                            if (versionMatch && versionMatch[1]) {
-                                resolve(versionMatch[1]);
-                            }
-                            else {
-                                reject(new Error("Script version was not found in the file."));
-                            }
-                        }
-                        else {
-                            reject(new Error("Error retrieving remote script: " + response.statusText));
-                        }
-                    },
-                    onerror: (error) => {
-                        reject(new Error("Error during remote script request: " + error));
-                    }
-                });
-            });
-        });
-    }
-    checkForUpdate() {
-        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            const localScriptVersion = yield this.getCurrentScriptVersion();
-            const hostedScriptVersion = yield this.getNewScriptVersion();
-            if (localScriptVersion !== hostedScriptVersion) {
-                this.displayUpdateNotification();
-            }
-            else {
-                this.showTemporaryNotification("Client is up to date", "success", 2300);
-            }
-        });
-    }
-    displayUpdateNotification() {
-        const modal = document.createElement("div");
-        modal.style.position = "fixed";
-        modal.style.top = "50%";
-        modal.style.left = "50%";
-        modal.style.transform = "translate(-50%, -50%)";
-        modal.style.backgroundColor = "rgb(250, 250, 250)";
-        modal.style.borderRadius = "10px";
-        modal.style.padding = "20px";
-        modal.style.width = "400px";
-        modal.style.boxShadow = "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)";
-        modal.style.border = "1px solid rgb(229, 229, 229)";
-        const header = document.createElement("div");
-        header.style.display = "flex";
-        header.style.alignItems = "center";
-        header.style.marginBottom = "15px";
-        const title = document.createElement("h3");
-        title.textContent = "Update Available";
-        title.style.margin = "0";
-        title.style.fontSize = "16px";
-        title.style.fontWeight = "600";
-        header.appendChild(title);
-        const closeButton = document.createElement("button");
-        closeButton.innerHTML = "×";
-        closeButton.style.marginLeft = "auto";
-        closeButton.style.border = "none";
-        closeButton.style.background = "none";
-        closeButton.style.fontSize = "20px";
-        closeButton.style.cursor = "pointer";
-        closeButton.style.padding = "0 5px";
-        closeButton.onclick = () => modal.remove();
-        header.appendChild(closeButton);
-        const content = document.createElement("div");
-        content.textContent = "A new version of KxsClient is available!";
-        content.style.marginBottom = "20px";
-        content.style.color = "rgb(75, 85, 99)";
-        const updateButton = document.createElement("button");
-        updateButton.textContent = "Update Now";
-        updateButton.style.backgroundColor = "rgb(59, 130, 246)";
-        updateButton.style.color = "white";
-        updateButton.style.padding = "8px 16px";
-        updateButton.style.borderRadius = "6px";
-        updateButton.style.border = "none";
-        updateButton.style.cursor = "pointer";
-        updateButton.style.width = "100%";
-        updateButton.onclick = () => {
-            window.open(this.remoteScriptUrl, "_blank");
-            modal.remove();
-        };
-        modal.appendChild(header);
-        modal.appendChild(content);
-        modal.appendChild(updateButton);
-        document.body.appendChild(modal);
-    }
-    showTemporaryNotification(message, type = 'info', duration = 5000) {
-        const notification = document.createElement("div");
-        notification.style.position = "fixed";
-        notification.style.top = "20px";
-        notification.style.left = "20px";
-        notification.style.padding = "12px 20px";
-        notification.style.backgroundColor = "#333333";
-        notification.style.color = "white";
-        notification.style.zIndex = "9999";
-        notification.style.transition = "opacity 0.5s ease-in-out";
-        notification.style.minWidth = "200px";
-        notification.style.borderRadius = "2px";
-        const messageDiv = document.createElement("div");
-        messageDiv.textContent = message;
-        const progressBar = document.createElement("div");
-        progressBar.style.height = "4px";
-        progressBar.style.backgroundColor = "#e6f3ff";
-        progressBar.style.width = "100%";
-        progressBar.style.position = "absolute";
-        progressBar.style.bottom = "0";
-        progressBar.style.left = "0";
-        progressBar.style.animation = `slideLeft ${duration}ms linear forwards`;
-        const styleSheet = document.createElement("style");
-        styleSheet.textContent = `
-          @keyframes slideLeft {
-              from { transform-origin: right; transform: scaleX(1); }
-              to { transform-origin: right; transform: scaleX(0); }
-          }
-      `;
-        notification.appendChild(messageDiv);
-        notification.appendChild(progressBar);
-        document.head.appendChild(styleSheet);
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.style.opacity = "0";
-            setTimeout(() => {
-                notification.remove();
-                styleSheet.remove();
-            }, 500);
-        }, duration);
-    }
-    getCurrentScriptVersion() {
-        return packageInfo.version;
+    toggleFpsUncap() {
+        this.isFpsUncapped = !this.isFpsUncapped;
+        this.setAnimationFrameCallback();
+        this.saveFpsUncappedToLocalStorage();
     }
 }
-
 
 ;// ./src/index.ts
 
@@ -2468,8 +2492,6 @@ class UpdateChecker {
 
 
 
-
-new UpdateChecker();
 const src_packageInfo = __webpack_require__(330);
 const src_config = __webpack_require__(272);
 const background_song = src_config.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
