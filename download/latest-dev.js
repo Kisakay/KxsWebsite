@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.10
+// @version      1.0.12
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -25,14 +25,14 @@
 /***/ 272:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 
 /***/ }),
 
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.10","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.12","main":"dist/KxsClient.user.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -990,6 +990,66 @@ class KxsClientHUD {
         this.setupWeaponBorderHandler();
         this.startUpdateLoop();
     }
+    initResponsiveHandling() {
+        window.addEventListener('resize', this.handleResize.bind(this));
+        this.handleResize();
+    }
+    handleResize() {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        console.log('Viewport size:', viewportWidth, viewportHeight);
+        for (const name of ['fps', 'kills', 'ping']) {
+            const counterContainer = document.getElementById(`${name}CounterContainer`);
+            if (!counterContainer)
+                continue;
+            const counter = this.kxsClient.counters[name];
+            if (!counter)
+                continue;
+            const rect = counterContainer.getBoundingClientRect();
+            const savedPosition = this.getSavedPosition(name);
+            let newPosition = this.calculateSafePosition(savedPosition, rect.width, rect.height, viewportWidth, viewportHeight);
+            console.log(`New position for ${name}:`, newPosition);
+            this.applyPosition(counterContainer, newPosition);
+            this.savePosition(name, newPosition);
+        }
+    }
+    calculateSafePosition(currentPosition, elementWidth, elementHeight, viewportWidth, viewportHeight) {
+        let { left, top } = currentPosition;
+        // Ajuster la position horizontale si nécessaire
+        if (left + elementWidth > viewportWidth) {
+            left = viewportWidth - elementWidth;
+        }
+        if (left < 0) {
+            left = 0;
+        }
+        // Ajuster la position verticale si nécessaire
+        if (top + elementHeight > viewportHeight) {
+            top = viewportHeight - elementHeight;
+        }
+        if (top < 0) {
+            top = 0;
+        }
+        return { left, top };
+    }
+    getSavedPosition(name) {
+        const savedPosition = localStorage.getItem(`${name}CounterPosition`);
+        if (savedPosition) {
+            try {
+                return JSON.parse(savedPosition);
+            }
+            catch (_a) {
+                return this.kxsClient.defaultPositions[name];
+            }
+        }
+        return this.kxsClient.defaultPositions[name];
+    }
+    applyPosition(element, position) {
+        element.style.left = `${position.left}px`;
+        element.style.top = `${position.top}px`;
+    }
+    savePosition(name, position) {
+        localStorage.setItem(`${name}CounterPosition`, JSON.stringify(position));
+    }
     startUpdateLoop() {
         var _a;
         const now = performance.now();
@@ -1028,7 +1088,9 @@ class KxsClientHUD {
         const counterContainer = document.createElement("div");
         counterContainer.id = `${name}CounterContainer`;
         Object.assign(counterContainer.style, {
-            position: "relative",
+            position: "absolute",
+            left: `${this.kxsClient.defaultPositions[name].left}px`,
+            top: `${this.kxsClient.defaultPositions[name].top}px`,
             zIndex: "10000",
         });
         Object.assign(counter.style, {
@@ -2079,9 +2141,9 @@ class KxsClient {
         this.isAutoUpdateEnabled = true;
         this.counters = {};
         this.defaultPositions = {
-            fps: { left: 20, top: 180 },
-            ping: { left: 20, top: 280 },
-            kills: { left: 20, top: 260 },
+            fps: { left: 20, top: 160 },
+            ping: { left: 20, top: 220 },
+            kills: { left: 20, top: 280 },
         };
         this.defaultSizes = {
             fps: { width: 100, height: 30 },
@@ -2546,6 +2608,11 @@ favicon.href = kxs_logo;
 document.head.appendChild(favicon);
 document.title = "KxsClient";
 intercept("audio/ambient/menu_music_01.mp3", background_song);
+intercept('img/survev_logo_full.png', kxs_logo);
+const uiStatsLogo = document.querySelector('#ui-stats-logo');
+if (uiStatsLogo) {
+    uiStatsLogo.style.backgroundImage = "url('https://kxs.rip/assets/KysClientLogo.png')";
+}
 const newChangelogUrl = src_config.base_url;
 const startBottomMiddle = document.getElementById("start-bottom-middle");
 if (startBottomMiddle) {
