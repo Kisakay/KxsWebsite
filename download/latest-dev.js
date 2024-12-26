@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.9
+// @version      1.0.10
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -32,7 +32,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","match":
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.10","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco .; npm version patch;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -170,6 +170,19 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
+};
+const stuff_emojis = {
+    main_weapon: "🔫",
+    secondary_weapon: "🔫",
+    grenades: "💣",
+    melees: "🔪",
+    soda: "🥤",
+    medkit: "🩹",
+    bandage: "🩹",
+    pills: "💊",
+    backpack: "🎒",
+    chest: "📦",
+    helmet: "⛑️"
 };
 class WebhookValidator {
     static isValidWebhookUrl(url) {
@@ -309,6 +322,17 @@ class DiscordTracking {
                     value: result.username,
                     inline: true,
                 });
+            }
+            if (result.stuff) {
+                for (const [key, value] of Object.entries(result.stuff)) {
+                    if (value) {
+                        embed.fields.push({
+                            name: `${stuff_emojis[key]} ${key.replace("_", " ").toUpperCase()}`,
+                            value,
+                            inline: true,
+                        });
+                    }
+                }
             }
             const message = {
                 username: result.username,
@@ -763,7 +787,7 @@ class KxsClientSecondaryMenu {
     }
     addShiftListener() {
         window.addEventListener("keydown", (event) => {
-            if (event.key === "Shift") {
+            if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
                 this.toggleMenuVisibility();
                 this.loadOption();
@@ -1376,6 +1400,7 @@ class HealthWarning {
     }
     createWarningElement() {
         const warning = document.createElement("div");
+        const uiTopLeft = document.getElementById("ui-top-left");
         warning.style.cssText = `
             position: fixed;
             background: rgba(0, 0, 0, 0.8);
@@ -1407,10 +1432,12 @@ class HealthWarning {
         `;
         const text = document.createElement("span");
         text.textContent = "LOW HP!";
-        content.appendChild(icon);
-        content.appendChild(text);
-        warning.appendChild(content);
-        document.body.appendChild(warning);
+        if (uiTopLeft) {
+            content.appendChild(icon);
+            content.appendChild(text);
+            warning.appendChild(content);
+            uiTopLeft.appendChild(warning);
+        }
         this.warningElement = warning;
         this.addPulseAnimation();
     }
@@ -2152,6 +2179,7 @@ class KxsClient {
     }
     handlePlayerWin() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             this.felicitation();
             const stats = this.getPlayerStats(true);
             yield this.discordTracker.trackGameEnd({
@@ -2162,6 +2190,19 @@ class KxsClient {
                 duration: stats.duration,
                 position: stats.position,
                 isWin: true,
+                stuff: {
+                    main_weapon: (_a = document.querySelector('#ui-weapon-id-1 .ui-weapon-name')) === null || _a === void 0 ? void 0 : _a.textContent,
+                    secondary_weapon: (_b = document.querySelector('#ui-weapon-id-2 .ui-weapon-name')) === null || _b === void 0 ? void 0 : _b.textContent,
+                    soda: (_c = document.querySelector("#ui-loot-soda .ui-loot-count")) === null || _c === void 0 ? void 0 : _c.textContent,
+                    melees: (_d = document.querySelector('#ui-weapon-id-3 .ui-weapon-name')) === null || _d === void 0 ? void 0 : _d.textContent,
+                    grenades: (_e = document.querySelector(`#ui-weapon-id-4 .ui-weapon-name`)) === null || _e === void 0 ? void 0 : _e.textContent,
+                    medkit: (_f = document.querySelector("#ui-loot-healthkit .ui-loot-count")) === null || _f === void 0 ? void 0 : _f.textContent,
+                    bandage: (_g = document.querySelector("#ui-loot-bandage .ui-loot-count")) === null || _g === void 0 ? void 0 : _g.textContent,
+                    pills: (_h = document.querySelector("#ui-loot-painkiller .ui-loot-count")) === null || _h === void 0 ? void 0 : _h.textContent,
+                    backpack: (_j = document.querySelector("#ui-armor-backpack .ui-armor-level")) === null || _j === void 0 ? void 0 : _j.textContent,
+                    chest: (_k = document.querySelector("#ui-armor-chest .ui-armor-level")) === null || _k === void 0 ? void 0 : _k.textContent,
+                    helmet: (_l = document.querySelector("#ui-armor-helmet .ui-armor-level")) === null || _l === void 0 ? void 0 : _l.textContent,
+                }
             });
         });
     }
