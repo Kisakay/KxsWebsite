@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.14
+// @version      1.0.15
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -33,7 +33,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.14","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.15","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -2206,14 +2206,23 @@ class KxsClient {
         this.deathObserver.observe(document.body, config);
     }
     checkForDeathScreen(nodes) {
+        let loseArray = [
+            "died",
+            "eliminated",
+            "was"
+        ];
+        let winArray = [
+            "Winner",
+            "Victory",
+            "dinner",
+        ];
         nodes.forEach((node) => {
-            var _a, _b;
             if (node instanceof HTMLElement) {
                 const deathTitle = node.querySelector(".ui-stats-header-title");
-                if ((_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.includes("died")) {
+                if (loseArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
                     this.handlePlayerDeath();
                 }
-                else if ((_b = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _b === void 0 ? void 0 : _b.includes("Winner")) {
+                else if (winArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
                     this.handlePlayerWin();
                 }
             }
@@ -2221,10 +2230,15 @@ class KxsClient {
     }
     handlePlayerDeath() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
-            if (this.isDeathSoundEnabled) {
-                const audio = new Audio(this.config.base_url + "/assets/dead.m4a");
-                audio.volume = 0.3;
-                audio.play().catch((err) => false);
+            try {
+                if (this.isDeathSoundEnabled) {
+                    const audio = new Audio(this.config.base_url + "/assets/dead.m4a");
+                    audio.volume = 0.3;
+                    audio.play().catch((err) => false);
+                }
+            }
+            catch (error) {
+                console.error("Reading error:", error);
             }
             const stats = this.getPlayerStats(false);
             yield this.discordTracker.trackGameEnd({
