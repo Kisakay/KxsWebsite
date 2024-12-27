@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.16
+// @version      1.0.17
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -33,7 +33,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.16","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.17","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -446,9 +446,8 @@ class KxsMainClientMenu {
             text: `Uncap FPS`,
             initialState: this.kxsClient.isFpsUncapped,
             onClick: () => {
-                this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
-                this.kxsClient.toggleFpsUncap();
                 this.kxsClient.updateLocalStorage();
+                this.kxsClient.toggleFpsUncap();
             },
         });
         this.menuManager.addButton({
@@ -1966,6 +1965,43 @@ class UpdateChecker {
             this.checkForUpdate();
         }
     }
+    downloadScript() {
+        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                GM.xmlHttpRequest({
+                    method: "GET",
+                    url: this.remoteScriptUrl,
+                    headers: {
+                        "Cache-Control": "no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache",
+                        "Expires": "0"
+                    },
+                    nocache: true,
+                    responseType: "blob",
+                    onload: (response) => {
+                        if (response.status === 200) {
+                            const blob = new Blob([response.response], { type: 'application/javascript' });
+                            const downloadUrl = window.URL.createObjectURL(blob);
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = downloadUrl;
+                            downloadLink.download = 'KxsClient.user.js';
+                            document.body.appendChild(downloadLink);
+                            downloadLink.click();
+                            document.body.removeChild(downloadLink);
+                            window.URL.revokeObjectURL(downloadUrl);
+                            resolve();
+                        }
+                        else {
+                            reject(new Error("Error downloading script: " + response.statusText));
+                        }
+                    },
+                    onerror: (error) => {
+                        reject(new Error("Error during script download: " + error));
+                    }
+                });
+            });
+        });
+    }
     getNewScriptVersion() {
         return UpdateChecker_awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
@@ -2030,7 +2066,7 @@ class UpdateChecker {
         header.style.alignItems = "center";
         header.style.marginBottom = "15px";
         const title = document.createElement("h3");
-        title.textContent = "Update Available";
+        title.textContent = "Download Update";
         title.style.margin = "0";
         title.style.fontSize = "16px";
         title.style.fontWeight = "600";
@@ -2060,10 +2096,16 @@ class UpdateChecker {
         updateButton.style.border = "none";
         updateButton.style.cursor = "pointer";
         updateButton.style.width = "100%";
-        updateButton.onclick = () => {
-            window.open(this.remoteScriptUrl, "_blank");
-            modal.remove();
-        };
+        updateButton.onclick = () => UpdateChecker_awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.downloadScript();
+                this.showTemporaryNotification("Download started", "success", 2300);
+                modal.remove();
+            }
+            catch (error) {
+                this.showTemporaryNotification("Download failed: " + error.message, "info", 5000);
+            }
+        });
         modal.appendChild(header);
         modal.appendChild(content);
         modal.appendChild(updateButton);
