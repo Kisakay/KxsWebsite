@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.15
+// @version      1.0.16
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -33,7 +33,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.15","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.16","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -654,6 +654,15 @@ class KxsClientSecondaryMenu {
             onChange: () => {
                 this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
                 this.kxsClient.toggleFpsUncap();
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(pluginsSection, {
+            label: `Winning Animation`,
+            value: this.kxsClient.isWinningAnimationEnabled,
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isWinningAnimationEnabled = !this.kxsClient.isWinningAnimationEnabled;
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -2138,6 +2147,7 @@ class KxsClient {
         this.isWinSoundEnabled = true;
         this.isHealthWarningEnabled = true;
         this.isAutoUpdateEnabled = true;
+        this.isWinningAnimationEnabled = true;
         this.counters = {};
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
@@ -2186,6 +2196,7 @@ class KxsClient {
             isWinSoundEnabled: this.isWinSoundEnabled,
             isHealthWarningEnabled: this.isHealthWarningEnabled,
             isAutoUpdateEnabled: this.isAutoUpdateEnabled,
+            isWinningAnimationEnabled: this.isWinningAnimationEnabled,
         }));
     }
     ;
@@ -2255,7 +2266,9 @@ class KxsClient {
     handlePlayerWin() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-            this.felicitation();
+            if (this.isWinningAnimationEnabled) {
+                this.felicitation();
+            }
             const stats = this.getPlayerStats(true);
             yield this.discordTracker.trackGameEnd({
                 username: stats.username,
@@ -2553,7 +2566,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -2566,6 +2579,7 @@ class KxsClient {
             this.discordWebhookUrl = (_f = savedSettings.discordWebhookUrl) !== null && _f !== void 0 ? _f : this.discordWebhookUrl;
             this.isHealthWarningEnabled = (_g = savedSettings.isHealthWarningEnabled) !== null && _g !== void 0 ? _g : this.isHealthWarningEnabled;
             this.isAutoUpdateEnabled = (_h = savedSettings.isAutoUpdateEnabled) !== null && _h !== void 0 ? _h : this.isAutoUpdateEnabled;
+            this.isWinningAnimationEnabled = (_j = savedSettings.isWinningAnimationEnabled) !== null && _j !== void 0 ? _j : this.isWinningAnimationEnabled;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
