@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.17
+// @version      1.0.18
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -33,7 +33,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.17","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.18","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -662,6 +662,17 @@ class KxsClientSecondaryMenu {
             type: "toggle",
             onChange: () => {
                 this.kxsClient.isWinningAnimationEnabled = !this.kxsClient.isWinningAnimationEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(pluginsSection, {
+            label: `Rich Presence (Account token required)`,
+            value: this.kxsClient.discordToken || "",
+            type: "input",
+            onChange: (value) => {
+                this.kxsClient.discordToken = value;
+                this.kxsClient.discordRPC.disconnect();
+                this.kxsClient.discordRPC.connect();
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -2158,6 +2169,98 @@ class UpdateChecker {
 }
 
 
+;// ./src/DiscordRichPresence.ts
+const DiscordRichPresence_packageInfo = __webpack_require__(330);
+class DiscordWebSocket {
+    constructor(token) {
+        this.ws = null;
+        this.heartbeatInterval = 0;
+        this.sequence = null;
+        this.token = token;
+    }
+    connect() {
+        this.ws = new WebSocket('wss://gateway.discord.gg/?v=9&encoding=json');
+        this.ws.onopen = () => {
+            console.log('Connected to Discord gateway');
+            this.identify();
+        };
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleMessage(data);
+            console.log;
+        };
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+        this.ws.onclose = () => {
+            console.log('Disconnected from Discord gateway');
+            clearInterval(this.heartbeatInterval);
+        };
+    }
+    identify() {
+        const payload = {
+            op: 2,
+            d: {
+                token: this.token,
+                properties: {
+                    $os: 'linux',
+                    $browser: 'chrome',
+                    $device: 'chrome'
+                },
+                presence: {
+                    activities: [{
+                            name: "KxsClient",
+                            type: 0,
+                            application_id: "1321193265533550602",
+                            assets: {
+                                large_image: "mp:app-assets/1321193265533550602/1322173537326338058.png?size=512",
+                                large_text: "KxsClient v" + DiscordRichPresence_packageInfo.version,
+                            }
+                        }],
+                    status: 'online',
+                    afk: false
+                }
+            }
+        };
+        this.send(payload);
+    }
+    handleMessage(data) {
+        switch (data.op) {
+            case 10: // Hello
+                const { heartbeat_interval } = data.d;
+                this.startHeartbeat(heartbeat_interval);
+                break;
+            case 11: // Heartbeat ACK
+                console.log('Heartbeat acknowledged');
+                break;
+            case 0: // Dispatch
+                this.sequence = data.s;
+                break;
+        }
+    }
+    startHeartbeat(interval) {
+        this.heartbeatInterval = setInterval(() => {
+            this.send({
+                op: 1,
+                d: this.sequence
+            });
+        }, interval);
+    }
+    send(data) {
+        var _a;
+        if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(data));
+        }
+    }
+    disconnect() {
+        if (this.ws) {
+            clearInterval(this.heartbeatInterval);
+            this.ws.close();
+        }
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2168,6 +2271,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -2190,6 +2294,7 @@ class KxsClient {
         this.isHealthWarningEnabled = true;
         this.isAutoUpdateEnabled = true;
         this.isWinningAnimationEnabled = true;
+        this.discordToken = null;
         this.counters = {};
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
@@ -2204,12 +2309,14 @@ class KxsClient {
         // Before all, load local storage
         this.loadLocalStorage();
         this.changeSurvevLogo();
+        this.discordRPC = new DiscordWebSocket(this.discordToken);
         this.updater = new UpdateChecker(this);
         this.kill_leader = new KillLeaderTracker(this);
         this.healWarning = new HealthWarning(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
+        this.discordRPC.connect();
         this.discordTracker = new DiscordTracking(this.discordWebhookUrl);
     }
     getPlayerName() {
@@ -2239,6 +2346,7 @@ class KxsClient {
             isHealthWarningEnabled: this.isHealthWarningEnabled,
             isAutoUpdateEnabled: this.isAutoUpdateEnabled,
             isWinningAnimationEnabled: this.isWinningAnimationEnabled,
+            discordToken: this.discordToken,
         }));
     }
     ;
@@ -2608,7 +2716,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -2622,6 +2730,7 @@ class KxsClient {
             this.isHealthWarningEnabled = (_g = savedSettings.isHealthWarningEnabled) !== null && _g !== void 0 ? _g : this.isHealthWarningEnabled;
             this.isAutoUpdateEnabled = (_h = savedSettings.isAutoUpdateEnabled) !== null && _h !== void 0 ? _h : this.isAutoUpdateEnabled;
             this.isWinningAnimationEnabled = (_j = savedSettings.isWinningAnimationEnabled) !== null && _j !== void 0 ? _j : this.isWinningAnimationEnabled;
+            this.discordToken = (_k = savedSettings.discordToken) !== null && _k !== void 0 ? _k : this.discordToken;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
