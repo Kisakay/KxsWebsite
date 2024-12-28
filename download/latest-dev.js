@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.20
+// @version      1.0.21
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -14,6 +14,7 @@
 // @match        *://surviv.wf/*
 // @match        *://resurviv.biz/*
 // @match        *://82.67.125.203/*
+// @match        *://leia-uwu.github.io/survev/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM.getValue
@@ -27,14 +28,14 @@
 /***/ 272:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 
 /***/ }),
 
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.20","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.21","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -247,7 +248,8 @@ class WebhookValidator {
 }
 WebhookValidator.DISCORD_WEBHOOK_REGEX = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
 class DiscordTracking {
-    constructor(webhookUrl) {
+    constructor(kxsClient, webhookUrl) {
+        this.kxsClient = kxsClient;
         this.webhookUrl = webhookUrl;
     }
     setWebhookUrl(webhookUrl) {
@@ -260,6 +262,7 @@ class DiscordTracking {
     }
     sendWebhookMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.kxsClient.nm.showNotification("Sending Discord message...", "info", 2300);
             try {
                 const response = yield fetch(this.webhookUrl, {
                     method: "POST",
@@ -623,6 +626,7 @@ class KxsClientSecondaryMenu {
             value: this.kxsClient.discordWebhookUrl || "",
             type: "input",
             onChange: (value) => {
+                value = value.toString().trim();
                 this.kxsClient.discordWebhookUrl = value;
                 this.kxsClient.discordTracker.setWebhookUrl(value);
                 this.kxsClient.updateLocalStorage();
@@ -671,7 +675,8 @@ class KxsClientSecondaryMenu {
             value: this.kxsClient.discordToken || "",
             type: "input",
             onChange: (value) => {
-                this.kxsClient.discordToken = value;
+                value = value.toString().trim();
+                this.kxsClient.discordToken = this.kxsClient.parseToken(value);
                 this.kxsClient.discordRPC.disconnect();
                 this.kxsClient.discordRPC.connect();
                 this.kxsClient.updateLocalStorage();
@@ -849,6 +854,7 @@ class KxsClientSecondaryMenu {
     }
     toggleMenuVisibility() {
         this.isClientMenuVisible = !this.isClientMenuVisible;
+        this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
         this.menu.style.display = this.isClientMenuVisible ? "block" : "none";
     }
 }
@@ -2057,7 +2063,7 @@ class UpdateChecker {
                 this.displayUpdateNotification();
             }
             else {
-                this.showTemporaryNotification("Client is up to date", "success", 2300);
+                this.kxsClient.nm.showNotification("Client is up to date", "success", 2300);
             }
         });
     }
@@ -2111,58 +2117,17 @@ class UpdateChecker {
         updateButton.onclick = () => UpdateChecker_awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.downloadScript();
-                this.showTemporaryNotification("Download started", "success", 2300);
+                this.kxsClient.nm.showNotification("Download started", "success", 2300);
                 modal.remove();
             }
             catch (error) {
-                this.showTemporaryNotification("Download failed: " + error.message, "info", 5000);
+                this.kxsClient.nm.showNotification("Download failed: " + error.message, "info", 5000);
             }
         });
         modal.appendChild(header);
         modal.appendChild(content);
         modal.appendChild(updateButton);
         document.body.appendChild(modal);
-    }
-    showTemporaryNotification(message, type = 'info', duration = 5000) {
-        const notification = document.createElement("div");
-        notification.style.position = "fixed";
-        notification.style.top = "20px";
-        notification.style.left = "20px";
-        notification.style.padding = "12px 20px";
-        notification.style.backgroundColor = "#333333";
-        notification.style.color = "white";
-        notification.style.zIndex = "9999";
-        notification.style.transition = "opacity 0.5s ease-in-out";
-        notification.style.minWidth = "200px";
-        notification.style.borderRadius = "2px";
-        const messageDiv = document.createElement("div");
-        messageDiv.textContent = message;
-        const progressBar = document.createElement("div");
-        progressBar.style.height = "4px";
-        progressBar.style.backgroundColor = "#e6f3ff";
-        progressBar.style.width = "100%";
-        progressBar.style.position = "absolute";
-        progressBar.style.bottom = "0";
-        progressBar.style.left = "0";
-        progressBar.style.animation = `slideLeft ${duration}ms linear forwards`;
-        const styleSheet = document.createElement("style");
-        styleSheet.textContent = `
-          @keyframes slideLeft {
-              from { transform-origin: right; transform: scaleX(1); }
-              to { transform-origin: right; transform: scaleX(0); }
-          }
-      `;
-        notification.appendChild(messageDiv);
-        notification.appendChild(progressBar);
-        document.head.appendChild(styleSheet);
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.style.opacity = "0";
-            setTimeout(() => {
-                notification.remove();
-                styleSheet.remove();
-            }, 500);
-        }, duration);
     }
     getCurrentScriptVersion() {
         return packageInfo.version;
@@ -2173,36 +2138,36 @@ class UpdateChecker {
 ;// ./src/DiscordRichPresence.ts
 const DiscordRichPresence_packageInfo = __webpack_require__(330);
 class DiscordWebSocket {
-    constructor(token) {
+    constructor(kxsClient, token) {
         this.ws = null;
         this.heartbeatInterval = 0;
         this.sequence = null;
-        this.token = token;
+        this.isAuthenticated = false;
+        this.kxsClient = kxsClient;
     }
     connect() {
         this.ws = new WebSocket('wss://gateway.discord.gg/?v=9&encoding=json');
         this.ws.onopen = () => {
-            console.log('Connected to Discord gateway');
-            this.identify();
+            console.log('WebSocket connection established');
         };
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             this.handleMessage(data);
-            console.log;
         };
         this.ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
+            this.kxsClient.nm.showNotification('WebSocket error: ' + error.type, 'error', 5000);
         };
         this.ws.onclose = () => {
-            console.log('Disconnected from Discord gateway');
+            this.kxsClient.nm.showNotification('Disconnected from Discord gateway', 'info', 5000);
             clearInterval(this.heartbeatInterval);
+            this.isAuthenticated = false;
         };
     }
     identify() {
         const payload = {
             op: 2,
             d: {
-                token: this.token,
+                token: this.kxsClient.discordToken,
                 properties: {
                     $os: 'linux',
                     $browser: 'chrome',
@@ -2230,12 +2195,18 @@ class DiscordWebSocket {
             case 10: // Hello
                 const { heartbeat_interval } = data.d;
                 this.startHeartbeat(heartbeat_interval);
+                this.identify();
+                this.kxsClient.nm.showNotification('Started Discord RPC', 'success', 3000);
                 break;
             case 11: // Heartbeat ACK
                 console.log('Heartbeat acknowledged');
                 break;
             case 0: // Dispatch
                 this.sequence = data.s;
+                if (data.t === 'READY') {
+                    this.isAuthenticated = true;
+                    this.kxsClient.nm.showNotification('Connected to Discord gateway', 'success', 2500);
+                }
                 break;
         }
     }
@@ -2262,6 +2233,156 @@ class DiscordWebSocket {
 }
 
 
+;// ./src/NotificationManager.ts
+class NotificationManager {
+    constructor() {
+        this.notifications = [];
+        this.NOTIFICATION_HEIGHT = 65; // Height + margin
+        this.NOTIFICATION_MARGIN = 10;
+        this.addGlobalStyles();
+    }
+    static getInstance() {
+        if (!NotificationManager.instance) {
+            NotificationManager.instance = new NotificationManager();
+        }
+        return NotificationManager.instance;
+    }
+    addGlobalStyles() {
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = `
+        @keyframes slideIn {
+          0% { transform: translateX(-120%); opacity: 0; }
+          50% { transform: translateX(10px); opacity: 0.8; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+  
+        @keyframes slideOut {
+          0% { transform: translateX(0); opacity: 1; }
+          50% { transform: translateX(10px); opacity: 0.8; }
+          100% { transform: translateX(-120%); opacity: 0; }
+        }
+  
+        @keyframes slideLeft {
+          from { transform-origin: right; transform: scaleX(1); }
+          to { transform-origin: right; transform: scaleX(0); }
+        }
+  
+        @keyframes bounce {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+      `;
+        document.head.appendChild(styleSheet);
+    }
+    updateNotificationPositions() {
+        this.notifications.forEach((notification, index) => {
+            const topPosition = 20 + (index * this.NOTIFICATION_HEIGHT);
+            notification.style.top = `${topPosition}px`;
+        });
+    }
+    removeNotification(notification) {
+        const index = this.notifications.indexOf(notification);
+        if (index > -1) {
+            this.notifications.splice(index, 1);
+            this.updateNotificationPositions();
+        }
+    }
+    getIconConfig(type) {
+        const configs = {
+            success: {
+                color: '#4CAF50',
+                svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>`
+            },
+            error: {
+                color: '#F44336',
+                svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+                </svg>`
+            },
+            info: {
+                color: '#FFD700',
+                svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>`
+            }
+        };
+        return configs[type];
+    }
+    showNotification(message, type, duration = 5000) {
+        const notification = document.createElement("div");
+        // Base styles
+        Object.assign(notification.style, {
+            position: "fixed",
+            top: "20px",
+            left: "20px",
+            padding: "12px 20px",
+            backgroundColor: "#333333",
+            color: "white",
+            zIndex: "9999",
+            minWidth: "200px",
+            borderRadius: "4px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            transform: "translateX(-120%)",
+            opacity: "0",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+        });
+        // Create icon
+        const icon = document.createElement("div");
+        Object.assign(icon.style, {
+            width: "20px",
+            height: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "bounce 0.5s ease-in-out"
+        });
+        const iconConfig = this.getIconConfig(type);
+        icon.style.color = iconConfig.color;
+        icon.innerHTML = iconConfig.svg;
+        // Create message
+        const messageDiv = document.createElement("div");
+        messageDiv.textContent = message;
+        messageDiv.style.flex = "1";
+        // Create progress bar
+        const progressBar = document.createElement("div");
+        Object.assign(progressBar.style, {
+            height: "4px",
+            backgroundColor: "#e6f3ff",
+            width: "100%",
+            position: "absolute",
+            bottom: "0",
+            left: "0",
+            animation: `slideLeft ${duration}ms linear forwards`
+        });
+        // Assemble notification
+        notification.appendChild(icon);
+        notification.appendChild(messageDiv);
+        notification.appendChild(progressBar);
+        document.body.appendChild(notification);
+        // Add to stack and update positions
+        this.notifications.push(notification);
+        this.updateNotificationPositions();
+        // Entrance animation
+        requestAnimationFrame(() => {
+            notification.style.transition = "all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)";
+            notification.style.animation = "slideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards";
+        });
+        // Exit animation and cleanup
+        setTimeout(() => {
+            notification.style.animation = "slideOut 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards";
+            setTimeout(() => {
+                this.removeNotification(notification);
+                notification.remove();
+            }, 500);
+        }, duration);
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2272,6 +2393,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -2310,7 +2432,8 @@ class KxsClient {
         // Before all, load local storage
         this.loadLocalStorage();
         this.changeSurvevLogo();
-        this.discordRPC = new DiscordWebSocket(this.parseToken(this.discordToken));
+        this.nm = NotificationManager.getInstance();
+        this.discordRPC = new DiscordWebSocket(this, this.parseToken(this.discordToken));
         this.updater = new UpdateChecker(this);
         this.kill_leader = new KillLeaderTracker(this);
         this.healWarning = new HealthWarning(this);
@@ -2318,7 +2441,7 @@ class KxsClient {
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
         this.discordRPC.connect();
-        this.discordTracker = new DiscordTracking(this.discordWebhookUrl);
+        this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
     }
     parseToken(token) {
         if (token) {
