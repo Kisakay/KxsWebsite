@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.21
+// @version      1.0.22
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -35,7 +35,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.21","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.22","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -262,6 +262,9 @@ class DiscordTracking {
     }
     sendWebhookMessage(message) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!WebhookValidator.isValidWebhookUrl(this.webhookUrl)) {
+                return;
+            }
             this.kxsClient.nm.showNotification("Sending Discord message...", "info", 2300);
             try {
                 const response = yield fetch(this.webhookUrl, {
@@ -425,16 +428,6 @@ class KxsMainClientMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        // this.menuManager.addToggleButton({
-        //   id: "xray",
-        //   text: `X-Ray`,
-        //   initialState: this.kxsClient.isXrayEnable,
-        //   onClick: () => {
-        //     this.kxsClient.isXrayEnable = !this.kxsClient.isXrayEnable;
-        //     window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-        //     this.kxsClient.updateLocalStorage();
-        //   },
-        // });
         this.menuManager.addToggleButton({
             id: "kills",
             text: `Show Kills`,
@@ -2411,7 +2404,6 @@ class KxsClient {
         this.isFpsVisible = true;
         this.isPingVisible = true;
         this.isKillsVisible = true;
-        this.isXrayEnable = false;
         this.isDeathSoundEnabled = true;
         this.isWinSoundEnabled = true;
         this.isHealthWarningEnabled = true;
@@ -2469,7 +2461,6 @@ class KxsClient {
             isPingVisible: this.isPingVisible,
             isFpsUncapped: this.isFpsUncapped,
             isKillsVisible: this.isKillsVisible,
-            isXrayEnable: this.isXrayEnable,
             discordWebhookUrl: this.discordWebhookUrl,
             isDeathSoundEnabled: this.isDeathSoundEnabled,
             isWinSoundEnabled: this.isWinSoundEnabled,
@@ -2846,7 +2837,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -2855,12 +2846,11 @@ class KxsClient {
             this.isPingVisible = (_b = savedSettings.isPingVisible) !== null && _b !== void 0 ? _b : this.isPingVisible;
             this.isFpsUncapped = (_c = savedSettings.isFpsUncapped) !== null && _c !== void 0 ? _c : this.isFpsUncapped;
             this.isKillsVisible = (_d = savedSettings.isKillsVisible) !== null && _d !== void 0 ? _d : this.isKillsVisible;
-            this.isXrayEnable = (_e = savedSettings.isXrayEnable) !== null && _e !== void 0 ? _e : this.isXrayEnable;
-            this.discordWebhookUrl = (_f = savedSettings.discordWebhookUrl) !== null && _f !== void 0 ? _f : this.discordWebhookUrl;
-            this.isHealthWarningEnabled = (_g = savedSettings.isHealthWarningEnabled) !== null && _g !== void 0 ? _g : this.isHealthWarningEnabled;
-            this.isAutoUpdateEnabled = (_h = savedSettings.isAutoUpdateEnabled) !== null && _h !== void 0 ? _h : this.isAutoUpdateEnabled;
-            this.isWinningAnimationEnabled = (_j = savedSettings.isWinningAnimationEnabled) !== null && _j !== void 0 ? _j : this.isWinningAnimationEnabled;
-            this.discordToken = (_k = savedSettings.discordToken) !== null && _k !== void 0 ? _k : this.discordToken;
+            this.discordWebhookUrl = (_e = savedSettings.discordWebhookUrl) !== null && _e !== void 0 ? _e : this.discordWebhookUrl;
+            this.isHealthWarningEnabled = (_f = savedSettings.isHealthWarningEnabled) !== null && _f !== void 0 ? _f : this.isHealthWarningEnabled;
+            this.isAutoUpdateEnabled = (_g = savedSettings.isAutoUpdateEnabled) !== null && _g !== void 0 ? _g : this.isAutoUpdateEnabled;
+            this.isWinningAnimationEnabled = (_h = savedSettings.isWinningAnimationEnabled) !== null && _h !== void 0 ? _h : this.isWinningAnimationEnabled;
+            this.discordToken = (_j = savedSettings.discordToken) !== null && _j !== void 0 ? _j : this.discordToken;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
