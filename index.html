@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kxs.rip/">
-    <meta property="og:title" content="KxsClient - The Future of survev.io">
+    <meta property="og:title" content="KxsClient - The Future of Survev.io">
     <meta property="og:description"
         content="Experience a new level of gaming with the upcoming KxsClient. Ultra-fast, secure, and fully customizable.">
     <meta property="og:image" content="https://kxs.rip/assets/KysClientLogo.png">
@@ -14,17 +14,18 @@
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#ff6a00">
+    <meta name="theme-color" content="#3498db">
 
     <title>KxsClient</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1e3c72;
-            --secondary-color: #2a5298;
-            --accent-color: #ff6a00;
-            --text-light: #ffffff;
-            --text-dark: #333333;
+            --primary-color: #1d3557;
+            --secondary-color: #457b9d;
+            --accent-color: #e63946;
+            --text-light: #f1faee;
+            --text-dark: #1d3557;
+            --background-gradient: linear-gradient(135deg, #1d3557, #457b9d);
             --section-padding: 5rem 2rem;
         }
 
@@ -38,7 +39,8 @@
             font-family: 'Arial', sans-serif;
             line-height: 1.6;
             color: var(--text-light);
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--background-gradient);
+            overflow-x: hidden;
         }
 
         /* Header & Navigation */
@@ -47,7 +49,7 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(30, 60, 114, 0.95);
+            background: rgba(29, 53, 87, 0.95);
             backdrop-filter: blur(10px);
             z-index: 1000;
             padding: 1rem 0;
@@ -102,152 +104,42 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
 
         .hero h1 {
             font-size: 4rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+            background: linear-gradient(90deg, #e63946, #f4a261);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: titleGlow 2s ease-in-out infinite alternate;
         }
 
-        @keyframes titleGlow {
-            from {
-                text-shadow: 0 0 20px rgba(255, 154, 158, 0.5);
-            }
-
-            to {
-                text-shadow: 0 0 30px rgba(255, 154, 158, 0.8);
-            }
-        }
-
-        /* Features Section */
-        .features {
-            padding: var(--section-padding);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature-card i {
-            font-size: 2.5rem;
-            color: var(--accent-color);
-            margin-bottom: 1rem;
-        }
-
-        /* Documentation Section */
-        .documentation {
-            padding: var(--section-padding);
-        }
-
-        .doc-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .doc-nav {
+        .hero p {
+            font-size: 1.2rem;
             margin-bottom: 2rem;
         }
 
-        .doc-nav button {
-            background: none;
-            border: none;
-            color: var(--text-light);
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: color 0.3s;
+        .video-container {
+            margin: 2rem auto;
+            max-width: 800px;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .doc-nav button.active {
-            color: var(--accent-color);
-            border-bottom: 2px solid var(--accent-color);
+        .video-container video {
+            width: 100%;
+            height: auto;
         }
 
-        /* Footer */
-        .footer {
-            background: rgba(30, 60, 114, 0.95);
-            padding: 4rem 2rem 2rem;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .footer-section h3 {
-            color: var(--accent-color);
-            margin-bottom: 1rem;
-        }
-
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section ul li {
-            margin-bottom: 0.5rem;
-        }
-
-        .footer-section a {
-            color: var(--text-light);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-section a:hover {
-            color: var(--accent-color);
-        }
-
-        .social-links {
+        .cta-buttons {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .social-links a {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            transition: background-color 0.3s;
+            gap: 1rem;
         }
 
-        .social-links a:hover {
-            background: var(--accent-color);
-        }
-
-        /* Buttons */
         .cta-button {
             display: inline-block;
             padding: 1rem 2rem;
@@ -260,7 +152,6 @@
             text-decoration: none;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s, box-shadow 0.2s;
-            margin: 0.5rem;
         }
 
         .cta-button:hover {
@@ -274,12 +165,13 @@
                 display: none;
             }
 
-            .mobile-menu-btn {
-                display: block;
-            }
-
             .hero h1 {
                 font-size: 3rem;
+            }
+
+            .video-container {
+                margin: 1rem auto;
+                max-width: 100%;
             }
         }
     </style>
@@ -304,7 +196,7 @@
 
     <section class="hero" id="home">
         <h1>The Future of KxsClient</h1>
-        <p>Experience a new level of gaming with the upcoming Kxs client</p>
+        <p>Experience a new level of gaming with the upcoming KxsClient</p>
         <div class="video-container">
             <video controls>
                 <source src="video/video1.mp4" type="video/mp4" />
@@ -321,89 +213,272 @@
         </div>
     </section>
 
-    <section class="features" id="features">
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="fas fa-bolt"></i>
-                <h3>Ultra customizable HUD</h3>
-                <p>Plant of customizations possible</p>
-            </div>
-            <div class="feature-card">
-                <i class="fas fa-paint-brush"></i>
-                <h3>Modern Interface</h3>
-                <p>Intuitive design customizable to your preferences</p>
-            </div>
-        </div>
-    </section>
 
-    <section class="documentation" id="documentation">
-        <div class="doc-container">
-            <div class="doc-nav">
-                <button class="active">Getting Started</button>
-                <button>Configuration</button>
-                <button>FAQ</button>
-            </div>
-            <div class="doc-content">
-                <h2>Getting Started</h2>
-                <p>Welcome to the KxsClient documentation. Follow these steps to begin:</p>
-                <ol>
-                    <li>Download a script loader extension like TamperMonkey</li>
-                    <li>Download the KxsClient script</li>
-                    <li>Configure your preferences</li>
-                    <li>Join a game and have fun!</li>
-                </ol>
-            </div>
-        </div>
-    </section>
 
-    <footer class="footer" id="contact">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>About</h3>
-                <p>KxsClient is an project aimed at enhancing the gaming experience for players.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Useful Links</h3>
-                <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#documentation">Documentation</a></li>
-                    <li><a href="https://github.com/Kisakay">GitHub</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Community</h3>
-                <div class="social-links">
-                    <a href="https://discord.gg/JshbHHq8uf"><i class="fab fa-discord"></i></a>
-                    <a href="https://github.com/Kisakay/KxsClient"><i class="fab fa-github"></i></a>
+    <head>
+        <style>
+            /* Existing styles */
+            :root {
+                --primary-color: #1d3557;
+                --secondary-color: #457b9d;
+                --accent-color: #e63946;
+                --text-light: #f1faee;
+                --text-dark: #1d3557;
+                --background-gradient: linear-gradient(135deg, #1d3557, #457b9d);
+                --section-padding: 5rem 2rem;
+            }
+
+            /* ... (previous styles remain the same) ... */
+
+            /* New styles for Features section */
+            .features {
+                padding: var(--section-padding);
+                background: var(--primary-color);
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .feature-card {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 15px;
+                text-align: center;
+                transition: transform 0.3s;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-10px);
+            }
+
+            .feature-card i {
+                font-size: 2.5rem;
+                color: var(--accent-color);
+                margin-bottom: 1rem;
+            }
+
+            .feature-card h3 {
+                margin-bottom: 1rem;
+                color: var(--text-light);
+            }
+
+            .image-container {
+                max-width: 1000px;
+                margin: 3rem auto 0;
+            }
+
+            .image-container img {
+                width: 100%;
+                border-radius: 15px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            /* Documentation section */
+            .documentation {
+                padding: var(--section-padding);
+                background: var(--secondary-color);
+            }
+
+            .doc-container {
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+
+            .doc-nav {
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .doc-nav button {
+                padding: 0.8rem 1.5rem;
+                border: none;
+                border-radius: 30px;
+                background: rgba(255, 255, 255, 0.1);
+                color: var(--text-light);
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+            .doc-nav button.active {
+                background: var(--accent-color);
+            }
+
+            .doc-content {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 15px;
+            }
+
+            .doc-content h2 {
+                margin-bottom: 1.5rem;
+                color: var(--text-light);
+            }
+
+            .doc-content ol {
+                margin-left: 1.5rem;
+                color: var(--text-light);
+            }
+
+            .doc-content li {
+                margin-bottom: 0.5rem;
+            }
+
+            /* Footer */
+            .footer {
+                padding: var(--section-padding);
+                background: var(--primary-color);
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+            }
+
+            .footer-section h3 {
+                color: var(--text-light);
+                margin-bottom: 1rem;
+            }
+
+            .footer-section ul {
+                list-style: none;
+            }
+
+            .footer-section ul li {
+                margin-bottom: 0.5rem;
+            }
+
+            .footer-section a {
+                color: var(--text-light);
+                text-decoration: none;
+                transition: color 0.3s;
+            }
+
+            .footer-section a:hover {
+                color: var(--accent-color);
+            }
+
+            .social-links {
+                display: flex;
+                gap: 1rem;
+            }
+
+            .social-links a {
+                font-size: 1.5rem;
+            }
+
+            @media (max-width: 768px) {
+                .doc-nav {
+                    flex-direction: column;
+                }
+
+                .footer-content {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Existing header and hero sections remain the same -->
+
+        <section class="features" id="features">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Ultra customizable HUD</h3>
+                    <p>Plant of customizations possible</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-paint-brush"></i>
+                    <h3>Modern Interface</h3>
+                    <p>Intuitive design customizable to your preferences</p>
                 </div>
             </div>
-        </div>
-        <div
-            style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 248, 248, 0.1);">
-            <p>Made with ♥ by <a href="https://github.com/Kisakay">Kisakay</a></p>
-        </div>
-    </footer>
+            <div class="image-container">
+                <img src="./assets/image.png" alt="Feature Preview">
+            </div>
+        </section>
 
-    <script>
-        // Navigation smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
+        <section class="documentation" id="documentation">
+            <div class="doc-container">
+                <div class="doc-nav">
+                    <button class="active">Getting Started</button>
+                    <button>Configuration</button>
+                    <button>FAQ</button>
+                </div>
+                <div class="doc-content">
+                    <h2>Getting Started</h2>
+                    <p>Welcome to the KxsClient documentation. Follow these steps to begin:</p>
+                    <ol>
+                        <li>Download a script loader extension like TamperMonkey</li>
+                        <li>Download the KxsClient script</li>
+                        <li>Configure your preferences</li>
+                        <li>Join a game and have fun!</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer" id="contact">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>KxsClient is an project aimed at enhancing the gaming experience for players.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Useful Links</h3>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#documentation">Documentation</a></li>
+                        <li><a href="https://github.com/Kisakay">GitHub</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <div class="social-links">
+                        <a href="https://discord.gg/JshbHHq8uf"><i class="fab fa-discord"></i></a>
+                        <a href="https://github.com/Kisakay/KxsClient"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div
+                style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 248, 248, 0.1);">
+                <p>Made with ♥ by <a href="https://github.com/Kisakay">Kisakay</a></p>
+            </div>
+        </footer>
+
+        <script>
+            // Navigation smooth scroll
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
                 });
             });
-        });
 
-        // Documentation tabs
-        const docButtons = document.querySelectorAll('.doc-nav button');
-        docButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                docButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
+            // Documentation tabs
+            const docButtons = document.querySelectorAll('.doc-nav button');
+            docButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    docButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                });
             });
-        });
-    </script>
+        </script>
+    </body>
+
+</html>
 </body>
 
 </html>
