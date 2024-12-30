@@ -675,6 +675,15 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(pluginsSection, {
+            label: `Kill Leader Tracking`,
+            value: this.kxsClient.isKillLeaderTrackerEnabled,
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isKillLeaderTrackerEnabled = !this.kxsClient.isKillLeaderTrackerEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
     }
     clearMenu() {
         this.sections.forEach((section) => {
@@ -1669,7 +1678,7 @@ class KillLeaderTracker {
             this.encouragementElement.style.animation = "fadeInOut 3s forwards";
         }
     }
-    showEncouragement(killsToLeader, isDethrone = false) {
+    showEncouragement(killsToLeader, isDethrone = false, noKillLeader = false) {
         if (!this.encouragementElement)
             return;
         let message;
@@ -1678,6 +1687,10 @@ class KillLeaderTracker {
             this.encouragementElement.style.borderColor = "#ff0000";
             this.encouragementElement.style.color = "#ff0000";
             this.encouragementElement.style.background = "rgba(255, 0, 0, 0.1)";
+        }
+        else if (noKillLeader) {
+            const killsNeeded = this.MINIMUM_KILLS_FOR_LEADER - this.lastKnownKills;
+            message = `Nice Kill! Get ${killsNeeded} more kills to become the first Kill Leader!`;
         }
         else {
             message =
@@ -1705,13 +1718,20 @@ class KillLeaderTracker {
         return this.kxsClient.getPlayerName() === (killLeaderNameElement === null || killLeaderNameElement === void 0 ? void 0 : killLeaderNameElement.textContent);
     }
     update(myKills) {
+        if (!this.kxsClient.isKillLeaderTrackerEnabled)
+            return;
         const killLeaderElement = document.querySelector("#ui-kill-leader-count");
         this.killLeaderKillCount = parseInt((killLeaderElement === null || killLeaderElement === void 0 ? void 0 : killLeaderElement.textContent) || "0", 10);
-        if (!killLeaderElement)
-            return;
-        const amKillLeader = this.isKillLeader();
         if (myKills > this.lastKnownKills) {
-            if (amKillLeader) {
+            if (this.killLeaderKillCount === 0) {
+                // Pas encore de kill leader, encourager le joueur à atteindre 3 kills
+                this.showEncouragement(0, false, true);
+            }
+            else if (this.killLeaderKillCount < this.MINIMUM_KILLS_FOR_LEADER) {
+                // Ne rien faire si le kill leader n'a pas atteint le minimum requis
+                return;
+            }
+            else if (this.isKillLeader()) {
                 this.showEncouragement(0);
                 this.wasKillLeader = true;
             }
@@ -1720,7 +1740,7 @@ class KillLeaderTracker {
                 this.showEncouragement(killsNeeded);
             }
         }
-        else if (this.wasKillLeader && !amKillLeader) {
+        else if (this.wasKillLeader && !this.isKillLeader()) {
             // Détroné
             this.showEncouragement(0, true);
             this.wasKillLeader = false;
@@ -2414,6 +2434,7 @@ class KxsClient {
         this.isHealthWarningEnabled = true;
         this.isAutoUpdateEnabled = true;
         this.isWinningAnimationEnabled = true;
+        this.isKillLeaderTrackerEnabled = true;
         this.discordToken = null;
         this.counters = {};
         this.defaultPositions = {
@@ -2473,6 +2494,7 @@ class KxsClient {
             isAutoUpdateEnabled: this.isAutoUpdateEnabled,
             isWinningAnimationEnabled: this.isWinningAnimationEnabled,
             discordToken: this.discordToken,
+            isKillLeaderTrackerEnabled: this.isKillLeaderTrackerEnabled,
         }));
     }
     ;
@@ -2842,7 +2864,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -2856,6 +2878,7 @@ class KxsClient {
             this.isAutoUpdateEnabled = (_g = savedSettings.isAutoUpdateEnabled) !== null && _g !== void 0 ? _g : this.isAutoUpdateEnabled;
             this.isWinningAnimationEnabled = (_h = savedSettings.isWinningAnimationEnabled) !== null && _h !== void 0 ? _h : this.isWinningAnimationEnabled;
             this.discordToken = (_j = savedSettings.discordToken) !== null && _j !== void 0 ? _j : this.discordToken;
+            this.isKillLeaderTrackerEnabled = (_k = savedSettings.isKillLeaderTrackerEnabled) !== null && _k !== void 0 ? _k : this.isKillLeaderTrackerEnabled;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
