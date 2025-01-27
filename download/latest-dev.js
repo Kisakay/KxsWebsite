@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.0.29
+// @version      1.1.0
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -37,7 +37,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.0.29","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -687,10 +687,282 @@ class KxsClientHUD {
         }
         this.setupWeaponBorderHandler();
         this.startUpdateLoop();
+        this.escapeMenu();
+        if (this.kxsClient.isKillFeedBlint) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', this.initKillFeed);
+            }
+            else {
+                this.initKillFeed();
+            }
+        }
     }
-    initResponsiveHandling() {
-        window.addEventListener('resize', this.handleResize.bind(this));
-        this.handleResize();
+    initKillFeed() {
+        this.applyCustomStyles();
+        this.setupObserver();
+    }
+    escapeMenu() {
+        const customStyles = `
+    .ui-game-menu-desktop {
+        background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        padding: 20px !important;
+        backdrop-filter: blur(10px) !important;
+        max-width: 350px !important;
+        margin: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    .kxs-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 20px;
+        padding: 10px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .kxs-logo {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        border-radius: 6px;
+    }
+
+    .kxs-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ffffff;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+        font-family: 'Arial', sans-serif;
+        letter-spacing: 2px;
+    }
+
+    .kxs-title span {
+        color: #4287f5;
+    }
+        
+    
+    .btn-game-menu {
+        background: linear-gradient(135deg, rgba(66, 135, 245, 0.1) 0%, rgba(66, 135, 245, 0.2) 100%) !important;
+        border: 1px solid rgba(66, 135, 245, 0.3) !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease !important;
+        margin: 5px 0 !important;
+        padding: 12px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        text-align: center !important;
+        display: block !important;
+        box-sizing: border-box !important;
+    }
+
+    .btn-game-menu:hover {
+        background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, rgba(66, 135, 245, 0.3) 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(66, 135, 245, 0.2) !important;
+    }
+
+    .slider-container {
+        background: rgba(66, 135, 245, 0.1) !important;
+        border-radius: 8px !important;
+        padding: 10px 15px !important;
+        margin: 10px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .slider-text {
+        color: #ffffff !important;
+        font-size: 14px !important;
+        margin-bottom: 8px !important;
+        text-align: center !important;
+    }
+
+    .slider {
+        -webkit-appearance: none !important;
+        width: 100% !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        background: rgba(66, 135, 245, 0.3) !important;
+        outline: none !important;
+        margin: 10px 0 !important;
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        background: #4287f5 !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2) !important;
+        box-shadow: 0 0 10px rgba(66, 135, 245, 0.5) !important;
+    }
+
+    .btns-game-double-row {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+        width: 100% !important;
+    }
+
+    .btn-game-container {
+        flex: 1 !important;
+    }
+    `;
+        const addCustomStyles = () => {
+            const styleElement = document.createElement('style');
+            styleElement.textContent = customStyles;
+            document.head.appendChild(styleElement);
+        };
+        const addKxsHeader = () => {
+            const menuContainer = document.querySelector('#ui-game-menu');
+            if (!menuContainer)
+                return;
+            const header = document.createElement('div');
+            header.className = 'kxs-header';
+            const title = document.createElement('span');
+            title.className = 'kxs-title';
+            title.innerHTML = '<span>Kxs</span> CLIENT';
+            header.appendChild(title);
+            menuContainer.insertBefore(header, menuContainer.firstChild);
+        };
+        if (document.querySelector('#ui-game-menu')) {
+            addCustomStyles();
+            addKxsHeader();
+        }
+    }
+    handleMessage(element) {
+        if (element instanceof HTMLElement && element.classList.contains('killfeed-div')) {
+            const killfeedText = element.querySelector('.killfeed-text');
+            if (killfeedText instanceof HTMLElement) {
+                if (killfeedText.textContent && killfeedText.textContent.trim() !== '') {
+                    if (!killfeedText.hasAttribute('data-glint')) {
+                        killfeedText.setAttribute('data-glint', 'true');
+                        element.style.opacity = '1';
+                        setTimeout(() => {
+                            element.style.opacity = '0';
+                        }, 5000);
+                    }
+                }
+                else {
+                    element.style.opacity = '0';
+                }
+            }
+        }
+    }
+    setupObserver() {
+        const killfeedContents = document.getElementById('ui-killfeed-contents');
+        if (killfeedContents) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.target instanceof HTMLElement &&
+                        mutation.target.classList.contains('killfeed-text')) {
+                        const parentDiv = mutation.target.closest('.killfeed-div');
+                        if (parentDiv) {
+                            this.handleMessage(parentDiv);
+                        }
+                    }
+                    mutation.addedNodes.forEach((node) => {
+                        if (node instanceof HTMLElement) {
+                            this.handleMessage(node);
+                        }
+                    });
+                });
+            });
+            observer.observe(killfeedContents, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributes: true,
+                attributeFilter: ['style', 'class']
+            });
+            killfeedContents.querySelectorAll('.killfeed-div').forEach(this.handleMessage);
+        }
+    }
+    applyCustomStyles() {
+        const customStyles = document.createElement('style');
+        if (this.kxsClient.isKillFeedBlint) {
+            customStyles.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@600&display=swap');
+  
+        .killfeed-div {
+            position: absolute !important;
+            padding: 5px 10px !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            border-radius: 5px !important;
+            transition: opacity 0.5s ease-out !important;
+        }
+  
+        .killfeed-text {
+            font-family: 'Oxanium', sans-serif !important;
+            font-weight: bold !important;
+            font-size: 16px !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+            background: linear-gradient(90deg, 
+                rgb(255, 0, 0), 
+                rgb(255, 127, 0), 
+                rgb(255, 255, 0), 
+                rgb(0, 255, 0), 
+                rgb(0, 0, 255), 
+                rgb(75, 0, 130), 
+                rgb(148, 0, 211), 
+                rgb(255, 0, 0));
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glint 3s linear infinite;
+        }
+  
+        @keyframes glint {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+  
+        .killfeed-div .killfeed-text:empty {
+            display: none !important;
+        }
+      `;
+        }
+        else {
+            customStyles.innerHTML = `
+        .killfeed-div {
+            position: absolute;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            transition: opacity 0.5s ease-out;
+        }
+  
+        .killfeed-text {
+            font-family: inherit;
+            font-weight: normal;
+            font-size: inherit;
+            color: inherit;
+            text-shadow: none;
+            background: none;
+        }
+  
+        .killfeed-div .killfeed-text:empty {
+            display: none;
+        }
+      `;
+        }
+        document.head.appendChild(customStyles);
     }
     handleResize() {
         const viewportWidth = window.innerWidth;
@@ -711,14 +983,12 @@ class KxsClientHUD {
     }
     calculateSafePosition(currentPosition, elementWidth, elementHeight, viewportWidth, viewportHeight) {
         let { left, top } = currentPosition;
-        // Ajuster la position horizontale si nécessaire
         if (left + elementWidth > viewportWidth) {
             left = viewportWidth - elementWidth;
         }
         if (left < 0) {
             left = 0;
         }
-        // Ajuster la position verticale si nécessaire
         if (top + elementHeight > viewportHeight) {
             top = viewportHeight - elementHeight;
         }
@@ -2170,6 +2440,15 @@ class KxsLegacyClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(HUD, {
+            label: "Kill Feed Blint Text",
+            value: this.kxsClient.isKillFeedBlint,
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isKillFeedBlint = !this.kxsClient.isKillFeedBlint;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
         let musicSection = this.addSection("Music");
         this.addOption(musicSection, {
             label: "Death sound",
@@ -2691,6 +2970,17 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(HUD, {
+            label: "Kill Feed Blint Text",
+            value: this.kxsClient.isKillFeedBlint,
+            icon: `<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g data-name="Layer 2" id="Layer_2"> <path d="M18,11a1,1,0,0,1-1,1,5,5,0,0,0-5,5,1,1,0,0,1-2,0,5,5,0,0,0-5-5,1,1,0,0,1,0-2,5,5,0,0,0,5-5,1,1,0,0,1,2,0,5,5,0,0,0,5,5A1,1,0,0,1,18,11Z"></path> <path d="M19,24a1,1,0,0,1-1,1,2,2,0,0,0-2,2,1,1,0,0,1-2,0,2,2,0,0,0-2-2,1,1,0,0,1,0-2,2,2,0,0,0,2-2,1,1,0,0,1,2,0,2,2,0,0,0,2,2A1,1,0,0,1,19,24Z"></path> <path d="M28,17a1,1,0,0,1-1,1,4,4,0,0,0-4,4,1,1,0,0,1-2,0,4,4,0,0,0-4-4,1,1,0,0,1,0-2,4,4,0,0,0,4-4,1,1,0,0,1,2,0,4,4,0,0,0,4,4A1,1,0,0,1,28,17Z"></path> </g> </g></svg>`,
+            category: "HUD",
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isKillFeedBlint = !this.kxsClient.isKillFeedBlint;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
         this.addOption(SERVER, {
             label: `Rich Presence (Account token required)`,
             value: this.kxsClient.discordToken || "",
@@ -3006,6 +3296,7 @@ class KxsClient {
         this.isWinningAnimationEnabled = true;
         this.isKillLeaderTrackerEnabled = true;
         this.isLegaySecondaryMenu = true;
+        this.isKillFeedBlint = false;
         this.discordToken = null;
         this.counters = {};
         this.defaultPositions = {
@@ -3072,7 +3363,8 @@ class KxsClient {
             isWinningAnimationEnabled: this.isWinningAnimationEnabled,
             discordToken: this.discordToken,
             isKillLeaderTrackerEnabled: this.isKillLeaderTrackerEnabled,
-            isLegaySecondaryMenu: this.isLegaySecondaryMenu
+            isLegaySecondaryMenu: this.isLegaySecondaryMenu,
+            isKillFeedBlint: this.isKillFeedBlint,
         }));
     }
     ;
@@ -3442,7 +3734,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -3458,6 +3750,7 @@ class KxsClient {
             this.discordToken = (_j = savedSettings.discordToken) !== null && _j !== void 0 ? _j : this.discordToken;
             this.isKillLeaderTrackerEnabled = (_k = savedSettings.isKillLeaderTrackerEnabled) !== null && _k !== void 0 ? _k : this.isKillLeaderTrackerEnabled;
             this.isLegaySecondaryMenu = (_l = savedSettings.isLegaySecondaryMenu) !== null && _l !== void 0 ? _l : this.isLegaySecondaryMenu;
+            this.isKillFeedBlint = (_m = savedSettings.isKillFeedBlint) !== null && _m !== void 0 ? _m : this.isKillFeedBlint;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
