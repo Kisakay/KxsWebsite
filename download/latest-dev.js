@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.0
+// @version      1.1.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -37,7 +37,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","publish":"bun run ./KxsClient-Website-Updater.ts"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -1162,108 +1162,46 @@ class KxsClientHUD {
             }
         });
         const weaponNames = Array.from(document.getElementsByClassName("ui-weapon-name"));
+        const WEAPON_COLORS = {
+            ORANGE: '#FFAE00',
+            BLUE: '#007FFF',
+            GREEN: '#0f690d',
+            RED: '#FF0000',
+            BLACK: '#000000',
+            OLIVE: '#808000',
+            ORANGE_RED: '#FF4500',
+            PURPLE: '#800080',
+            TEAL: '#008080',
+            BROWN: '#A52A2A',
+            PINK: '#FFC0CB',
+            DEFAULT: '#FFFFFF'
+        };
+        const WEAPON_COLOR_MAPPING = {
+            ORANGE: ['CZ-3A1', 'G18C', 'M9', 'M93R', 'MAC-10', 'MP5', 'P30L', 'DUAL P30L', 'UMP9', 'VECTOR', 'VSS', 'FLAMETHROWER'],
+            BLUE: ['AK-47', 'OT-38', 'OTS-38', 'M39 EMR', 'DP-28', 'MOSIN-NAGANT', 'SCAR-H', 'SV-98', 'M1 GARAND', 'PKP PECHENEG', 'AN-94', 'BAR M1918', 'BLR 81', 'SVD-63', 'M134', 'WATER GUN', 'GROZA', 'GROZA-S'],
+            GREEN: ['FAMAS', 'M416', 'M249', 'QBB-97', 'MK 12 SPR', 'M4A1-S', 'SCOUT ELITE', 'L86A2'],
+            RED: ['M870', 'MP220', 'SAIGA-12', 'SPAS-12', 'USAS-12', 'SUPER 90', 'LASR GUN', 'M1100'],
+            BLACK: ['DEAGLE 50', 'RAINBOW BLASTER'],
+            OLIVE: ['AWM-S', 'MK 20 SSR'],
+            ORANGE_RED: ['FLARE GUN'],
+            PURPLE: ['MODEL 94', 'PEACEMAKER', 'VECTOR (.45 ACP)', 'M1911', 'M1A1', 'MK45G'],
+            TEAL: ['M79'],
+            BROWN: ['POTATO CANNON', 'SPUD GUN'],
+            PINK: ['HEART CANNON'],
+            DEFAULT: []
+        };
         weaponNames.forEach((weaponNameElement) => {
             const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
             const observer = new MutationObserver(() => {
-                var _a;
-                const weaponName = (_a = weaponNameElement.textContent) === null || _a === void 0 ? void 0 : _a.trim();
-                let border = "#FFFFFF";
-                switch (weaponName.toUpperCase()) {
-                    case "CZ-3A1":
-                    case "G18C":
-                    case "M9":
-                    case "M93R":
-                    case "MAC-10":
-                    case "MP5":
-                    case "P30L":
-                    case "DUAL P30L":
-                    case "UMP9":
-                    case "VECTOR":
-                    case "VSS":
-                    case "FLAMETHROWER":
-                        border = "#FFAE00";
-                        break;
-                    case "AK-47":
-                    case "OT-38":
-                    case "OTS-38":
-                    case "M39 EMR":
-                    case "DP-28":
-                    case "MOSIN-NAGANT":
-                    case "SCAR-H":
-                    case "SV-98":
-                    case "M1 GARAND":
-                    case "PKP PECHENEG":
-                    case "AN-94":
-                    case "BAR M1918":
-                    case "BLR 81":
-                    case "SVD-63":
-                    case "M134":
-                    case "WATER GUN":
-                    case "GROZA":
-                    case "GROZA-S":
-                        border = "#007FFF";
-                        break;
-                    case "FAMAS":
-                    case "M416":
-                    case "M249":
-                    case "QBB-97":
-                    case "MK 12 SPR":
-                    case "M4A1-S":
-                    case "SCOUT ELITE":
-                    case "L86A2":
-                        border = "#0f690d";
-                        break;
-                    case "M870":
-                    case "MP220":
-                    case "SAIGA-12":
-                    case "SPAS-12":
-                    case "USAS-12":
-                    case "SUPER 90":
-                    case "LASR GUN":
-                    case "M1100":
-                        border = "#FF0000";
-                        break;
-                    case "DEAGLE 50":
-                    case "RAINBOW BLASTER":
-                        border = "#000000";
-                        break;
-                    case "AWM-S":
-                    case "MK 20 SSR":
-                        border = "#808000";
-                        break;
-                    case "FLARE GUN":
-                        border = "#FF4500";
-                        break;
-                    case "MODEL 94":
-                    case "PEACEMAKER":
-                    case "VECTOR (.45 ACP)":
-                    case "M1911":
-                    case "M1A1":
-                        border = "#800080";
-                        break;
-                    case "M79":
-                        border = "#008080";
-                        break;
-                    case "POTATO CANNON":
-                    case "SPUD GUN":
-                        border = "#A52A2A";
-                        break;
-                    case "HEART CANNON":
-                        border = "#FFC0CB";
-                        break;
-                    default:
-                        border = "#FFFFFF";
-                        break;
-                }
+                var _a, _b, _c;
+                const weaponName = ((_b = (_a = weaponNameElement.textContent) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.toUpperCase()) || '';
+                const colorKey = (((_c = Object.entries(WEAPON_COLOR_MAPPING)
+                    .find(([_, weapons]) => weapons.includes(weaponName))) === null || _c === void 0 ? void 0 : _c[0]) || 'DEFAULT');
                 if (weaponContainer && weaponContainer.id !== "ui-weapon-id-4") {
-                    weaponContainer.style.border = `3px solid ${border}`;
+                    weaponContainer.style.border = `3px solid ${WEAPON_COLORS[colorKey]}`;
                 }
             });
-            observer.observe(weaponNameElement, {
-                childList: true,
-                characterData: true,
-                subtree: true,
-            });
+            observer.observe(weaponNameElement, { childList: true, characterData: true, subtree: true });
         });
     }
     updateUiElements() {
