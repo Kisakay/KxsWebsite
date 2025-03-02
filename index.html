@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -18,15 +17,24 @@
 
     <title>KxsClient</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
         :root {
-            --primary-color: #1d3557;
-            --secondary-color: #457b9d;
-            --accent-color: #e63946;
-            --text-light: #f1faee;
-            --text-dark: #1d3557;
-            --background-gradient: linear-gradient(135deg, #1d3557, #457b9d);
+            --primary-color: #0a192f;
+            --secondary-color: #172a46;
+            --accent-color: #64ffda;
+            --accent-color-alt: #ff6b6b;
+            --text-light: #e6f1ff;
+            --text-dark: #0a192f;
+            --background-gradient: linear-gradient(135deg, #0a192f, #172a46);
             --section-padding: 5rem 2rem;
+            --blur-amount: 10px;
+            --glow-color: rgba(100, 255, 218, 0.7);
+            --bloom-intensity: 15px;
+            --bloom-transition: 0.8s ease;
+            --bloom-color: rgba(100, 255, 218, 0.8);
+            --background-bloom-color: rgba(100, 255, 218, 0.3);
+            --transition-speed: 0.4s;
         }
 
         * {
@@ -36,11 +44,89 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Inter', 'Arial', sans-serif;
             line-height: 1.6;
             color: var(--text-light);
             background: var(--background-gradient);
             overflow-x: hidden;
+        }
+
+        .bloom-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .bloom-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(100, 255, 218, 0.1), transparent 70%);
+            filter: brightness(1.2) contrast(1.2);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        /* Glowing Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+            z-index: -1;
+            animation: float 15s infinite ease-in-out;
+            transition: transform var(--bloom-transition), opacity var(--bloom-transition);
+        }
+
+        .orb-1 {
+            top: 10%;
+            left: 10%;
+            width: 300px;
+            height: 300px;
+            background-color: rgba(100, 255, 218, 0.2);
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            bottom: 10%;
+            right: 10%;
+            width: 400px;
+            height: 400px;
+            background-color: rgba(255, 107, 107, 0.15);
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            top: 50%;
+            left: 50%;
+            width: 350px;
+            height: 350px;
+            background-color: rgba(111, 66, 193, 0.15);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(5%, 5%) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-5%, 2%) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
         }
 
         /* Header & Navigation */
@@ -49,11 +135,17 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(29, 53, 87, 0.95);
+            background: rgba(10, 25, 47, 0.8);
             backdrop-filter: blur(10px);
             z-index: 1000;
             padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-speed);
+        }
+
+        .header.scrolled {
+            padding: 0.7rem 0;
+            background: rgba(10, 25, 47, 0.95);
         }
 
         .nav-container {
@@ -73,26 +165,63 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            transition: all var(--transition-speed);
         }
 
-        .logo i {
+        .logo:hover {
             color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .logo img {
+            transition: transform var(--transition-speed);
+        }
+
+        .logo:hover img {
+            transform: rotate(10deg);
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 2.5rem;
         }
 
         .nav-links a {
             color: var(--text-light);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s;
+            position: relative;
+            padding: 0.3rem 0;
+            transition: color var(--transition-speed);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-color);
+            transition: width var(--transition-speed);
         }
 
         .nav-links a:hover {
             color: var(--accent-color);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1001;
         }
 
         /* Hero Section */
@@ -104,80 +233,745 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            position: relative;
+            overflow: hidden;
         }
 
         .hero h1 {
-            font-size: 4rem;
+            font-size: 4.5rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(90deg, #e63946, #f4a261);
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-color-alt));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: titleGlow 2s ease-in-out infinite alternate;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+            position: relative;
+        }
+
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(100, 255, 218, 0.2), 0 0 20px rgba(100, 255, 218, 0.1);
+            }
+
+            100% {
+                text-shadow: 0 0 20px rgba(100, 255, 218, 0.4), 0 0 40px rgba(100, 255, 218, 0.2);
+            }
         }
 
         .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
+            font-size: 1.4rem;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            color: rgba(230, 241, 255, 0.8);
         }
 
         .video-container {
-            margin: 2rem auto;
+            margin: 2.5rem auto;
             max-width: 800px;
             overflow: hidden;
             border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.5s ease;
+        }
+
+        .video-container:hover {
+            transform: perspective(1000px) rotateX(0deg);
+        }
+
+        .video-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            opacity: 0.5;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .video-container video {
             width: 100%;
             height: auto;
+            display: block;
         }
 
         .cta-buttons {
             display: flex;
             justify-content: center;
-            gap: 1rem;
+            gap: 1.5rem;
+            margin-top: 1rem;
         }
 
         .cta-button {
-            display: inline-block;
-            padding: 1rem 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2.5rem;
             font-size: 1.1rem;
             font-weight: bold;
-            color: var(--text-light);
+            color: var(--primary-color);
             background: var(--accent-color);
             border: none;
-            border-radius: 30px;
+            border-radius: 8px;
             text-decoration: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.4);
+            transition: all var(--transition-speed);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: transform 0.5s;
+            z-index: -1;
         }
 
         .cta-button:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(100, 255, 218, 0.6);
+        }
+
+        .cta-button:hover::before {
+            transform: translateX(100%);
+        }
+
+        .cta-button.alt {
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.2);
+        }
+
+        .cta-button.alt:hover {
+            background: rgba(100, 255, 218, 0.1);
+            box-shadow: 0 8px 25px rgba(100, 255, 218, 0.3);
+        }
+
+        /* Features Section */
+        .features {
+            padding: var(--section-padding);
+            position: relative;
+            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            color: var(--text-light);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+            margin: 1rem auto 0;
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all var(--transition-speed);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(100, 255, 218, 0.1), transparent 80%);
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(100, 255, 218, 0.3);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            transition: transform var(--transition-speed);
+        }
+
+        .feature-card:hover i {
+            transform: scale(1.2);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            color: var(--text-light);
+            font-size: 1.5rem;
+        }
+
+        .feature-card p {
+            color: rgba(230, 241, 255, 0.7);
+        }
+
+        .image-container {
+            max-width: 1000px;
+            margin: 4rem auto 0;
+            position: relative;
+        }
+
+        .image-container img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            transition: transform var(--transition-speed);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+
+        .image-container:hover img {
+            transform: scale(1.02);
+        }
+
+        /* Documentation Section */
+        .documentation {
+            padding: var(--section-padding);
+            background: linear-gradient(to bottom, var(--secondary-color), var(--primary-color));
+            position: relative;
+        }
+
+        .doc-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .doc-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .doc-nav button {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .doc-nav button:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .doc-nav button.active {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.4);
+        }
+
+        .doc-content {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform var(--transition-speed);
+        }
+
+        .doc-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(100, 255, 218, 0.3);
+        }
+
+        .doc-content h2 {
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+
+        .doc-content p {
+            margin-bottom: 1.5rem;
+            color: rgba(230, 241, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .doc-content ol {
+            margin-left: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .doc-content li {
+            margin-bottom: 1rem;
+            color: rgba(230, 241, 255, 0.8);
+            font-size: 1.05rem;
+        }
+
+        .doc-content li::marker {
+            color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            padding: var(--section-padding);
+            background: var(--primary-color);
+            position: relative;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 1.2rem;
+            font-size: 1.3rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40%;
+            height: 2px;
+            background: var(--accent-color);
+        }
+
+        .footer-section p {
+            color: rgba(230, 241, 255, 0.7);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: rgba(230, 241, 255, 0.7);
+            text-decoration: none;
+            transition: all var(--transition-speed);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-color);
+            transform: translateX(5px);
+        }
+
+        .footer-section a i {
+            font-size: 0.8rem;
+            transition: transform var(--transition-speed);
+        }
+
+        .footer-section a:hover i {
+            transform: translateX(3px);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.2rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all var(--transition-speed);
+        }
+
+        .social-links a i {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            transition: all var(--transition-speed);
+        }
+
+        .social-links a:hover {
+            background: var(--accent-color);
+            transform: translateY(-5px);
+        }
+
+        .social-links a:hover i {
+            color: var(--primary-color);
+            transform: none;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(230, 241, 255, 0.6);
+        }
+
+        .footer-bottom a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: all var(--transition-speed);
+        }
+
+        .footer-bottom a:hover {
+            text-decoration: underline;
+        }
+
+        .heart {
+            color: var(--accent-color-alt);
+            display: inline-block;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        @keyframes heartbeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 45px;
+            height: 45px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 99;
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.4);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(100, 255, 218, 0.6);
         }
 
         /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 3.5rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .nav-links {
-                display: none;
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+                background: var(--primary-color);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2rem;
+                transition: right 0.5s ease;
+                z-index: 999;
+                box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .mobile-nav-toggle {
+                display: block;
             }
 
             .hero h1 {
                 font-size: 3rem;
             }
 
-            .video-container {
-                margin: 1rem auto;
-                max-width: 100%;
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .cta-button {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .doc-nav {
+                flex-wrap: wrap;
+            }
+
+            .doc-nav button {
+                flex: 1 0 40%;
+            }
+
+            .feature-card {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .doc-nav button {
+                flex: 1 0 100%;
+            }
+
+            .back-to-top {
+                bottom: 1rem;
+                right: 1rem;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Mouse following bloom effect */
+        .mouse-bloom {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--background-bloom-color) 0%, transparent 70%);
+            filter: brightness(1.5) contrast(1.3);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            mix-blend-mode: screen;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+            display: none;
+        }
+
+        /* Documentation tabs */
+        .tab-btn {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.4);
+        }
+
+        /* Initial site bloom effect - more intense */
+        .initial-bloom {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 25, 47, 0.95);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+        }
+
+        .initial-bloom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, var(--background-bloom-color), transparent 80%);
+            filter: brightness(1.5) contrast(1.5);
+            animation: pulseBloom 3s infinite alternate;
+        }
+
+        .visit-button {
+            position: relative;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 10001;
+            box-shadow: 0 0 20px var(--bloom-color);
+        }
+
+        .visit-button:hover {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px var(--bloom-color);
+        }
+
+        .visit-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .visit-button:hover::before {
+            left: 100%;
+        }
+
+        @keyframes pulseBloom {
+            0% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 0.9;
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Initial bloom with visit button -->
+    <div class="initial-bloom" id="initialBloom">
+        <button class="visit-button" id="visitButton">VISIT</button>
+    </div>
+
+    <!-- Audio elements for music playback -->
+    <audio id="bgMusic1" src="./assets/Stranger_Things_Theme_Song_C418_REMIX.mp3" preload="auto"></audio>
+
+    <!-- Mouse following bloom -->
+    <div class="mouse-bloom" id="mouseBloom"></div>
+
+    <!-- Bloom container -->
+    <div class="bloom-container">
+        <div class="bloom-overlay"></div>
+    </div>
+
+    <!-- Background Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
     <header class="header">
         <nav class="nav-container">
             <a href="#" class="logo">
@@ -191,294 +985,373 @@
                 <a href="#download">Download</a>
                 <a href="#contact">Contact</a>
             </div>
+            <button class="mobile-nav-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
         </nav>
     </header>
 
     <section class="hero" id="home">
-        <h1>The Future of KxsClient</h1>
-        <p>Experience a new level of gaming with the upcoming KxsClient</p>
-        <div class="video-container">
+        <h1 data-aos="fade-up" data-aos-duration="1000">The Future of KxsClient</h1>
+        <p data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">Experience a new level of gaming with the
+            upcoming KxsClient - ultra-fast, secure, and fully customizable.</p>
+        <div class="video-container" data-aos="zoom-in" data-aos-duration="1000" data-aos-delay="400">
             <video controls>
                 <source src="video/video1.mp4" type="video/mp4" />
                 Your browser does not support video playback.
             </video>
         </div>
-        <div class="cta-buttons">
+        <div class="cta-buttons" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="600">
             <a href="https://discord.gg/JshbHHq8uf" class="cta-button">
                 <i class="fab fa-discord"></i> Join Discord
             </a>
-            <a href="download/latest-dev.js" class="cta-button">
+            <a href="download/latest-dev.js" class="cta-button alt">
                 <i class="fas fa-download"></i> Download Alpha
             </a>
         </div>
     </section>
 
-
-
-    <head>
-        <style>
-            /* Existing styles */
-            :root {
-                --primary-color: #1d3557;
-                --secondary-color: #457b9d;
-                --accent-color: #e63946;
-                --text-light: #f1faee;
-                --text-dark: #1d3557;
-                --background-gradient: linear-gradient(135deg, #1d3557, #457b9d);
-                --section-padding: 5rem 2rem;
-            }
-
-            /* ... (previous styles remain the same) ... */
-
-            /* New styles for Features section */
-            .features {
-                padding: var(--section-padding);
-                background: var(--primary-color);
-            }
-
-            .features-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 2rem;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-
-            .feature-card {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 2rem;
-                border-radius: 15px;
-                text-align: center;
-                transition: transform 0.3s;
-            }
-
-            .feature-card:hover {
-                transform: translateY(-10px);
-            }
-
-            .feature-card i {
-                font-size: 2.5rem;
-                color: var(--accent-color);
-                margin-bottom: 1rem;
-            }
-
-            .feature-card h3 {
-                margin-bottom: 1rem;
-                color: var(--text-light);
-            }
-
-            .image-container {
-                max-width: 1000px;
-                margin: 3rem auto 0;
-            }
-
-            .image-container img {
-                width: 100%;
-                border-radius: 15px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            }
-
-            /* Documentation section */
-            .documentation {
-                padding: var(--section-padding);
-                background: var(--secondary-color);
-            }
-
-            .doc-container {
-                max-width: 1000px;
-                margin: 0 auto;
-            }
-
-            .doc-nav {
-                display: flex;
-                gap: 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .doc-nav button {
-                padding: 0.8rem 1.5rem;
-                border: none;
-                border-radius: 30px;
-                background: rgba(255, 255, 255, 0.1);
-                color: var(--text-light);
-                cursor: pointer;
-                transition: background 0.3s;
-            }
-
-            .doc-nav button.active {
-                background: var(--accent-color);
-            }
-
-            .doc-content {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 2rem;
-                border-radius: 15px;
-            }
-
-            .doc-content h2 {
-                margin-bottom: 1.5rem;
-                color: var(--text-light);
-            }
-
-            .doc-content ol {
-                margin-left: 1.5rem;
-                color: var(--text-light);
-            }
-
-            .doc-content li {
-                margin-bottom: 0.5rem;
-            }
-
-            /* Footer */
-            .footer {
-                padding: var(--section-padding);
-                background: var(--primary-color);
-            }
-
-            .footer-content {
-                max-width: 1200px;
-                margin: 0 auto;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 2rem;
-            }
-
-            .footer-section h3 {
-                color: var(--text-light);
-                margin-bottom: 1rem;
-            }
-
-            .footer-section ul {
-                list-style: none;
-            }
-
-            .footer-section ul li {
-                margin-bottom: 0.5rem;
-            }
-
-            .footer-section a {
-                color: var(--text-light);
-                text-decoration: none;
-                transition: color 0.3s;
-            }
-
-            .footer-section a:hover {
-                color: var(--accent-color);
-            }
-
-            .social-links {
-                display: flex;
-                gap: 1rem;
-            }
-
-            .social-links a {
-                font-size: 1.5rem;
-            }
-
-            @media (max-width: 768px) {
-                .doc-nav {
-                    flex-direction: column;
-                }
-
-                .footer-content {
-                    grid-template-columns: 1fr;
-                }
-            }
-        </style>
-    </head>
-
-    <body>
-        <!-- Existing header and hero sections remain the same -->
-
-        <section class="features" id="features">
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-bolt"></i>
-                    <h3>Ultra customizable HUD</h3>
-                    <p>Plant of customizations possible</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-paint-brush"></i>
-                    <h3>Modern Interface</h3>
-                    <p>Intuitive design customizable to your preferences</p>
-                </div>
+    <section class="features" id="features">
+        <h2 class="section-title" data-aos="fade-up">Powerful Features</h2>
+        <div class="features-grid">
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                <i class="fas fa-bolt"></i>
+                <h3>Ultra Customizable HUD</h3>
+                <p>Create your perfect gaming interface with countless customization options to match your playstyle.
+                </p>
             </div>
-            <div class="image-container">
-                <img src="./assets/image.png" alt="Feature Preview">
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <i class="fas fa-paint-brush"></i>
+                <h3>Modern Interface</h3>
+                <p>Enjoy an intuitive design that adapts to your preferences with sleek animations and responsive
+                    controls.</p>
             </div>
-        </section>
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>Performance Boost</h3>
+                <p>Experience significant FPS improvements with our optimized client designed for smooth gameplay.</p>
+            </div>
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Enhanced Security</h3>
+                <p>Play with confidence knowing your data is protected with our advanced security features.</p>
+            </div>
+        </div>
+        <div class="image-container" data-aos="fade-up" data-aos-delay="500">
+            <img src="./assets/image.png" alt="Feature Preview">
+        </div>
+    </section>
 
-        <section class="documentation" id="documentation">
-            <div class="doc-container">
-                <div class="doc-nav">
-                    <button class="active">Getting Started</button>
-                    <button>Configuration</button>
-                    <button>FAQ</button>
-                </div>
-                <div class="doc-content">
+    <section class="documentation" id="documentation">
+        <h2 class="section-title" data-aos="fade-up">Documentation</h2>
+        <div class="doc-container">
+            <div class="doc-nav" data-aos="fade-up" data-aos-delay="100">
+                <button class="tab-btn active" data-tab="getting-started">Getting Started</button>
+                <button class="tab-btn" data-tab="configuration">Configuration</button>
+                <button class="tab-btn" data-tab="faq">FAQ</button>
+            </div>
+            <div class="doc-content" data-aos="fade-up" data-aos-delay="200">
+                <div id="getting-started" class="tab-content active">
                     <h2>Getting Started</h2>
                     <p>Welcome to the KxsClient documentation. Follow these steps to begin:</p>
                     <ol>
-                        <li>Download a script loader extension like TamperMonkey</li>
-                        <li>Download the KxsClient script</li>
-                        <li>Configure your preferences</li>
-                        <li>Join a game and have fun!</li>
+                        <li>Download a script loader extension like TamperMonkey from your browser's extension store
+                        </li>
+                        <li>Visit our download page and get the latest KxsClient script</li>
+                        <li>Open TamperMonkey and create a new script, then paste the KxsClient code</li>
+                        <li>Save the script and configure your preferences in the settings panel</li>
+                        <li>Join a game and enjoy your enhanced gaming experience!</li>
+                    </ol>
+                </div>
+                <div id="configuration" class="tab-content">
+                    <h2>Configuration Guide</h2>
+                    <p>KxsClient offers extensive customization options to enhance your gameplay:</p>
+                    <ol>
+                        <li>Press <code>Alt+K</code> in-game to open the settings panel</li>
+                        <li>Adjust HUD elements through the drag-and-drop interface</li>
+                        <li>Customize colors, transparency and size of all UI components</li>
+                        <li>Save multiple profiles for different game modes</li>
+                        <li>Import and export settings to share with friends</li>
+                    </ol>
+                </div>
+                <div id="faq" class="tab-content">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Find answers to common questions about KxsClient:</p>
+                    <ol>
+                        <li><strong>Is KxsClient safe to use?</strong><br>Yes, KxsClient is designed with security in
+                            mind and doesn't modify game files directly.</li>
+                        <li><strong>Will it work on all browsers?</strong><br>KxsClient is compatible with Chrome,
+                            Firefox, Edge, and other major browsers that support userscripts.</li>
+                        <li><strong>Is KxsClient free?</strong><br>Yes, the core features are completely free. We may
+                            offer premium features in the future.</li>
+                        <li><strong>How do I report bugs?</strong><br>Join our Discord server and post in the
+                            #bug-reports channel.</li>
                     </ol>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <footer class="footer" id="contact">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>About</h3>
-                    <p>KxsClient is an project aimed at enhancing the gaming experience for players.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Useful Links</h3>
-                    <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#documentation">Documentation</a></li>
-                        <li><a href="https://github.com/Kisakay">GitHub</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Community</h3>
-                    <div class="social-links">
-                        <a href="https://discord.gg/JshbHHq8uf"><i class="fab fa-discord"></i></a>
-                        <a href="https://github.com/Kisakay/KxsClient"><i class="fab fa-github"></i></a>
-                    </div>
+    <section class="footer" id="contact">
+        <div class="footer-content">
+            <div class="footer-section" data-aos="fade-up" data-aos-delay="100">
+                <h3>About KxsClient</h3>
+                <p>KxsClient is an innovative project aimed at enhancing the gaming experience for players with advanced
+                    features, customization options, and performance improvements.</p>
+            </div>
+            <div class="footer-section" data-aos="fade-up" data-aos-delay="200">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
+                    <li><a href="#documentation"><i class="fas fa-chevron-right"></i> Documentation</a></li>
+                    <li><a href="#download"><i class="fas fa-chevron-right"></i> Download</a></li>
+                    <li><a href="https://github.com/Kisakay"><i class="fas fa-chevron-right"></i> GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section" data-aos="fade-up" data-aos-delay="300">
+                <h3>Connect With Us</h3>
+                <p>Join our growing community and stay updated with the latest developments.</p>
+                <div class="social-links">
+                    <a href="https://discord.gg/JshbHHq8uf" title="Join our Discord server"><i
+                            class="fab fa-discord"></i></a>
+                    <a href="https://github.com/Kisakay/KxsClient" title="View source on GitHub"><i
+                            class="fab fa-github"></i></a>
+                    <a href="#" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="Subscribe on YouTube"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
-            <div
-                style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 248, 248, 0.1);">
-                <p>Made with ♥ by <a href="https://github.com/Kisakay">Kisakay</a></p>
-            </div>
-        </footer>
+        </div>
+        <div class="footer-bottom">
+            <p>Made with <span class="heart">♥</span> by <a href="https://github.com/Kisakay">Kisakay</a> | &copy; 2023
+                KxsClient</p>
+        </div>
+    </section>
 
-        <script>
-            // Navigation smooth scroll
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
+    <a href="#" class="back-to-top" id="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- AOS Library -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Navigation smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Toggle bloom effect
+                const bloomContainer = document.querySelector('.bloom-container');
+                const bloomOverlay = document.querySelector('.bloom-overlay');
+
+                // Show bloom container
+                bloomContainer.style.display = 'block';
+
+                // Fade in bloom
+                setTimeout(() => {
+                    bloomOverlay.style.opacity = '1';
+                }, 10);
+
+                // Wait a bit then scroll and remove bloom
+                setTimeout(() => {
                     document.querySelector(this.getAttribute('href')).scrollIntoView({
                         behavior: 'smooth'
                     });
-                });
+
+                    // Fade out bloom
+                    bloomOverlay.style.opacity = '0';
+
+                    // Hide bloom container after transition
+                    setTimeout(() => {
+                        bloomContainer.style.display = 'none';
+                    }, 300);
+                }, 300);
+            });
+        });
+
+        // Documentation tabs
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+
+                // Add active class to clicked button
+                button.classList.add('active');
+
+                // Hide all tab contents
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Show the selected tab content
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Mobile navigation
+        const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileNavToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+
+            // Change icon based on menu state
+            const icon = mobileNavToggle.querySelector('i');
+            if (navLinks.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Close mobile menu when a link is clicked
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                const icon = mobileNavToggle.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        });
+
+        // Header scroll effect
+        const header = document.querySelector('.header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Back to top button
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+        });
+
+        // Enhanced Mouse following bloom effect
+        const mouseBloom = document.getElementById('mouseBloom');
+        const orbs = document.querySelectorAll('.orb');
+
+        document.addEventListener('mousemove', (e) => {
+            // Calculate position relative to viewport
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+
+            // Position the bloom effect
+            mouseBloom.style.left = mouseX + 'px';
+            mouseBloom.style.top = mouseY + 'px';
+
+            // Influence orbs based on mouse position
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            orbs.forEach((orb, index) => {
+                // Calculate the influence (higher = stronger effect)
+                const influenceX = (mouseX / viewportWidth - 0.5) * 40;
+                const influenceY = (mouseY / viewportHeight - 0.5) * 40;
+
+                // Apply different effects to each orb for variety
+                if (index === 0) {
+                    orb.style.transform = `translate(${influenceX}px, ${influenceY}px) scale(${1 + (mouseY / viewportHeight) * 0.2})`;
+                    orb.style.opacity = 0.3 + (mouseX / viewportWidth) * 0.4;
+                } else if (index === 1) {
+                    orb.style.transform = `translate(${-influenceX * 0.7}px, ${-influenceY * 0.7}px) scale(${1 + (mouseX / viewportWidth) * 0.15})`;
+                    orb.style.opacity = 0.2 + (mouseY / viewportHeight) * 0.5;
+                } else {
+                    orb.style.transform = `translate(${influenceY * 0.5}px, ${-influenceX * 0.5}px) scale(${1 + ((mouseX + mouseY) / (viewportWidth + viewportHeight)) * 0.3})`;
+                    orb.style.opacity = 0.3 + ((mouseX + mouseY) / (viewportWidth + viewportHeight)) * 0.4;
+                }
+            });
+        });
+
+        // Show mouse bloom effect after initial bloom is removed
+        let mouseBloomVisible = false;
+
+        // Initial bloom and visit button functionality
+        const initialBloom = document.getElementById('initialBloom');
+        const visitButton = document.getElementById('visitButton');
+
+        // Music elements
+
+        // Make sure the elements exist before adding event listeners
+        if (visitButton && initialBloom) {
+            visitButton.addEventListener('click', () => {
+                // Play a random music track
+                const randomTrack = document.getElementById('bgMusic1');
+
+                randomTrack.volume = 0.7; // Set volume to 70%
+                randomTrack.play()
+                    .catch(error => console.log("Audio playback failed: ", error));
+
+                // Ensure proper fade-out effect 
+                initialBloom.style.opacity = '0';
+
+                setTimeout(() => {
+                    initialBloom.style.display = 'none';
+
+                    // Enable mouse bloom after entering site
+                    if (mouseBloom) {
+                        mouseBloom.style.display = 'block';
+                        mouseBloom.style.opacity = '0.5';
+                        mouseBloomVisible = true;
+                    }
+
+                    // Add dramatic entrance for orbs
+                    document.querySelectorAll('.orb').forEach((orb, index) => {
+                        orb.style.transition = 'transform 1.5s ease, opacity 1.5s ease';
+                        orb.style.opacity = '0.5';
+                        setTimeout(() => {
+                            orb.style.transform = 'translate(0, 0) scale(1)';
+                        }, index * 200);
+                    });
+                }, 800);
+            });
+        }
+
+        // Enhance hover effects with bloom
+        document.querySelectorAll('a, button, .feature-card, .cta-button').forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                if (mouseBloomVisible) {
+                    mouseBloom.style.opacity = '0.9';
+
+                    // Dramatic effect on orbs when hovering interactive elements
+                    orbs.forEach((orb, index) => {
+                        orb.style.opacity = '0.7';
+                        orb.style.filter = 'blur(45px) brightness(1.2)';
+                    });
+                }
             });
 
-            // Documentation tabs
-            const docButtons = document.querySelectorAll('.doc-nav button');
-            docButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    docButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                });
-            });
-        </script>
-    </body>
+            element.addEventListener('mouseleave', () => {
+                if (mouseBloomVisible) {
+                    mouseBloom.style.opacity = '0.5';
 
-</html>
+                    // Reset orbs on mouse leave
+                    orbs.forEach((orb) => {
+                        orb.style.opacity = '0.5';
+                        orb.style.filter = 'blur(60px)';
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
