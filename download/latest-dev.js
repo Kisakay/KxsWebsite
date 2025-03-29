@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.8
+// @version      1.1.9
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -39,7 +39,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -826,8 +826,31 @@ class KxsClientHUD {
         padding: 20px !important;
         backdrop-filter: blur(10px) !important;
         max-width: 350px !important;
+        /* max-height: 80vh !important; */ /* Optionnel: Limiter la hauteur maximale */
         margin: auto !important;
         box-sizing: border-box !important;
+        overflow-y: auto !important; /* Permettre le défilement vertical si nécessaire */
+    }
+
+    .ui-game-menu-desktop::-webkit-scrollbar {
+        width: 8px !important;
+    }
+    .ui-game-menu-desktop::-webkit-scrollbar-track {
+        background: rgba(25, 25, 35, 0.5) !important;
+        border-radius: 10px !important;
+    }
+    .ui-game-menu-desktop::-webkit-scrollbar-thumb {
+        background-color: #4287f5 !important;
+        border-radius: 10px !important;
+        border: 2px solid rgba(25, 25, 35, 0.5) !important;
+    }
+    .ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
+        background-color: #5a9eff !important;
+    }
+
+    .ui-game-menu-desktop {
+        scrollbar-width: thin !important;
+        scrollbar-color: #4287f5 rgba(25, 25, 35, 0.5) !important;
     }
 
     .kxs-header {
