@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.7
+// @version      1.1.8
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -18,6 +18,7 @@
 // @match        *://leia-uwu.github.io/survev/*
 // @match        *://50v50.online/*
 // @match        *://eu-comp.net/*
+// @match        *://survev.leia-is.gay/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM.getValue
@@ -31,14 +32,14 @@
 /***/ 272:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*","*://survev.leia-is.gay/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 
 /***/ }),
 
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.7","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
