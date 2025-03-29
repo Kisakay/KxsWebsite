@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.6
+// @version      1.1.5
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay x SoyAlguien
 // @license      AGPL-3.0
@@ -18,7 +18,6 @@
 // @match        *://leia-uwu.github.io/survev/*
 // @match        *://50v50.online/*
 // @match        *://eu-comp.net/*
-// @match        *://zurviv.io/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM.getValue
@@ -32,14 +31,14 @@
 /***/ 272:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*","*://zurviv.io/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 
 /***/ }),
 
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.6","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.5","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -70,6 +69,32 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.6",
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  f: () => (/* binding */ kxs_logo)
+});
+
+// UNUSED EXPORTS: background_song
 
 ;// ./src/ButtonManager.ts
 class MenuButton {
@@ -374,7 +399,7 @@ class KxsMainClientMenu {
         this.kxsClient = kxsClient;
         this.menu = document.createElement("div");
         this.setupKeyListeners();
-        this.initMenu();
+        // this.initMenu();
     }
     initMenu() {
         this.menu.id = "kxsMenu";
@@ -2525,6 +2550,16 @@ class KxsLegacyClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(HUD, {
+            label: `Spotify Player`,
+            value: this.kxsClient.isSpotifyPlayerEnabled,
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isSpotifyPlayerEnabled = !this.kxsClient.isSpotifyPlayerEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.toggleSpotifyMenu();
+            },
+        });
         this.addOption(pluginsSection, {
             label: `Uncap FPS`,
             value: this.kxsClient.isFpsUncapped,
@@ -2758,13 +2793,17 @@ class KxsLegacyClientSecondaryMenu {
 
 ;// ./src/ClientSecondaryMenuRework.ts
 
+
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
+        this.searchTerm = '';
         this.shiftListener = (event) => {
             if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
                 this.toggleMenuVisibility();
                 this.loadOption();
+                // Ensure options are displayed after loading
+                this.filterOptions();
             }
         };
         this.mouseMoveListener = (e) => {
@@ -2785,6 +2824,7 @@ class KxsClientSecondaryMenu {
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
         this.sections = [];
+        this.allOptions = [];
         this.activeCategory = "ALL";
         this.menu = document.createElement("div");
         this.initMenu();
@@ -2810,20 +2850,22 @@ class KxsClientSecondaryMenu {
             color: "#fff",
             maxHeight: "80vh",
             overflowY: "auto",
+            overflowX: "hidden", // Prevent horizontal scrolling
             position: "fixed",
             top: "10%",
             left: "50%",
             transform: "translateX(-50%)",
             display: "none",
+            boxSizing: "border-box", // Include padding in width calculation
         });
     }
     createHeader() {
         const header = document.createElement("div");
         header.style.marginBottom = "20px";
         header.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; box-sizing: border-box;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="https://kxs.rip/assets/KysClientLogo.png" 
+                <img src="${kxs_logo}" 
                     alt="Logo" style="width: 24px; height: 24px;">
                 <span style="font-size: 20px; font-weight: bold;">KXS CLIENT</span>
             </div>
@@ -2838,19 +2880,48 @@ class KxsClientSecondaryMenu {
               ">×</button>
             </div>
           </div>
-          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            ${["ALL", "HUD", "SERVER", "MECHANIC"].map(cat => `
-              <button class="category-btn" data-category="${cat}" style="
-                padding: 6px 16px;
-                background: ${this.activeCategory === cat ? '#3B82F6' : 'rgba(55, 65, 81, 0.8)'};
-                border: none;
-                border-radius: 6px;
-                color: white;
-                cursor: pointer;
-                font-size: 14px;
-                transition: background 0.2s;
-              ">${cat}</button>
-            `).join('')}
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box;">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px;">
+              ${["ALL", "HUD", "SERVER", "MECHANIC"].map(cat => `
+                <button class="category-btn" data-category="${cat}" style="
+                  padding: 6px 16px;
+                  background: ${this.activeCategory === cat ? '#3B82F6' : 'rgba(55, 65, 81, 0.8)'};
+                  border: none;
+                  border-radius: 6px;
+                  color: white;
+                  cursor: pointer;
+                  font-size: 14px;
+                  transition: background 0.2s;
+                ">${cat}</button>
+              `).join('')}
+            </div>
+            <div style="display: flex; width: 100%; box-sizing: border-box;">
+              <div style="position: relative; width: 100%; box-sizing: border-box;">
+                <input type="text" id="kxsSearchInput" placeholder="Search options..." style="
+                  width: 100%;
+                  padding: 8px 12px 8px 32px;
+                  background: rgba(55, 65, 81, 0.8);
+                  border: none;
+                  border-radius: 6px;
+                  color: white;
+                  font-size: 14px;
+                  outline: none;
+                  box-sizing: border-box;
+                ">
+                <div style="
+                  position: absolute;
+                  left: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 14px;
+                  height: 14px;
+                ">
+                  <svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         `;
         header.querySelectorAll('.category-btn').forEach(btn => {
@@ -2865,6 +2936,11 @@ class KxsClientSecondaryMenu {
         closeButton === null || closeButton === void 0 ? void 0 : closeButton.addEventListener('click', () => {
             this.toggleMenuVisibility();
         });
+        const searchInput = header.querySelector('#kxsSearchInput');
+        searchInput === null || searchInput === void 0 ? void 0 : searchInput.addEventListener('input', (e) => {
+            this.searchTerm = e.target.value.toLowerCase();
+            this.filterOptions();
+        });
         this.menu.appendChild(header);
     }
     clearMenu() {
@@ -2872,8 +2948,16 @@ class KxsClientSecondaryMenu {
         if (gridContainer) {
             gridContainer.innerHTML = '';
         }
+        // Reset search term when clearing menu
+        this.searchTerm = '';
+        const searchInput = document.getElementById('kxsSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+        }
     }
     loadOption() {
+        // Clear existing options to avoid duplicates
+        this.allOptions = [];
         let HUD = this.addSection("HUD", 'HUD');
         let MECHANIC = this.addSection("MECHANIC", 'MECHANIC');
         let SERVER = this.addSection("SERVER", 'SERVER');
@@ -3007,6 +3091,18 @@ class KxsClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
+            label: `Spotify Player`,
+            value: this.kxsClient.isSpotifyPlayerEnabled,
+            icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>spotify</title> <path d="M24.849 14.35c-3.206-1.616-6.988-2.563-10.991-2.563-2.278 0-4.484 0.306-6.58 0.881l0.174-0.041c-0.123 0.040-0.265 0.063-0.412 0.063-0.76 0-1.377-0.616-1.377-1.377 0-0.613 0.401-1.132 0.954-1.311l0.010-0.003c5.323-1.575 14.096-1.275 19.646 2.026 0.426 0.258 0.706 0.719 0.706 1.245 0 0.259-0.068 0.502-0.186 0.712l0.004-0.007c-0.29 0.345-0.721 0.563-1.204 0.563-0.273 0-0.529-0.070-0.752-0.192l0.008 0.004zM24.699 18.549c-0.201 0.332-0.561 0.55-0.971 0.55-0.225 0-0.434-0.065-0.61-0.178l0.005 0.003c-2.739-1.567-6.021-2.49-9.518-2.49-1.925 0-3.784 0.28-5.539 0.801l0.137-0.035c-0.101 0.032-0.217 0.051-0.337 0.051-0.629 0-1.139-0.51-1.139-1.139 0-0.509 0.333-0.939 0.793-1.086l0.008-0.002c1.804-0.535 3.878-0.843 6.023-0.843 3.989 0 7.73 1.064 10.953 2.925l-0.106-0.056c0.297 0.191 0.491 0.52 0.491 0.894 0 0.227-0.071 0.437-0.192 0.609l0.002-0.003zM22.899 22.673c-0.157 0.272-0.446 0.452-0.777 0.452-0.186 0-0.359-0.057-0.502-0.154l0.003 0.002c-2.393-1.346-5.254-2.139-8.299-2.139-1.746 0-3.432 0.261-5.020 0.745l0.122-0.032c-0.067 0.017-0.145 0.028-0.224 0.028-0.512 0-0.927-0.415-0.927-0.927 0-0.432 0.296-0.795 0.696-0.898l0.006-0.001c1.581-0.47 3.397-0.74 5.276-0.74 3.402 0 6.596 0.886 9.366 2.44l-0.097-0.050c0.302 0.15 0.506 0.456 0.506 0.809 0 0.172-0.048 0.333-0.132 0.469l0.002-0.004zM16 1.004c0 0 0 0-0 0-8.282 0-14.996 6.714-14.996 14.996s6.714 14.996 14.996 14.996c8.282 0 14.996-6.714 14.996-14.996v0c-0.025-8.272-6.724-14.971-14.993-14.996h-0.002z"></path> </g></svg>',
+            category: "HUD",
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isSpotifyPlayerEnabled = !this.kxsClient.isSpotifyPlayerEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.toggleSpotifyMenu();
+            },
+        });
+        this.addOption(HUD, {
             label: "Kill Feed Blint Text",
             value: this.kxsClient.isKillFeedBlint,
             icon: `<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g data-name="Layer 2" id="Layer_2"> <path d="M18,11a1,1,0,0,1-1,1,5,5,0,0,0-5,5,1,1,0,0,1-2,0,5,5,0,0,0-5-5,1,1,0,0,1,0-2,5,5,0,0,0,5-5,1,1,0,0,1,2,0,5,5,0,0,0,5,5A1,1,0,0,1,18,11Z"></path> <path d="M19,24a1,1,0,0,1-1,1,2,2,0,0,0-2,2,1,1,0,0,1-2,0,2,2,0,0,0-2-2,1,1,0,0,1,0-2,2,2,0,0,0,2-2,1,1,0,0,1,2,0,2,2,0,0,0,2,2A1,1,0,0,1,19,24Z"></path> <path d="M28,17a1,1,0,0,1-1,1,4,4,0,0,0-4,4,1,1,0,0,1-2,0,4,4,0,0,0-4-4,1,1,0,0,1,0-2,4,4,0,0,0,4-4,1,1,0,0,1,2,0,4,4,0,0,0,4,4A1,1,0,0,1,28,17Z"></path> </g> </g></svg>`,
@@ -3091,31 +3187,48 @@ class KxsClientSecondaryMenu {
     }
     setActiveCategory(category) {
         this.activeCategory = category;
-        const gridContainer = document.getElementById('kxsMenuGrid');
-        if (gridContainer) {
-            // Clear existing content
-            gridContainer.innerHTML = '';
-            // Get unique options based on category
-            const displayedOptions = new Set();
-            this.sections.forEach(section => {
-                if (category === 'ALL' || section.category === category) {
-                    section.options.forEach(option => {
-                        // Create a unique key for each option
-                        const optionKey = `${option.label}-${option.category}`;
-                        if (!displayedOptions.has(optionKey)) {
-                            displayedOptions.add(optionKey);
-                            this.createOptionCard(option, gridContainer);
-                        }
-                    });
-                }
-            });
-        }
+        this.filterOptions();
         // Update button styles
         this.menu.querySelectorAll('.category-btn').forEach(btn => {
             const btnCategory = btn.dataset.category;
             btn.style.background =
                 btnCategory === category ? '#3B82F6' : 'rgba(55, 65, 81, 0.8)';
         });
+    }
+    filterOptions() {
+        const gridContainer = document.getElementById('kxsMenuGrid');
+        if (gridContainer) {
+            // Clear existing content
+            gridContainer.innerHTML = '';
+            // Get unique options based on category and search term
+            const displayedOptions = new Set();
+            this.sections.forEach(section => {
+                if (this.activeCategory === 'ALL' || section.category === this.activeCategory) {
+                    section.options.forEach(option => {
+                        // Create a unique key for each option
+                        const optionKey = `${option.label}-${option.category}`;
+                        // Check if option matches search term
+                        const matchesSearch = this.searchTerm === '' ||
+                            option.label.toLowerCase().includes(this.searchTerm) ||
+                            option.category.toLowerCase().includes(this.searchTerm);
+                        if (!displayedOptions.has(optionKey) && matchesSearch) {
+                            displayedOptions.add(optionKey);
+                            this.createOptionCard(option, gridContainer);
+                        }
+                    });
+                }
+            });
+            // Show a message if no options match the search
+            if (displayedOptions.size === 0 && this.searchTerm !== '') {
+                const noResultsMsg = document.createElement('div');
+                noResultsMsg.textContent = `No results found for "${this.searchTerm}"`;
+                noResultsMsg.style.gridColumn = '1 / -1';
+                noResultsMsg.style.textAlign = 'center';
+                noResultsMsg.style.padding = '20px';
+                noResultsMsg.style.color = '#9CA3AF';
+                gridContainer.appendChild(noResultsMsg);
+            }
+        }
     }
     createGridContainer() {
         const gridContainer = document.createElement("div");
@@ -3124,48 +3237,20 @@ class KxsClientSecondaryMenu {
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: "16px",
             padding: "16px",
+            gridAutoRows: "minmax(150px, auto)",
+            overflowY: "auto",
+            overflowX: "hidden", // Prevent horizontal scrolling
+            maxHeight: "calc(3 * 150px + 2 * 16px)",
+            width: "100%",
+            boxSizing: "border-box" // Include padding in width calculation
         });
         gridContainer.id = "kxsMenuGrid";
         this.menu.appendChild(gridContainer);
     }
     addOption(section, option) {
         section.options.push(option);
-        const gridContainer = document.getElementById('kxsMenuGrid');
-        if (!gridContainer)
-            return;
-        const optionCard = document.createElement("div");
-        Object.assign(optionCard.style, {
-            background: "rgba(31, 41, 55, 0.8)",
-            borderRadius: "10px",
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "12px",
-            minHeight: "150px",
-        });
-        const iconContainer = document.createElement("div");
-        Object.assign(iconContainer.style, {
-            width: "48px",
-            height: "48px",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: "8px"
-        });
-        iconContainer.innerHTML = option.icon || '';
-        const title = document.createElement("div");
-        title.textContent = option.label;
-        title.style.fontSize = "16px";
-        title.style.textAlign = "center";
-        const toggleBtn = option.type === "toggle"
-            ? this.createToggleButton(option)
-            : this.createInputElement(option);
-        optionCard.appendChild(iconContainer);
-        optionCard.appendChild(title);
-        optionCard.appendChild(toggleBtn);
-        gridContainer.appendChild(optionCard);
+        // Store all options for searching
+        this.allOptions.push(option);
     }
     addSection(title, category = "ALL") {
         const section = {
@@ -3212,6 +3297,8 @@ class KxsClientSecondaryMenu {
                 this.clearMenu();
                 this.toggleMenuVisibility();
                 this.loadOption();
+                // Ensure options are displayed after loading
+                this.filterOptions();
             }
         });
     }
@@ -3266,6 +3353,10 @@ class KxsClientSecondaryMenu {
         this.isClientMenuVisible = !this.isClientMenuVisible;
         this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
         this.menu.style.display = this.isClientMenuVisible ? "block" : "none";
+        // If opening the menu, make sure to display options
+        if (this.isClientMenuVisible) {
+            this.filterOptions();
+        }
     }
     destroy() {
         // Remove global event listeners
@@ -3344,6 +3435,7 @@ class KxsClient {
         this.isKillLeaderTrackerEnabled = true;
         this.isLegaySecondaryMenu = false;
         this.isKillFeedBlint = false;
+        this.isSpotifyPlayerEnabled = false;
         this.discordToken = null;
         this.counters = {};
         this.all_friends = '';
@@ -3376,6 +3468,9 @@ class KxsClient {
             this.secondaryMenu = new KxsClientSecondaryMenu(this);
         }
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
+        if (this.isSpotifyPlayerEnabled) {
+            this.createSimpleSpotifyPlayer();
+        }
     }
     parseToken(token) {
         if (token) {
@@ -3413,7 +3508,8 @@ class KxsClient {
             isKillLeaderTrackerEnabled: this.isKillLeaderTrackerEnabled,
             isLegaySecondaryMenu: this.isLegaySecondaryMenu,
             isKillFeedBlint: this.isKillFeedBlint,
-            all_friends: this.all_friends
+            all_friends: this.all_friends,
+            isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled
         }));
     }
     ;
@@ -3783,7 +3879,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -3801,6 +3897,7 @@ class KxsClient {
             this.isLegaySecondaryMenu = (_l = savedSettings.isLegaySecondaryMenu) !== null && _l !== void 0 ? _l : this.isLegaySecondaryMenu;
             this.isKillFeedBlint = (_m = savedSettings.isKillFeedBlint) !== null && _m !== void 0 ? _m : this.isKillFeedBlint;
             this.all_friends = (_o = savedSettings.all_friends) !== null && _o !== void 0 ? _o : this.all_friends;
+            this.isSpotifyPlayerEnabled = (_p = savedSettings.isSpotifyPlayerEnabled) !== null && _p !== void 0 ? _p : this.isSpotifyPlayerEnabled;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
@@ -3834,9 +3931,450 @@ class KxsClient {
         this.setAnimationFrameCallback();
         this.saveFpsUncappedToLocalStorage();
     }
+    createSimpleSpotifyPlayer() {
+        // Main container
+        const container = document.createElement('div');
+        container.id = 'spotify-player-container';
+        Object.assign(container.style, {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            width: '320px',
+            backgroundColor: '#121212',
+            borderRadius: '12px',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+            overflow: 'hidden',
+            zIndex: '10000',
+            fontFamily: 'Montserrat, Arial, sans-serif',
+            transition: 'transform 0.3s ease, opacity 0.3s ease',
+            transform: 'translateY(0)',
+            opacity: '1'
+        });
+        // Player header
+        const header = document.createElement('div');
+        Object.assign(header.style, {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+            backgroundColor: '#070707',
+            color: 'white',
+            borderBottom: '1px solid #282828',
+            position: 'relative' // For absolute positioning of the button
+        });
+        // Spotify logo
+        const logo = document.createElement('div');
+        logo.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#1DB954" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
+        const title = document.createElement('span');
+        title.textContent = 'Spotify Player';
+        title.style.marginLeft = '8px';
+        title.style.fontWeight = 'bold';
+        const logoContainer = document.createElement('div');
+        logoContainer.style.display = 'flex';
+        logoContainer.style.alignItems = 'center';
+        logoContainer.appendChild(logo);
+        logoContainer.appendChild(title);
+        // Control buttons
+        const controls = document.createElement('div');
+        controls.style.display = 'flex';
+        controls.style.alignItems = 'center';
+        // Minimize button
+        const minimizeBtn = document.createElement('button');
+        Object.assign(minimizeBtn.style, {
+            background: 'none',
+            border: 'none',
+            color: '#aaa',
+            cursor: 'pointer',
+            fontSize: '18px',
+            padding: '0',
+            marginLeft: '10px',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
+        minimizeBtn.innerHTML = '−';
+        minimizeBtn.title = 'Minimize';
+        // Close button
+        const closeBtn = document.createElement('button');
+        Object.assign(closeBtn.style, {
+            background: 'none',
+            border: 'none',
+            color: '#aaa',
+            cursor: 'pointer',
+            fontSize: '18px',
+            padding: '0',
+            marginLeft: '10px',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
+        closeBtn.innerHTML = '×';
+        closeBtn.title = 'Close';
+        controls.appendChild(minimizeBtn);
+        controls.appendChild(closeBtn);
+        header.appendChild(logoContainer);
+        header.appendChild(controls);
+        // Album cover image
+        const albumArt = document.createElement('div');
+        Object.assign(albumArt.style, {
+            width: '50px',
+            height: '50px',
+            backgroundColor: '#333',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            borderRadius: '4px',
+            flexShrink: '0'
+        });
+        albumArt.style.backgroundImage = `url('https://i.scdn.co/image/ab67616d00001e02fe24b9ffeb3c3fdb4f9abbe9')`;
+        // Track information
+        const trackInfo = document.createElement('div');
+        Object.assign(trackInfo.style, {
+            flex: '1',
+            overflow: 'hidden'
+        });
+        // Player content
+        const content = document.createElement('div');
+        content.style.padding = '0';
+        // Spotify iframe
+        const iframe = document.createElement('iframe');
+        iframe.id = 'spotify-player-iframe';
+        iframe.src = 'https://open.spotify.com/embed/playlist/37i9dQZEVXcJZyENOWUFo7';
+        iframe.width = '100%';
+        iframe.height = '80px';
+        iframe.frameBorder = '0';
+        iframe.allow = 'encrypted-media';
+        iframe.style.border = 'none';
+        content.appendChild(iframe);
+        // Playlist change button integrated in the header
+        const changePlaylistContainer = document.createElement('div');
+        Object.assign(changePlaylistContainer.style, {
+            display: 'flex',
+            alignItems: 'center',
+            marginRight: '10px'
+        });
+        // Square button to enter a playlist ID
+        const changePlaylistBtn = document.createElement('button');
+        Object.assign(changePlaylistBtn.style, {
+            width: '24px',
+            height: '24px',
+            backgroundColor: '#1DB954',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 8px 0 0'
+        });
+        changePlaylistBtn.innerHTML = `
+			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M12 5V19M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
+		`;
+        changePlaylistBtn.addEventListener('click', () => {
+            const id = prompt('Enter the Spotify playlist ID:', '37i9dQZEVXcJZyENOWUFo7');
+            if (id) {
+                iframe.src = `https://open.spotify.com/embed/playlist/${id}`;
+                localStorage.setItem('kxsSpotifyPlaylist', id);
+                // Simulate an album cover based on the playlist ID
+                albumArt.style.backgroundImage = `url('https://i.scdn.co/image/ab67706f00000002${id.substring(0, 16)}')`;
+            }
+        });
+        changePlaylistContainer.appendChild(changePlaylistBtn);
+        // Load saved playlist
+        const savedPlaylist = localStorage.getItem('kxsSpotifyPlaylist');
+        if (savedPlaylist) {
+            iframe.src = `https://open.spotify.com/embed/playlist/${savedPlaylist}`;
+            // Simuler une pochette d'album basée sur l'ID de la playlist
+            albumArt.style.backgroundImage = `url('https://i.scdn.co/image/ab67706f00000002${savedPlaylist.substring(0, 16)}')`;
+        }
+        // Integrate the playlist change button into the controls
+        controls.insertBefore(changePlaylistContainer, minimizeBtn);
+        // Assemble the elements
+        container.appendChild(header);
+        container.appendChild(content);
+        // Add a title to the button for accessibility
+        changePlaylistBtn.title = "Change playlist";
+        // Add to document
+        document.body.appendChild(container);
+        // Player states
+        let isMinimized = false;
+        // Events
+        minimizeBtn.addEventListener('click', () => {
+            if (isMinimized) {
+                content.style.display = 'block';
+                changePlaylistContainer.style.display = 'block';
+                container.style.transform = 'translateY(0)';
+                minimizeBtn.innerHTML = '−';
+            }
+            else {
+                content.style.display = 'none';
+                changePlaylistContainer.style.display = 'none';
+                container.style.transform = 'translateY(0)';
+                minimizeBtn.innerHTML = '+';
+            }
+            isMinimized = !isMinimized;
+        });
+        closeBtn.addEventListener('click', () => {
+            container.style.transform = 'translateY(150%)';
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.style.display = 'none';
+                showButton.style.display = 'flex';
+                showButton.style.alignItems = 'center';
+                showButton.style.justifyContent = 'center';
+            }, 300);
+        });
+        // Make the player draggable
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+        header.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - container.getBoundingClientRect().left;
+            offsetY = e.clientY - container.getBoundingClientRect().top;
+            container.style.transition = 'none';
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                container.style.right = 'auto';
+                container.style.bottom = 'auto';
+                container.style.left = (e.clientX - offsetX) + 'px';
+                container.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            container.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        });
+        // Button to show the player again
+        const showButton = document.createElement('button');
+        showButton.id = 'spotify-float-button';
+        Object.assign(showButton.style, {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            backgroundColor: '#1DB954',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            cursor: 'pointer',
+            zIndex: '9999',
+            fontSize: '24px',
+            transition: 'transform 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
+        showButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="white" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
+        document.body.appendChild(showButton);
+        showButton.addEventListener('mouseenter', () => {
+            showButton.style.transform = 'scale(1.1)';
+        });
+        showButton.addEventListener('mouseleave', () => {
+            showButton.style.transform = 'scale(1)';
+        });
+        showButton.addEventListener('click', () => {
+            container.style.display = 'block';
+            container.style.transform = 'translateY(0)';
+            container.style.opacity = '1';
+            showButton.style.display = 'none';
+        });
+        return container;
+    }
+    toggleSpotifyMenu() {
+        if (this.isSpotifyPlayerEnabled) {
+            this.createSimpleSpotifyPlayer();
+        }
+        else {
+            this.removeSimpleSpotifyPlayer();
+        }
+    }
+    removeSimpleSpotifyPlayer() {
+        // Supprimer le conteneur principal du lecteur
+        const container = document.getElementById('spotify-player-container');
+        if (container) {
+            container.remove();
+        }
+        // Supprimer aussi le bouton flottant grâce à son ID
+        const floatButton = document.getElementById('spotify-float-button');
+        if (floatButton) {
+            floatButton.remove();
+        }
+    }
+}
+
+;// ./src/LoadingScreen.ts
+/**
+ * LoadingScreen.ts
+ *
+ * Ce module fournit une animation de chargement avec un logo et un cercle de chargement rotatif
+ * qui s'affiche pendant le chargement des ressources du jeu.
+ */
+class LoadingScreen {
+    /**
+     * Creates a new instance of the loading screen
+     * @param logoUrl URL of the Kxs logo to display
+     */
+    constructor(logoUrl) {
+        this.logoUrl = logoUrl;
+        this.container = document.createElement('div');
+        this.initializeStyles();
+        this.createContent();
+    }
+    /**
+     * Initializes CSS styles for the loading screen
+     */
+    initializeStyles() {
+        // Styles for the main container
+        Object.assign(this.container.style, {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: '9999',
+            transition: 'opacity 0.5s ease-in-out',
+            animation: 'fadeIn 0.5s ease-in-out',
+            backdropFilter: 'blur(5px)'
+        });
+    }
+    /**
+     * Creates the loading screen content (logo and loading circle)
+     */
+    createContent() {
+        // Create container for the logo
+        const logoContainer = document.createElement('div');
+        Object.assign(logoContainer.style, {
+            width: '200px',
+            height: '200px',
+            marginBottom: '20px',
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        });
+        // Create the logo element
+        const logo = document.createElement('img');
+        logo.src = this.logoUrl;
+        Object.assign(logo.style, {
+            width: '150px',
+            height: '150px',
+            objectFit: 'contain',
+            position: 'absolute',
+            zIndex: '2',
+            animation: 'pulse 2s ease-in-out infinite'
+        });
+        // Create the main loading circle
+        const loadingCircle = document.createElement('div');
+        Object.assign(loadingCircle.style, {
+            width: '180px',
+            height: '180px',
+            border: '4px solid transparent',
+            borderTopColor: '#3498db',
+            borderRadius: '50%',
+            animation: 'spin 1.5s linear infinite',
+            position: 'absolute',
+            zIndex: '1'
+        });
+        // Create a second loading circle (rotating in the opposite direction)
+        const loadingCircle2 = document.createElement('div');
+        Object.assign(loadingCircle2.style, {
+            width: '200px',
+            height: '200px',
+            border: '2px solid transparent',
+            borderLeftColor: '#e74c3c',
+            borderRightColor: '#e74c3c',
+            borderRadius: '50%',
+            animation: 'spin-reverse 3s linear infinite',
+            position: 'absolute',
+            zIndex: '0'
+        });
+        // Add animations
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes spin-reverse {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(-360deg); }
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            @keyframes fadeIn {
+                0% { opacity: 0; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+        // Ajout d'un texte de chargement
+        const loadingText = document.createElement('div');
+        loadingText.textContent = 'Loading...';
+        Object.assign(loadingText.style, {
+            color: 'white',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '18px',
+            marginTop: '20px',
+            animation: 'pulse 1.5s ease-in-out infinite'
+        });
+        // Ajout d'un sous-texte
+        const subText = document.createElement('div');
+        subText.textContent = 'Initializing resources...';
+        Object.assign(subText.style, {
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            marginTop: '5px'
+        });
+        // Assemble the elements
+        logoContainer.appendChild(loadingCircle2);
+        logoContainer.appendChild(loadingCircle);
+        logoContainer.appendChild(logo);
+        this.container.appendChild(logoContainer);
+        this.container.appendChild(loadingText);
+        this.container.appendChild(subText);
+    }
+    /**
+     * Shows the loading screen
+     */
+    show() {
+        document.body.appendChild(this.container);
+    }
+    /**
+     * Hides the loading screen with a fade transition
+     */
+    hide() {
+        this.container.style.opacity = '0';
+        setTimeout(() => {
+            if (this.container.parentNode) {
+                document.body.removeChild(this.container);
+            }
+        }, 500); // Wait for the transition to finish before removing the element
+    }
 }
 
 ;// ./src/index.ts
+
 
 
 
@@ -3845,6 +4383,8 @@ const src_packageInfo = __webpack_require__(330);
 const src_config = __webpack_require__(272);
 const background_song = src_config.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
 const kxs_logo = src_config.base_url + "/assets/KysClientLogo.png";
+const loadingScreen = new LoadingScreen(kxs_logo);
+loadingScreen.show();
 const backgroundElement = document.getElementById("background");
 if (backgroundElement)
     backgroundElement.style.backgroundImage = `url("${src_config.base_url}/assets/background.jpg")`;
@@ -3858,7 +4398,7 @@ intercept("audio/ambient/menu_music_01.mp3", background_song);
 intercept('img/survev_logo_full.png', kxs_logo);
 const uiStatsLogo = document.querySelector('#ui-stats-logo');
 if (uiStatsLogo) {
-    uiStatsLogo.style.backgroundImage = "url('https://kxs.rip/assets/KysClientLogo.png')";
+    uiStatsLogo.style.backgroundImage = `url('${kxs_logo}')`;
 }
 const newChangelogUrl = src_config.base_url;
 const startBottomMiddle = document.getElementById("start-bottom-middle");
@@ -3878,6 +4418,9 @@ if (startBottomMiddle) {
 const kxsClient = new KxsClient();
 const kxsClientHUD = new KxsClientHUD(kxsClient);
 const mainMenu = new KxsMainClientMenu(kxsClient);
+setInterval(() => {
+    loadingScreen.hide();
+}, 1400);
 
 /******/ })()
 ;
