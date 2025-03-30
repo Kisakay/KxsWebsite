@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,28 +14,70 @@
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#3498db">
+    <meta name="theme-color" content="#6c5ce7">
 
-    <title>KxsClient</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>KxsClient | Redefining Gaming Experience</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons & Animation Libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+
     <style>
         :root {
-            --primary-color: #0a192f;
-            --secondary-color: #172a46;
-            --accent-color: #64ffda;
-            --accent-color-alt: #ff6b6b;
-            --text-light: #e6f1ff;
-            --text-dark: #0a192f;
-            --background-gradient: linear-gradient(135deg, #0a192f, #172a46);
-            --section-padding: 5rem 2rem;
-            --blur-amount: 10px;
-            --glow-color: rgba(100, 255, 218, 0.7);
-            --bloom-intensity: 15px;
-            --bloom-transition: 0.8s ease;
-            --bloom-color: rgba(100, 255, 218, 0.8);
-            --background-bloom-color: rgba(100, 255, 218, 0.3);
-            --transition-speed: 0.4s;
+            /* Couleurs principales */
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --primary-light: #a29bfe;
+            --secondary: #00cec9;
+            --secondary-dark: #00a8a3;
+            --accent: #fd79a8;
+            --accent-dark: #e84393;
+
+            /* Couleurs de fond */
+            --bg-dark: #0f0f1a;
+            --bg-darker: #080810;
+            --bg-light: #1a1a2e;
+            --bg-card: rgba(26, 26, 46, 0.5);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+
+            /* Couleurs de texte */
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-tertiary: rgba(255, 255, 255, 0.6);
+
+            /* Effets */
+            --glow: 0 0 15px rgba(108, 92, 231, 0.5);
+            --glow-strong: 0 0 25px rgba(108, 92, 231, 0.8);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            --shadow-sm: 0 5px 15px rgba(0, 0, 0, 0.15);
+
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            --transition-slow: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+
+            /* Espacements */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 2rem;
+            --space-lg: 4rem;
+            --space-xl: 8rem;
+
+            /* Bordures */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
         }
 
         * {
@@ -43,72 +86,143 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', 'Arial', sans-serif;
-            line-height: 1.6;
-            color: var(--text-light);
-            background: var(--background-gradient);
-            overflow-x: hidden;
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
         }
 
-        .bloom-container {
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--space-md);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+
+        h3 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        p {
+            margin-bottom: var(--space-md);
+            color: var(--text-secondary);
+        }
+
+        a {
+            color: var(--secondary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        a:hover {
+            color: var(--primary-light);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        button {
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-lg);
+            text-align: center;
+        }
+
+        section {
+            padding: var(--space-xl) 0;
+            position: relative;
+        }
+
+        /* Background Effects */
+        .bg-gradient {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: 9999;
+            z-index: -2;
+            background: linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
         }
 
-        .bloom-overlay {
-            position: absolute;
+        .bg-grid {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, rgba(100, 255, 218, 0.1), transparent 70%);
-            filter: brightness(1.2) contrast(1.2);
-            transition: opacity 0.3s ease;
-            opacity: 0;
+            z-index: -1;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.5;
         }
 
-        /* Glowing Orbs */
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.5;
+            filter: blur(80px);
+            opacity: 0.3;
             z-index: -1;
-            animation: float 15s infinite ease-in-out;
-            transition: transform var(--bloom-transition), opacity var(--bloom-transition);
+            animation: float 20s infinite ease-in-out;
+            transition: all var(--transition-slow);
         }
 
         .orb-1 {
             top: 10%;
-            left: 10%;
-            width: 300px;
-            height: 300px;
-            background-color: rgba(100, 255, 218, 0.2);
+            left: 15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle at center, var(--primary-light), transparent 70%);
             animation-delay: 0s;
         }
 
         .orb-2 {
-            bottom: 10%;
+            bottom: 15%;
             right: 10%;
-            width: 400px;
-            height: 400px;
-            background-color: rgba(255, 107, 107, 0.15);
-            animation-delay: -5s;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle at center, var(--secondary), transparent 70%);
+            animation-delay: -7s;
         }
 
         .orb-3 {
-            top: 50%;
-            left: 50%;
-            width: 350px;
-            height: 350px;
-            background-color: rgba(111, 66, 193, 0.15);
-            animation-delay: -10s;
+            top: 40%;
+            left: 60%;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle at center, var(--accent), transparent 70%);
+            animation-delay: -14s;
         }
 
         @keyframes float {
@@ -117,16 +231,27 @@
             }
 
             33% {
-                transform: translate(5%, 5%) scale(1.1);
+                transform: translate(3%, 3%) scale(1.05);
             }
 
             66% {
-                transform: translate(-5%, 2%) scale(0.9);
+                transform: translate(-3%, 1%) scale(0.95);
             }
 
             100% {
                 transform: translate(0, 0) scale(1);
             }
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iMC4xNSIvPjwvc3ZnPg==');
         }
 
         /* Header & Navigation */
@@ -135,64 +260,70 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 25, 47, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 15, 26, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             z-index: 1000;
-            padding: 1rem 0;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
-            transition: all var(--transition-speed);
+            padding: 1.2rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all var(--transition-medium);
         }
 
         .header.scrolled {
-            padding: 0.7rem 0;
-            background: rgba(10, 25, 47, 0.95);
+            padding: 0.8rem 0;
+            background: rgba(15, 15, 26, 0.95);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--text-light);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all var(--transition-speed);
+            gap: 0.8rem;
+            transition: all var(--transition-medium);
         }
 
         .logo:hover {
-            color: var(--accent-color);
+            color: var(--primary);
             transform: translateY(-2px);
         }
 
         .logo img {
-            transition: transform var(--transition-speed);
+            height: 40px;
+            transition: all var(--transition-medium);
         }
 
         .logo:hover img {
-            transform: rotate(10deg);
+            transform: rotate(10deg) scale(1.05);
+            filter: drop-shadow(0 0 8px var(--primary));
         }
 
         .nav-links {
             display: flex;
-            gap: 2.5rem;
+            gap: 3rem;
         }
 
         .nav-links a {
-            color: var(--text-light);
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
             position: relative;
-            padding: 0.3rem 0;
-            transition: color var(--transition-speed);
+            padding: 0.5rem 0;
+            transition: all var(--transition-fast);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
         }
 
         .nav-links a::after {
@@ -202,12 +333,272 @@
             left: 0;
             width: 0;
             height: 2px;
-            background-color: var(--accent-color);
-            transition: width var(--transition-speed);
+            background: var(--primary);
+            transition: width var(--transition-medium);
         }
 
-        .nav-links a:hover {
-            color: var(--accent-color);
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            transition: all var(--transition-medium);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
+        }
+
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: var(--text-primary);
+            border-radius: 3px;
+            transition: all var(--transition-medium);
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr !important;
+                text-align: center;
+            }
+
+            .footer-section ul {
+                display: inline-block;
+                text-align: left;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 80%;
+                max-width: 400px;
+                height: 100vh;
+                background: var(--bg-dark);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 2rem;
+                padding: 2rem;
+                transition: right var(--transition-medium);
+                z-index: 1000;
+                box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+        }
+
+        /* Suppression du code dupliqué */
+
+        /* Hero Section Styles */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+            align-items: center;
+        }
+
+        .hero-content {
+            z-index: 1;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            position: relative;
+        }
+
+        .gradient-text::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all var(--transition-medium);
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn i {
+            transition: transform var(--transition-medium);
+        }
+
+        .btn:hover i {
+            transform: translateX(3px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: var(--space-lg);
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+        }
+
+        .hero-image {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all var(--transition-medium);
+        }
+
+        .hero-image:hover img {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-image-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0.1;
+            filter: blur(40px);
+            z-index: -1;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0) translateX(-50%);
+            }
+
+            40% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+
+            60% {
+                transform: translateY(-5px) translateX(-50%);
+            }
         }
 
         .nav-links a:hover::after {
@@ -249,11 +640,11 @@
 
         @keyframes titleGlow {
             0% {
-                text-shadow: 0 0 10px rgba(100, 255, 218, 0.2), 0 0 20px rgba(100, 255, 218, 0.1);
+                text-shadow: 0 0 5px rgba(100, 255, 218, 0.15), 0 0 10px rgba(100, 255, 218, 0.05);
             }
 
             100% {
-                text-shadow: 0 0 20px rgba(100, 255, 218, 0.4), 0 0 40px rgba(100, 255, 218, 0.2);
+                text-shadow: 0 0 10px rgba(100, 255, 218, 0.3), 0 0 20px rgba(100, 255, 218, 0.1);
             }
         }
 
@@ -360,19 +751,644 @@
             box-shadow: 0 8px 25px rgba(100, 255, 218, 0.3);
         }
 
-        /* Features Section */
-        .features {
-            padding: var(--section-padding);
-            position: relative;
-            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+        /* Section Styles */
+        .section-header {
+            margin-bottom: var(--space-xl);
         }
 
-        .section-title {
+        .text-center {
             text-align: center;
-            margin-bottom: 3rem;
-            font-size: 2.5rem;
-            color: var(--text-light);
+        }
+
+        .section-subtitle {
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: var(--space-xs);
+            padding: 0.3rem 1rem;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: var(--radius-full);
+        }
+
+        .section-description {
+            max-width: 700px;
+            margin: 0 auto var(--space-md);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Features Section */
+        .features {
             position: relative;
+            background: linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-lg);
+            margin: 0 auto;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all var(--transition-medium);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(0, 206, 201, 0.05));
+            opacity: 0;
+            z-index: -1;
+            transition: opacity var(--transition-medium);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: var(--space-sm);
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        /* Showcase Section */
+        .showcase {
+            position: relative;
+            background: linear-gradient(to bottom, var(--bg-dark), var(--bg-darker));
+        }
+
+        .showcase-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-xl);
+            align-items: center;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .video-wrapper {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            display: block;
+            border-radius: var(--radius-lg);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(8, 8, 16, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-medium);
+            opacity: 1;
+        }
+
+        .video-wrapper:hover .video-overlay {
+            opacity: 0;
+        }
+
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-medium);
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(108, 92, 231, 0.5);
+        }
+
+        .showcase-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .showcase-features {
+            list-style: none;
+            margin: var(--space-lg) auto;
+            padding: 0;
+            text-align: left;
+            max-width: 80%;
+        }
+
+        .showcase-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+            color: var(--text-secondary);
+        }
+
+        .showcase-features li i {
+            color: var(--secondary);
+            margin-right: var(--space-sm);
+        }
+
+        /* Testimonials Section */
+        .testimonials {
+            position: relative;
+            background: linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+        }
+
+        .testimonials-slider {
+            position: relative;
+            padding: 0 var(--space-md);
+        }
+
+        .testimonial-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all var(--transition-medium);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .testimonial-content {
+            flex: 1;
+            margin-bottom: var(--space-md);
+        }
+
+        .testimonial-content p {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            position: relative;
+        }
+
+        .testimonial-content p::before,
+        .testimonial-content p::after {
+            content: '\201C';
+            font-size: 2rem;
+            color: var(--primary-light);
+            position: absolute;
+            left: -1rem;
+            top: -1rem;
+            opacity: 0.3;
+        }
+
+        .testimonial-content p::after {
+            content: '\201D';
+            left: auto;
+            right: -1rem;
+            top: auto;
+            bottom: -1.5rem;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: var(--space-md);
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: var(--space-sm);
+        }
+
+        .author-info {
+            flex: 1;
+        }
+
+        .author-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+            color: var(--text-primary);
+        }
+
+        .author-info span {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .testimonial-rating {
+            color: #ffc107;
+            font-size: 0.9rem;
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            transition: all var(--transition-medium);
+        }
+
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 1rem;
+        }
+
+        .swiper-pagination-bullet {
+            background: var(--text-tertiary);
+        }
+
+        .swiper-pagination-bullet-active {
+            background: var(--primary);
+        }
+
+        /* Download Section */
+        .download {
+            position: relative;
+            background: linear-gradient(to bottom, var(--bg-dark), var(--bg-darker));
+            overflow: hidden;
+        }
+
+        .download-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-xl);
+            align-items: center;
+        }
+
+        .download-text h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: var(--space-md);
+        }
+
+        .download-stats {
+            display: flex;
+            gap: var(--space-lg);
+            margin: var(--space-lg) 0;
+        }
+
+        .download-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+
+        .btn-lg {
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .download-image {
+            position: relative;
+            z-index: 1;
+        }
+
+        .download-image img {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .download-image-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0.15;
+            filter: blur(40px);
+            z-index: -1;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        /* Contact Section */
+        .contact {
+            position: relative;
+            background: linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+        }
+
+        .contact-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-lg);
+            width: 100%;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .contact-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: var(--space-lg);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-medium);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow);
+            background: var(--bg-glass);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: 2rem;
+            margin-bottom: var(--space-md);
+            box-shadow: var(--glow);
+        }
+
+        .contact-card h3 {
+            margin-bottom: var(--space-sm);
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .contact-card p {
+            margin-bottom: var(--space-md);
+            color: var(--text-secondary);
+        }
+
+        .contact-card .btn {
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .contact-form {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            transition: all var(--transition-fast);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-darker);
+            padding: var(--space-lg) 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .footer {
+            padding: 60px 0 30px;
+            background-color: rgba(10, 10, 20, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+        }
+
+        .footer .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .footer-logo img {
+            height: 30px;
+            margin-right: var(--space-xs);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-social {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all var(--transition-medium);
+        }
+
+        .social-icon:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-copy {
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-medium);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
         }
 
         .section-title::after {
@@ -951,195 +1967,415 @@
 </head>
 
 <body>
-    <!-- Initial bloom with visit button -->
-    <div class="initial-bloom" id="initialBloom">
-        <button class="visit-button" id="visitButton">VISIT</button>
-    </div>
-
-    <!-- Audio elements for music playback -->
-    <audio id="bgMusic1" src="./assets/Stranger_Things_Theme_Song_C418_REMIX.mp3" preload="auto"></audio>
-
-    <!-- Mouse following bloom -->
-    <div class="mouse-bloom" id="mouseBloom"></div>
-
-    <!-- Bloom container -->
-    <div class="bloom-container">
-        <div class="bloom-overlay"></div>
-    </div>
-
-    <!-- Background Orbs -->
+    <!-- Background Elements -->
+    <div class="bg-gradient"></div>
+    <div class="bg-grid"></div>
+    <div class="noise"></div>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <header class="header">
-        <nav class="nav-container">
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container nav-container">
             <a href="#" class="logo">
-                <img src="https://kxs.rip/assets/KysClientLogo.png" alt="KxsClient Logo"
-                    style="height: 30px; margin-right: 10px;">
-                KxsClient
+                <img src="assets/KysClientLogo.png" alt="KxsClient Logo">
+                <span>KxsClient</span>
             </a>
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#documentation">Documentation</a>
-                <a href="#download">Download</a>
-                <a href="#contact">Contact</a>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <button class="mobile-nav-toggle">
-                <i class="fas fa-bars"></i>
-            </button>
-        </nav>
+            <nav class="nav-links" id="navLinks">
+                <a href="#features">Features</a>
+                <a href="#showcase">Preview</a>
+                <a href="#contact">Contact</a>
+                <a href="https://kxs.rip/download/latest-dev.js" class="nav-cta"
+                    style="padding: 0.5rem 1rem; font-size: 1rem;">Try Now</a>
+            </nav>
+        </div>
     </header>
 
-    <section class="hero" id="home">
-        <h1 data-aos="fade-up" data-aos-duration="1000">The Future of KxsClient</h1>
-        <p data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">Experience a new level of gaming with the
-            upcoming KxsClient - ultra-fast, secure, and fully customizable.</p>
-        <div class="video-container" data-aos="zoom-in" data-aos-duration="1000" data-aos-delay="400">
-            <video controls>
-                <source src="video/video1.mp4" type="video/mp4" />
-                Your browser does not support video playback.
-            </video>
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 data-aos="fade-up">Redefining <span class="gradient-text">Survev.io</span> Experience</h1>
+                <p data-aos="fade-up" data-aos-delay="100">KxsClient is a revolutionary game client that enhances your
+                    experience with optimized performance, advanced features, and an elegant user interface.</p>
+                <div class="hero-cta" data-aos="fade-up" data-aos-delay="200">
+                    <a href="https://kxs.rip/download/latest-dev.js" class="btn btn-primary">Download <i class="fas fa-download"></i></a>
+                    <button class="btn btn-outline" onclick="document.getElementById('features').scrollIntoView({ behavior: 'smooth' });">Learn More <i class="fas fa-arrow-right"></i></button>
+                </div>
+                <div class="hero-stats" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat">
+                        <span class="stat-number">10+</span>
+                        <span class="stat-label">Users</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">158%</span>
+                        <span class="stat-label">Performance</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">4.1/5</span>
+                        <span class="stat-label">Rating</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image" data-aos="zoom-in" data-aos-delay="200">
+                <img src="assets/KysClient.gif" alt="KxsClient Interface">
+                <div class="hero-image-glow"></div>
+            </div>
         </div>
-        <div class="cta-buttons" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="600">
-            <a href="https://discord.gg/JshbHHq8uf" class="cta-button">
-                <i class="fab fa-discord"></i> Join Discord
-            </a>
-            <a href="download/latest-dev.js" class="cta-button alt">
-                <i class="fas fa-download"></i> Download Alpha
-            </a>
+        <div class="scroll-indicator">
+            <span>Discover</span>
+            <i class="fas fa-chevron-down"></i>
         </div>
     </section>
 
+    <!-- Audio elements for music playback -->
+    <audio id="bgMusic1" src="./assets/Stranger_Things_Theme_Song_C418_REMIX.mp3" preload="auto"></audio>
+    <audio id="bgMusic2" src="./assets/mainMenu.mp3" preload="auto"></audio>
+    <audio id="winSound" src="./assets/win.m4a" preload="auto"></audio>
+    <audio id="deadSound" src="./assets/dead.m4a" preload="auto"></audio>
+
+    <!-- Features Section -->
     <section class="features" id="features">
-        <h2 class="section-title" data-aos="fade-up">Powerful Features</h2>
-        <div class="features-grid">
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                <i class="fas fa-bolt"></i>
-                <h3>Ultra Customizable HUD</h3>
-                <p>Create your perfect gaming interface with countless customization options to match your playstyle.
-                </p>
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle" data-aos="fade-up">Advanced Features</span>
+                <h2 data-aos="fade-up" data-aos-delay="100">A <span class="gradient-text">superior</span> gaming
+                    experience</h2>
+                <p class="section-description" data-aos="fade-up" data-aos-delay="200">Discover why thousands of players
+                    choose KxsClient to enhance their gaming experience.</p>
             </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                <i class="fas fa-paint-brush"></i>
-                <h3>Modern Interface</h3>
-                <p>Enjoy an intuitive design that adapts to your preferences with sleek animations and responsive
-                    controls.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                <i class="fas fa-tachometer-alt"></i>
-                <h3>Performance Boost</h3>
-                <p>Experience significant FPS improvements with our optimized client designed for smooth gameplay.</p>
-            </div>
-            <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
-                <i class="fas fa-shield-alt"></i>
-                <h3>Enhanced Security</h3>
-                <p>Play with confidence knowing your data is protected with our advanced security features.</p>
+
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Optimized Performance</h3>
+                    <p>Enjoy a smooth gaming experience with stable FPS and reduced latency, even on modest
+                        configurations.</p>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>Customizable Interface</h3>
+                    <p>Adapt the interface to your preferences with fully customizable themes, colors, and layouts.</p>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Enhanced Security</h3>
+                    <p>Play with peace of mind thanks to our advanced protection system against online threats.</p>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <h3>Advanced Options</h3>
+                    <p>Access advanced settings to optimize your gaming experience according to your specific needs.</p>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Social Features</h3>
+                    <p>Easily connect with your friends and join games together thanks to integrated social features.
+                    </p>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-icon">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3>Enhanced Visual Effects</h3>
+                    <p>Enjoy enhanced visual effects that make the game more immersive without compromising performance.
+                    </p>
+                </div>
             </div>
         </div>
-        <div class="image-container" data-aos="fade-up" data-aos-delay="500">
-            <img src="./assets/image.png" alt="Feature Preview">
+    </section>
+
+    <!-- Showcase Section -->
+    <section class="showcase" id="showcase">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle" data-aos="fade-up">Preview</span>
+                <h2 data-aos="fade-up" data-aos-delay="100">Discover <span class="gradient-text">KxsClient</span> in
+                    action</h2>
+                <p class="section-description" data-aos="fade-up" data-aos-delay="200">See for yourself how KxsClient
+                    transforms the Survev.io gaming experience.</p>
+            </div>
+
+            <div class="showcase-content">
+                <div class="showcase-video" data-aos="fade-right">
+                    <div class="video-wrapper">
+                        <video poster="assets/image.png" controls>
+                            <source src="video/video1.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+                <div class="showcase-text" data-aos="fade-left">
+                    <h3>A transformed gaming experience</h3>
+                    <p>KxsClient doesn't just improve Survev.io, it completely reinvents it. With a redesigned user
+                        interface, optimized performance, and exclusive features, you'll rediscover the game in a whole
+                        new light.</p>
+
+                    <ul class="showcase-features">
+                        <li><i class="fas fa-check"></i> Elegant and intuitive user interface</li>
+                        <li><i class="fas fa-check"></i> 200% improved performance</li>
+                        <li><i class="fas fa-check"></i> Advanced customization options</li>
+                        <li><i class="fas fa-check"></i> Exclusive features not available elsewhere</li>
+                    </ul>
+
+                    <a href="https://kxs.rip/download/latest-dev.js" class="btn btn-primary">Try Now <i
+                            class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle" data-aos="fade-up">Contact</span>
+                <h2 data-aos="fade-up" data-aos-delay="100">Need <span class="gradient-text">help</span>?</h2>
+                <p class="section-description" data-aos="fade-up" data-aos-delay="200">Our team is here to help you.
+                    Feel free to contact us for any questions or suggestions.</p>
+            </div>
+
+            <div class="contact-content">
+                <div class="contact-grid" data-aos="fade-up">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email</h3>
+                        <p>kisakay@mailfence.com (May take longer, prefer discord)</p>
+                        <a href="mailto:kisakay@mailfence.com" class="btn btn-outline">Send Email</a>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <h3>GitHub</h3>
+                        <p>Contribute to the project</p>
+                        <a href="https://github.com/Kisakay/KxsClient" class="btn btn-outline">View Repository</a>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-discord"></i>
+                        </div>
+                        <h3>Discord</h3>
+                        <p>Join our community</p>
+                        <a href="https://discord.gg/JshbHHq8uf" class="btn btn-outline">Join Server</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Video removed as requested -->
+    </div>
+
+    </section>
+
+    <section class="features" id="features">
+        <div class="container" style="text-align: center;">
+            <h2 class="section-title" data-aos="fade-up">Powerful Features</h2>
+            <div class="features-grid"
+                style="margin-bottom: 60px; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100"
+                    style="padding: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); transition: transform 0.3s, box-shadow 0.3s;">
+                    <i class="fas fa-bolt"
+                        style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom: 15px; font-size: 1.5rem;">Ultra Customizable HUD</h3>
+                    <p style="line-height: 1.6;">Create your perfect gaming interface with countless customization
+                        options to match your playstyle.
+                    </p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200"
+                    style="padding: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); transition: transform 0.3s, box-shadow 0.3s;">
+                    <i class="fas fa-paint-brush"
+                        style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom: 15px; font-size: 1.5rem;">Modern Interface</h3>
+                    <p style="line-height: 1.6;">Enjoy an intuitive design that adapts to your preferences with sleek
+                        animations and responsive
+                        controls.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300"
+                    style="padding: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); transition: transform 0.3s, box-shadow 0.3s;">
+                    <i class="fas fa-tachometer-alt"
+                        style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom: 15px; font-size: 1.5rem;">Performance Boost</h3>
+                    <p style="line-height: 1.6;">Experience significant FPS improvements with our optimized client
+                        designed for smooth gameplay.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="400"
+                    style="padding: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); transition: transform 0.3s, box-shadow 0.3s;">
+                    <i class="fas fa-shield-alt"
+                        style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom: 15px; font-size: 1.5rem;">Enhanced Security</h3>
+                    <p style="line-height: 1.6;">Play with confidence knowing your data is protected with our advanced
+                        security features.</p>
+                </div>
+            </div>
         </div>
     </section>
 
     <section class="documentation" id="documentation">
-        <h2 class="section-title" data-aos="fade-up">Documentation</h2>
-        <div class="doc-container">
-            <div class="doc-nav" data-aos="fade-up" data-aos-delay="100">
-                <button class="tab-btn active" data-tab="getting-started">Getting Started</button>
-                <button class="tab-btn" data-tab="configuration">Configuration</button>
-                <button class="tab-btn" data-tab="faq">FAQ</button>
-            </div>
-            <div class="doc-content" data-aos="fade-up" data-aos-delay="200">
-                <div id="getting-started" class="tab-content active">
-                    <h2>Getting Started</h2>
-                    <p>Welcome to the KxsClient documentation. Follow these steps to begin:</p>
-                    <ol>
-                        <li>Download a script loader extension like TamperMonkey from your browser's extension store
-                        </li>
-                        <li>Visit our download page and get the latest KxsClient script</li>
-                        <li>Open TamperMonkey and create a new script, then paste the KxsClient code</li>
-                        <li>Save the script and configure your preferences in the settings panel</li>
-                        <li>Join a game and enjoy your enhanced gaming experience!</li>
-                    </ol>
+        <div class="container" style="text-align: center;">
+            <h2 class="section-title" data-aos="fade-up">Documentation</h2>
+            <div class="doc-container">
+                <div class="doc-nav" data-aos="fade-up" data-aos-delay="100" style="justify-content: center;">
+                    <button class="tab-btn active" data-tab="getting-started">Getting Started</button>
+                    <button class="tab-btn" data-tab="configuration">Configuration</button>
+                    <button class="tab-btn" data-tab="faq">FAQ</button>
                 </div>
-                <div id="configuration" class="tab-content">
-                    <h2>Configuration Guide</h2>
-                    <p>KxsClient offers extensive customization options to enhance your gameplay:</p>
-                    <ol>
-                        <li>Press <code>Alt+K</code> in-game to open the settings panel</li>
-                        <li>Adjust HUD elements through the drag-and-drop interface</li>
-                        <li>Customize colors, transparency and size of all UI components</li>
-                        <li>Save multiple profiles for different game modes</li>
-                        <li>Import and export settings to share with friends</li>
-                    </ol>
-                </div>
-                <div id="faq" class="tab-content">
-                    <h2>Frequently Asked Questions</h2>
-                    <p>Find answers to common questions about KxsClient:</p>
-                    <ol>
-                        <li><strong>Is KxsClient safe to use?</strong><br>Yes, KxsClient is designed with security in
-                            mind and doesn't modify game files directly.</li>
-                        <li><strong>Will it work on all browsers?</strong><br>KxsClient is compatible with Chrome,
-                            Firefox, Edge, and other major browsers that support userscripts.</li>
-                        <li><strong>Is KxsClient free?</strong><br>Yes, the core features are completely free. We may
-                            offer premium features in the future.</li>
-                        <li><strong>How do I report bugs?</strong><br>Join our Discord server and post in the
-                            #bug-reports channel.</li>
-                    </ol>
+                <div class="doc-content" data-aos="fade-up" data-aos-delay="200" style="text-align: center;">
+                    <div id="getting-started" class="tab-content active">
+                        <h2>Getting Started</h2>
+                        <p>Welcome to the KxsClient documentation. Follow these steps to begin:</p>
+                        <ol style="display: inline-block; text-align: left; margin: 0 auto;">
+                            <li>Download a script loader extension like TamperMonkey from your browser's extension store
+                            </li>
+                            <li>Visit our download page and get the latest KxsClient script</li>
+                            <li>Open TamperMonkey and create a new script, then paste the KxsClient code</li>
+                            <li>Save the script and configure your preferences in the settings panel</li>
+                            <li>Join a game and enjoy your enhanced gaming experience!</li>
+                        </ol>
+                    </div>
+                    <div id="configuration" class="tab-content">
+                        <h2>Configuration Guide</h2>
+                        <p>KxsClient offers extensive customization options to enhance your gameplay:</p>
+                        <ol style="display: inline-block; text-align: left; margin: 0 auto;">
+                            <li>Press <code>Alt+K</code> in-game to open the settings panel</li>
+                            <li>Adjust HUD elements through the drag-and-drop interface</li>
+                            <li>Customize colors, transparency and size of all UI components</li>
+                            <li>Save multiple profiles for different game modes</li>
+                            <li>Import and export settings to share with friends</li>
+                        </ol>
+                    </div>
+                    <div id="faq" class="tab-content">
+                        <h2>Frequently Asked Questions</h2>
+                        <p>Find answers to common questions about KxsClient:</p>
+                        <ol style="display: inline-block; text-align: left; margin: 0 auto;">
+                            <li><strong>Is KxsClient safe to use?</strong><br>Yes, KxsClient is designed with security
+                                in
+                                mind and doesn't modify game files directly.</li>
+                            <li><strong>Will it work on all browsers?</strong><br>KxsClient is compatible with Chrome,
+                                Firefox, Edge, and other major browsers that support userscripts.</li>
+                            <li><strong>Is KxsClient free?</strong><br>Yes, the core features are completely free. We
+                                may
+                                offer premium features in the future.</li>
+                            <li><strong>How do I report bugs?</strong><br>Join our Discord server and post in the
+                                #bug-reports channel.</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="footer" id="contact">
-        <div class="footer-content">
-            <div class="footer-section" data-aos="fade-up" data-aos-delay="100">
-                <h3>About KxsClient</h3>
-                <p>KxsClient is an innovative project aimed at enhancing the gaming experience for players with advanced
-                    features, customization options, and performance improvements.</p>
-            </div>
-            <div class="footer-section" data-aos="fade-up" data-aos-delay="200">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
-                    <li><a href="#documentation"><i class="fas fa-chevron-right"></i> Documentation</a></li>
-                    <li><a href="#download"><i class="fas fa-chevron-right"></i> Download</a></li>
-                    <li><a href="https://github.com/Kisakay"><i class="fas fa-chevron-right"></i> GitHub</a></li>
-                </ul>
-            </div>
-            <div class="footer-section" data-aos="fade-up" data-aos-delay="300">
-                <h3>Connect With Us</h3>
-                <p>Join our growing community and stay updated with the latest developments.</p>
-                <div class="social-links">
-                    <a href="https://discord.gg/JshbHHq8uf" title="Join our Discord server"><i
-                            class="fab fa-discord"></i></a>
-                    <a href="https://github.com/Kisakay/KxsClient" title="View source on GitHub"><i
-                            class="fab fa-github"></i></a>
-                    <a href="#" title="Follow us on Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" title="Subscribe on YouTube"><i class="fab fa-youtube"></i></a>
+    <!-- Spacer to create distance between documentation and footer -->
+    <div style="height: 80px;"></div>
+
+    <!-- Footer Section -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-grid"
+                style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-bottom: 40px;">
+                <div class="footer-section" data-aos="fade-up" data-aos-delay="100">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--primary-color);">About KxsClient
+                    </h3>
+                    <p style="line-height: 1.6;">KxsClient is an innovative project aimed at enhancing the gaming
+                        experience for players with advanced
+                        features, customization options, and performance improvements.</p>
+                </div>
+                <div class="footer-section" data-aos="fade-up" data-aos-delay="200">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--primary-color);">Quick Links</h3>
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li style="margin-bottom: 10px;"><a href="#features"
+                                style="text-decoration: none; color: var(--text-color); transition: color 0.3s;"><i
+                                    class="fas fa-chevron-right"
+                                    style="margin-right: 8px; color: var(--primary-color);"></i> Features</a></li>
+                        <li style="margin-bottom: 10px;"><a href="#documentation"
+                                style="text-decoration: none; color: var(--text-color); transition: color 0.3s;"><i
+                                    class="fas fa-chevron-right"
+                                    style="margin-right: 8px; color: var(--primary-color);"></i> Documentation</a></li>
+                        <li style="margin-bottom: 10px;"><a href="https://kxs.rip/download/latest-dev.js"
+                                style="text-decoration: none; color: var(--text-color); transition: color 0.3s;"><i
+                                    class="fas fa-chevron-right"
+                                    style="margin-right: 8px; color: var(--primary-color);"></i> Download</a></li>
+                        <li style="margin-bottom: 10px;"><a href="https://github.com/Kisakay/KxsClient"
+                                style="text-decoration: none; color: var(--text-color); transition: color 0.3s;"><i
+                                    class="fas fa-chevron-right"
+                                    style="margin-right: 8px; color: var(--primary-color);"></i> GitHub</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section" data-aos="fade-up" data-aos-delay="300">
+                    <h3
+                        style="font-size: 1.5rem; margin-bottom: 20px; color: var(--primary-color); text-align: center;">
+                        Connect With Us</h3>
+                    <p style="line-height: 1.6; margin-bottom: 20px; text-align: center;">Join our growing community and
+                        stay updated with the latest developments.</p>
+                    <div class="social-links"
+                        style="display: flex; gap: 15px; justify-content: center; margin: 0 auto;">
+                        <a href="https://discord.gg/JshbHHq8uf" title="Join our Discord server"
+                            style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background-color: var(--primary-color); color: white; border-radius: 50%; transition: all 0.3s;"><i
+                                class="fab fa-discord" style="font-size: 1.2rem;"></i></a>
+                        <a href="https://github.com/Kisakay/KxsClient" title="View source on GitHub"
+                            style="display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background-color: var(--primary-color); color: white; border-radius: 50%; transition: all 0.3s;"><i
+                                class="fab fa-github" style="font-size: 1.2rem;"></i></a>
+                    </div>
                 </div>
             </div>
+            <div class="footer-bottom"
+                style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; text-align: center;">
+                <p>Made with <span class="heart" style="color: #e25555;">♥</span> by <a
+                        href="https://github.com/Kisakay"
+                        style="color: var(--primary-color); text-decoration: none;">Kisakay</a> | &copy; 2023-2025
+                    KxsClient</p>
+            </div>
         </div>
-        <div class="footer-bottom">
-            <p>Made with <span class="heart">♥</span> by <a href="https://github.com/Kisakay">Kisakay</a> | &copy; 2023
-                KxsClient</p>
-        </div>
-    </section>
+    </footer>
 
-    <a href="#" class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <a href="#" class="back-to-top" id="back-to-top" aria-label="Back to top"
+        style="position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; opacity: 0; transition: opacity 0.3s; z-index: 1000;">
         <i class="fas fa-arrow-up"></i>
     </a>
 
     <!-- AOS Library -->
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    </footer>
 
+    <!-- Back to Top Button -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script>
         // Initialize AOS
         AOS.init({
             duration: 800,
             easing: 'ease-in-out',
-            once: true
+            once: true,
+            mirror: false
         });
 
         // Navigation smooth scroll
@@ -1152,27 +2388,34 @@
                 const bloomOverlay = document.querySelector('.bloom-overlay');
 
                 // Show bloom container
-                bloomContainer.style.display = 'block';
+                if (bloomContainer) {
+                    bloomContainer.style.display = 'block';
 
-                // Fade in bloom
-                setTimeout(() => {
-                    bloomOverlay.style.opacity = '1';
-                }, 10);
+                    // Fade in bloom
+                    setTimeout(() => {
+                        if (bloomOverlay) bloomOverlay.style.opacity = '1';
+                    }, 10);
 
-                // Wait a bit then scroll and remove bloom
-                setTimeout(() => {
+                    // Wait a bit then scroll and remove bloom
+                    setTimeout(() => {
+                        document.querySelector(this.getAttribute('href')).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+
+                        // Fade out bloom
+                        if (bloomOverlay) bloomOverlay.style.opacity = '0';
+
+                        // Hide bloom container after transition
+                        setTimeout(() => {
+                            bloomContainer.style.display = 'none';
+                        }, 300);
+                    }, 300);
+                } else {
+                    // If bloom container doesn't exist, just do the smooth scroll
                     document.querySelector(this.getAttribute('href')).scrollIntoView({
                         behavior: 'smooth'
                     });
-
-                    // Fade out bloom
-                    bloomOverlay.style.opacity = '0';
-
-                    // Hide bloom container after transition
-                    setTimeout(() => {
-                        bloomContainer.style.display = 'none';
-                    }, 300);
-                }, 300);
+                }
             });
         });
 
@@ -1198,61 +2441,102 @@
         });
 
         // Mobile navigation
-        const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+        const menuToggle = document.querySelector('.mobile-nav-toggle');
         const navLinks = document.querySelector('.nav-links');
 
-        mobileNavToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
 
-            // Change icon based on menu state
-            const icon = mobileNavToggle.querySelector('i');
-            if (navLinks.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        });
-
-        // Close mobile menu when a link is clicked
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                const icon = mobileNavToggle.querySelector('i');
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+                // Change icon based on menu state
+                const icon = menuToggle.querySelector('i');
+                if (icon) {
+                    if (navLinks.classList.contains('active')) {
+                        icon.classList.remove('fa-bars');
+                        icon.classList.add('fa-times');
+                    } else {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                }
             });
-        });
+
+            // Close mobile menu when a link is clicked
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    const icon = menuToggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                });
+            });
+
+            // Additional mobile menu functionality - close when clicking links or buttons
+            const navLinksItems = navLinks.querySelectorAll('a, button');
+            navLinksItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        navLinks.classList.remove('active');
+                        menuToggle.classList.remove('active');
+                    }
+                });
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+                    navLinks.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                }
+            });
+        }
 
         // Header scroll effect
         const header = document.querySelector('.header');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
+        if (header) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        }
 
         // Back to top button
         const backToTopButton = document.getElementById('back-to-top');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTopButton.classList.add('visible');
-            } else {
-                backToTopButton.classList.remove('visible');
-            }
-        });
+        if (backToTopButton) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopButton.style.opacity = '1';
+                } else {
+                    backToTopButton.style.opacity = '0';
+                }
+            });
+        }
 
         // Enhanced Mouse following bloom effect
         const mouseBloom = document.getElementById('mouseBloom');
         const orbs = document.querySelectorAll('.orb');
 
+        // Audio control
+        const bgMusic1 = document.getElementById('bgMusic1');
+        const bgMusic2 = document.getElementById('bgMusic2');
+        const winSound = document.getElementById('winSound');
+        const deadSound = document.getElementById('deadSound');
+
+        // Set volume
+        if (bgMusic1) bgMusic1.volume = 0.3;
+        if (bgMusic2) bgMusic2.volume = 0.3;
+        if (winSound) winSound.volume = 0.5;
+        if (deadSound) deadSound.volume = 0.5;
+
+        // Mouse movement effect for orbs
         document.addEventListener('mousemove', (e) => {
-            // Calculate position relative to viewport
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
 
             // Position the bloom effect
             mouseBloom.style.left = mouseX + 'px';
