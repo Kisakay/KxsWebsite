@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.11
+// @version      1.1.12
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -39,7 +39,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.11","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.12","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -92,7 +92,8 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  f: () => (/* binding */ kxs_logo)
+  h3: () => (/* binding */ background_image),
+  fW: () => (/* binding */ kxs_logo)
 });
 
 // UNUSED EXPORTS: background_song
@@ -398,11 +399,11 @@ var ClientMainMenu_awaiter = (undefined && undefined.__awaiter) || function (thi
 class KxsMainClientMenu {
     constructor(kxsClient) {
         this.kxsClient = kxsClient;
-        this.menu = document.createElement("div");
-        this.setupKeyListeners();
+        // this.setupKeyListeners();
         // this.initMenu();
     }
     initMenu() {
+        this.menu = document.createElement("div");
         this.menu.id = "kxsMenu";
         Object.assign(this.menu.style, {
             backgroundColor: "rgba(0, 0, 0, 0.8)",
@@ -2630,6 +2631,52 @@ class KxsLegacyClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(HUD, {
+            label: `Change Background`,
+            value: true,
+            type: "click",
+            onChange: () => {
+                const backgroundElement = document.getElementById("background");
+                if (!backgroundElement) {
+                    alert("Element with id 'background' not found.");
+                    return;
+                }
+                const choice = prompt("Enter '0' to default Kxs background, '1' to provide a URL or '2' to upload a local image:");
+                if (choice === "0") {
+                    localStorage.removeItem("lastBackgroundUrl");
+                    localStorage.removeItem("lastBackgroundFile");
+                    localStorage.removeItem("lastBackgroundType");
+                    localStorage.removeItem("lastBackgroundValue");
+                }
+                else if (choice === "1") {
+                    const newBackgroundUrl = prompt("Enter the URL of the new background image:");
+                    if (newBackgroundUrl) {
+                        backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
+                        this.kxsClient.saveBackgroundToLocalStorage(newBackgroundUrl);
+                        alert("Background updated successfully!");
+                    }
+                }
+                else if (choice === "2") {
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = (event) => {
+                        var _a, _b;
+                        const file = (_b = (_a = event.target) === null || _a === void 0 ? void 0 : _a.files) === null || _b === void 0 ? void 0 : _b[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                backgroundElement.style.backgroundImage = `url(${reader.result})`;
+                                this.kxsClient.saveBackgroundToLocalStorage(file);
+                                alert("Background updated successfully!");
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                    fileInput.click();
+                }
+            },
+        });
     }
     clearMenu() {
         this.sections.forEach((section) => {
@@ -2714,9 +2761,18 @@ class KxsLegacyClientSecondaryMenu {
         const label = document.createElement("span");
         label.textContent = option.label;
         label.style.color = "#fff";
-        const valueElement = option.type === "toggle"
-            ? this.createToggleElement(option)
-            : this.createInputElement(option);
+        let valueElement = null;
+        switch (option.type) {
+            case "toggle":
+                valueElement = this.createToggleElement(option);
+                break;
+            case "input":
+                valueElement = this.createInputElement(option);
+                break;
+            case "click":
+                valueElement = this.createClickElement(option);
+                break;
+        }
         optionDiv.appendChild(label);
         optionDiv.appendChild(valueElement);
         // Utiliser la référence stockée à l'élément de section
@@ -2738,6 +2794,22 @@ class KxsLegacyClientSecondaryMenu {
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, newValue);
         });
         return toggle;
+    }
+    createClickElement(option) {
+        const button = document.createElement("button");
+        button.textContent = option.label;
+        button.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+        button.style.border = "none";
+        button.style.borderRadius = "3px";
+        button.style.color = "#FFAE00";
+        button.style.padding = "2px 5px";
+        button.style.cursor = "pointer";
+        button.style.fontSize = "12px";
+        button.addEventListener("click", () => {
+            var _a;
+            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, true);
+        });
+        return button;
     }
     createInputElement(option) {
         const input = document.createElement("input");
@@ -3170,6 +3242,55 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(HUD, {
+            label: `Change Background`,
+            icon: '<svg height="200px" width="200px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 179.006 179.006" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <polygon style="fill:#010002;" points="20.884,116.354 11.934,116.354 11.934,32.818 137.238,32.818 137.238,41.768 149.172,41.768 149.172,20.884 0,20.884 0,128.288 20.884,128.288 "></polygon> <path style="fill:#010002;" d="M29.834,50.718v107.404h149.172V50.718H29.834z M123.58,136.856c-0.024,0-0.048,0-0.072,0 c-0.012,0-1.187,0-2.81,0c-3.795,0-10.078,0-10.114,0c-19.625,0-39.25,0-58.875,0v-3.473c0.907-0.859,2.005-1.551,3.168-2.166 c1.981-1.062,3.938-2.148,5.967-3.115c1.957-0.937,3.998-1.742,6.003-2.59c1.886-0.8,3.801-1.545,5.674-2.363 c0.328-0.137,0.638-0.489,0.776-0.811c0.424-1.05,0.782-2.124,1.116-3.216c0.245-0.823,0.412-1.635,1.468-1.862 c0.263-0.048,0.597-0.513,0.627-0.817c0.209-1.581,0.37-3.168,0.489-4.744c0.024-0.346-0.149-0.776-0.382-1.038 c-1.384-1.557-2.142-3.353-2.47-5.406c-0.161-1.038-0.74-1.993-1.038-3.013c-0.394-1.366-0.728-2.745-1.038-4.129 c-0.119-0.501-0.048-1.038-0.125-1.551c-0.125-0.746-0.107-1.319,0.806-1.611c0.233-0.084,0.442-0.668,0.453-1.032 c0.048-2.214,0.012-4.433,0.024-6.641c0.012-1.36,0-2.727,0.107-4.087c0.185-2.596,1.718-4.421,3.622-5.997 c2.787-2.303,6.128-3.377,9.565-4.189c1.808-0.424,3.64-0.68,5.478-0.979c0.489-0.078,0.996-0.006,1.498-0.006 c0.095,0.125,0.161,0.251,0.251,0.37c-0.376,0.28-0.811,0.513-1.134,0.847c-0.746,0.746-0.674,1.265,0.125,1.945 c1.647,1.396,3.318,2.804,4.911,4.254c1.42,1.271,1.969,2.942,1.981,4.815c0,3.222,0,6.45,0,9.672c0,0.65-0.048,1.313,0.776,1.605 c0.167,0.066,0.352,0.424,0.34,0.632c-0.131,1.641-0.322,3.294-0.489,4.941c-0.006,0.066-0.018,0.131-0.054,0.185 c-1.486,2.166-1.677,4.827-2.733,7.148c-0.048,0.09-0.078,0.191-0.125,0.257c-1.969,2.315-1.36,5.102-1.396,7.769 c0,0.269,0.197,0.686,0.406,0.782c0.806,0.358,1.002,1.044,1.223,1.772c0.352,1.14,0.692,2.303,1.181,3.389 c0.179,0.394,0.716,0.746,1.17,0.907c0.943,0.364,1.886,0.74,2.834,1.11c2.363-1.002,5.734-2.434,6.385-2.727 c0.919-0.418,1.611-1.349,2.44-1.993c0.37-0.28,0.817-0.537,1.259-0.615c1.504-0.239,2.16-0.77,2.518-2.255 c0.465-1.945,0.806-3.89,0.388-5.913c-0.167-0.877-0.489-1.45-1.366-1.784c-1.778-0.698-3.532-1.474-5.293-2.22 c-1.319-0.555-1.396-1.02-0.919-2.387c1.516-4.296,2.631-8.658,3.007-13.258c0.28-3.443,0.048-6.981,1.307-10.305 c0.871-2.339,2.339-4.505,4.696-5.203c1.796-0.531,3.359-1.742,5.269-1.999c0.358-0.018,0.674-0.072,1.026-0.054 c0.042,0.006,0.078,0.012,0.113,0.012c4.529,0.286,9.923,3.019,11.2,8.043c0.066,0.257,0.101,0.525,0.143,0.788h0.125 c0.698,2.852,0.621,5.818,0.859,8.712c0.37,4.594,1.504,8.962,3.019,13.264c0.477,1.366,0.394,1.832-0.919,2.381 c-1.76,0.746-3.514,1.522-5.299,2.22c-0.871,0.34-1.181,0.895-1.36,1.784c-0.406,2.029-0.084,3.968,0.388,5.913 c0.346,1.48,1.014,2.011,2.512,2.25c0.442,0.078,0.883,0.334,1.259,0.615c0.829,0.644,1.516,1.569,2.44,1.993 c3.234,1.468,6.51,2.888,9.839,4.117c5.114,1.88,8.509,5.478,9.326,11.045C145.944,136.856,134.768,136.856,123.58,136.856z"></path> </g> </g> </g></svg>',
+            category: "HUD",
+            value: true,
+            type: "click",
+            onChange: () => {
+                const backgroundElement = document.getElementById("background");
+                if (!backgroundElement) {
+                    alert("Element with id 'background' not found.");
+                    return;
+                }
+                const choice = prompt("Enter '0' to default Kxs background, '1' to provide a URL or '2' to upload a local image:");
+                if (choice === "0") {
+                    localStorage.removeItem("lastBackgroundUrl");
+                    localStorage.removeItem("lastBackgroundFile");
+                    localStorage.removeItem("lastBackgroundType");
+                    localStorage.removeItem("lastBackgroundValue");
+                    backgroundElement.style.backgroundImage = `url(${background_image})`;
+                }
+                else if (choice === "1") {
+                    const newBackgroundUrl = prompt("Enter the URL of the new background image:");
+                    if (newBackgroundUrl) {
+                        backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
+                        this.kxsClient.saveBackgroundToLocalStorage(newBackgroundUrl);
+                        alert("Background updated successfully!");
+                    }
+                }
+                else if (choice === "2") {
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = (event) => {
+                        var _a, _b;
+                        const file = (_b = (_a = event.target) === null || _a === void 0 ? void 0 : _a.files) === null || _b === void 0 ? void 0 : _b[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                backgroundElement.style.backgroundImage = `url(${reader.result})`;
+                                this.kxsClient.saveBackgroundToLocalStorage(file);
+                                alert("Background updated successfully!");
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                    fileInput.click();
+                }
+            },
+        });
     }
     createOptionCard(option, container) {
         const optionCard = document.createElement("div");
@@ -3198,9 +3319,17 @@ class KxsClientSecondaryMenu {
         title.textContent = option.label;
         title.style.fontSize = "16px";
         title.style.textAlign = "center";
-        const control = option.type === "toggle"
-            ? this.createToggleButton(option)
-            : this.createInputElement(option);
+        let control = null;
+        switch (option.type) {
+            case "input":
+                control = this.createInputElement(option);
+                break;
+            case "toggle":
+                control = this.createToggleButton(option);
+                break;
+            case "click":
+                control = this.createClickButton(option);
+        }
         optionCard.appendChild(iconContainer);
         optionCard.appendChild(title);
         optionCard.appendChild(control);
@@ -3309,6 +3438,27 @@ class KxsClientSecondaryMenu {
             btn.textContent = newValue ? "ENABLED" : "DISABLED";
             btn.style.background = newValue ? "#059669" : "#DC2626";
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, newValue);
+        });
+        return btn;
+    }
+    createClickButton(option) {
+        const btn = document.createElement("button");
+        Object.assign(btn.style, {
+            width: "100%",
+            padding: "8px",
+            background: "#3B82F6",
+            border: "none",
+            borderRadius: "6px",
+            color: "white",
+            cursor: "pointer",
+            transition: "background 0.2s",
+            fontSize: "14px",
+            fontWeight: "bold"
+        });
+        btn.textContent = option.label;
+        btn.addEventListener("click", () => {
+            var _a;
+            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, true);
         });
         return btn;
     }
@@ -4404,11 +4554,12 @@ const src_packageInfo = __webpack_require__(330);
 const src_config = __webpack_require__(272);
 const background_song = src_config.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
 const kxs_logo = src_config.base_url + "/assets/KysClientLogo.png";
+const background_image = src_config.base_url + "/assets/background.jpg";
 const loadingScreen = new LoadingScreen(kxs_logo);
 loadingScreen.show();
 const backgroundElement = document.getElementById("background");
 if (backgroundElement)
-    backgroundElement.style.backgroundImage = `url("${src_config.base_url}/assets/background.jpg")`;
+    backgroundElement.style.backgroundImage = `url("${background_image}")`;
 const favicon = document.createElement('link');
 favicon.rel = 'icon';
 favicon.type = 'image/png';
