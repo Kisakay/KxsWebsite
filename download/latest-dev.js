@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.10
+// @version      1.1.11
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
-// @author       Kisakay x SoyAlguien
+// @author       Kisakay
 // @license      AGPL-3.0
 // @run-at       document-end
 // @downloadURL  https://kxs.rip/download/latest-dev.js
@@ -39,7 +39,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ 330:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.10","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay x SoyAlguien","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.11","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"}}');
 
 /***/ })
 
@@ -1502,12 +1502,10 @@ function intercept(link, targetUrl) {
 ;// ./src/HealthWarning.ts
 class HealthWarning {
     constructor(kxsClient) {
-        this.offsetX = 20; // Distance depuis le curseur
-        this.offsetY = 20;
         this.warningElement = null;
         this.kxsClient = kxsClient;
         this.createWarningElement();
-        this.initMouseTracking();
+        this.setFixedPosition();
     }
     createWarningElement() {
         const warning = document.createElement("div");
@@ -1524,7 +1522,6 @@ class HealthWarning {
             z-index: 9999;
             display: none;
             backdrop-filter: blur(5px);
-            transition: transform 0.1s ease;
             pointer-events: none;
         `;
         const content = document.createElement("div");
@@ -1552,20 +1549,13 @@ class HealthWarning {
         this.warningElement = warning;
         this.addPulseAnimation();
     }
-    initMouseTracking() {
-        document.addEventListener("mousemove", (e) => {
-            if (!this.warningElement || this.warningElement.style.display === "none")
-                return;
-            const x = e.clientX + this.offsetX;
-            const y = e.clientY + this.offsetY;
-            // Empêcher l'alerte de sortir de l'écran
-            const rect = this.warningElement.getBoundingClientRect();
-            const maxX = window.innerWidth - rect.width;
-            const maxY = window.innerHeight - rect.height;
-            const finalX = Math.min(Math.max(0, x), maxX);
-            const finalY = Math.min(Math.max(0, y), maxY);
-            this.warningElement.style.transform = `translate(${finalX}px, ${finalY}px)`;
-        });
+    setFixedPosition() {
+        if (!this.warningElement)
+            return;
+        // Example
+        this.warningElement.style.top = "20px";
+        this.warningElement.style.left = "20px";
+        //OR use transform use somethin like, this.warningElement.style.transform = `translate(20px, 20px)`; 
     }
     addPulseAnimation() {
         const keyframes = `
