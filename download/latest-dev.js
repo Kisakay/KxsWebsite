@@ -1,25 +1,25 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.1.15
+// @version      1.2.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
 // @run-at       document-end
 // @downloadURL  https://kxs.rip/download/latest-dev.js
 // @icon         https://kxs.rip/assets/KysClientLogo.png
-// @match        *://survev.io/*
-// @match        *://66.179.254.36/*
-// @match        *://zurviv.io/*
-// @match        *://expandedwater.online/*
-// @match        *://localhost:3000/*
-// @match        *://surviv.wf/*
-// @match        *://resurviv.biz/*
-// @match        *://82.67.125.203/*
-// @match        *://leia-uwu.github.io/survev/*
-// @match        *://50v50.online/*
-// @match        *://eu-comp.net/*
-// @match        *://survev.leia-is.gay/*
+// @match        ://survev.io/*
+// @match        *://66.179.254.36/
+// @match        ://zurviv.io/
+// @match        ://expandedwater.online/
+// @match        ://localhost:3000/
+// @match        ://surviv.wf/
+// @match        ://resurviv.biz/
+// @match        ://82.67.125.203/
+// @match        ://leia-uwu.github.io/survev/
+// @match        ://50v50.online/
+// @match        ://eu-comp.net/
+// @match        ://survev.leia-is.gay/
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM.getValue
@@ -716,7 +716,7 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*","*://survev.leia-is.gay/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/*","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 
 /***/ }),
 
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.1.15","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -1959,8 +1959,8 @@ class KxsClientHUD {
             borderRadius: "5px",
             fontFamily: "Arial, sans-serif",
             padding: "5px 10px",
-            pointerEvents: "auto",
-            cursor: "move",
+            pointerEvents: "none",
+            cursor: "default",
             width: `${this.kxsClient.defaultSizes[name].width}px`,
             height: `${this.kxsClient.defaultSizes[name].height}px`,
             display: "flex",
@@ -2104,6 +2104,8 @@ class KxsClientHUD {
         const playerOptions = document.getElementById("player-options");
         const teamMenuContents = document.getElementById("team-menu-contents");
         const startMenuContainer = document.querySelector("#start-menu .play-button-container");
+        // Update counters draggable state based on LSHIFT menu visibility
+        this.updateCountersDraggableState();
         if (!playerOptions)
             return;
         if (isSpecialUrl &&
@@ -2209,6 +2211,21 @@ class KxsClientHUD {
             startTime: performance.now(),
             duration: 1500, // Animation duration in milliseconds
             value: change,
+        });
+    }
+    updateCountersDraggableState() {
+        var _a;
+        const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.getMenuVisibility()) || false;
+        const counters = ['fps', 'kills', 'ping'];
+        counters.forEach(name => {
+            const counter = document.getElementById(`${name}Counter`);
+            if (counter) {
+                // Mise à jour des propriétés de draggabilité
+                counter.style.pointerEvents = isMenuOpen ? 'auto' : 'none';
+                counter.style.cursor = isMenuOpen ? 'move' : 'default';
+                // Mise à jour de la possibilité de redimensionnement
+                counter.style.resize = isMenuOpen ? 'both' : 'none';
+            }
         });
     }
     updateHealthAnimations() {
@@ -3246,6 +3263,16 @@ class KxsLegacyClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
+            label: "Clean Main Menu",
+            value: this.kxsClient.isMainMenuCleaned,
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isMainMenuCleaned = !this.kxsClient.isMainMenuCleaned;
+                this.kxsClient.MainMenuCleaning();
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(HUD, {
             label: "Show Ping",
             value: this.kxsClient.isPingVisible,
             type: "toggle",
@@ -3642,6 +3669,9 @@ class KxsLegacyClientSecondaryMenu {
         this.boundMouseMoveListener = null;
         this.boundMouseUpListener = null;
     }
+    getMenuVisibility() {
+        return this.isClientMenuVisible;
+    }
 }
 
 
@@ -3791,10 +3821,35 @@ class KxsClientSecondaryMenu {
             this.toggleMenuVisibility();
         });
         const searchInput = header.querySelector('#kxsSearchInput');
-        searchInput === null || searchInput === void 0 ? void 0 : searchInput.addEventListener('input', (e) => {
-            this.searchTerm = e.target.value.toLowerCase();
-            this.filterOptions();
-        });
+        if (searchInput) {
+            // Gestionnaire pour mettre à jour la recherche
+            searchInput.addEventListener('input', (e) => {
+                this.searchTerm = e.target.value.toLowerCase();
+                this.filterOptions();
+            });
+            // Empêcher les touches d'être interprétées par le jeu
+            // On bloque uniquement la propagation des événements clavier, sauf pour les touches spéciales
+            ['keydown', 'keyup', 'keypress'].forEach(eventType => {
+                searchInput.addEventListener(eventType, (e) => {
+                    const keyEvent = e;
+                    // Ne pas bloquer les touches spéciales (Escape, Shift)
+                    if (keyEvent.key === 'Escape' || (keyEvent.key === 'Shift' && keyEvent.location === 2)) {
+                        return; // Laisser l'événement se propager normalement
+                    }
+                    // Bloquer la propagation pour toutes les autres touches
+                    e.stopPropagation();
+                });
+            });
+            // Assurer que le champ garde le focus
+            searchInput.addEventListener('blur', () => {
+                // Retarder légèrement pour permettre d'autres interactions
+                setTimeout(() => {
+                    if (this.isClientMenuVisible) {
+                        searchInput.focus();
+                    }
+                }, 100);
+            });
+        }
         this.menu.appendChild(header);
     }
     clearMenu() {
@@ -3815,6 +3870,18 @@ class KxsClientSecondaryMenu {
         let HUD = this.addSection("HUD", 'HUD');
         let MECHANIC = this.addSection("MECHANIC", 'MECHANIC');
         let SERVER = this.addSection("SERVER", 'SERVER');
+        this.addOption(HUD, {
+            label: "Clean Main Menu",
+            value: this.kxsClient.isMainMenuCleaned,
+            category: "HUD",
+            icon: '<svg fill="#000000" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <title>clean</title> <rect x="20" y="18" width="6" height="2" transform="translate(46 38) rotate(-180)"></rect> <rect x="24" y="26" width="6" height="2" transform="translate(54 54) rotate(-180)"></rect> <rect x="22" y="22" width="6" height="2" transform="translate(50 46) rotate(-180)"></rect> <path d="M17.0029,20a4.8952,4.8952,0,0,0-2.4044-4.1729L22,3,20.2691,2,12.6933,15.126A5.6988,5.6988,0,0,0,7.45,16.6289C3.7064,20.24,3.9963,28.6821,4.01,29.04a1,1,0,0,0,1,.96H20.0012a1,1,0,0,0,.6-1.8C17.0615,25.5439,17.0029,20.0537,17.0029,20ZM11.93,16.9971A3.11,3.11,0,0,1,15.0041,20c0,.0381.0019.208.0168.4688L9.1215,17.8452A3.8,3.8,0,0,1,11.93,16.9971ZM15.4494,28A5.2,5.2,0,0,1,14,25H12a6.4993,6.4993,0,0,0,.9684,3H10.7451A16.6166,16.6166,0,0,1,10,24H8a17.3424,17.3424,0,0,0,.6652,4H6c.031-1.8364.29-5.8921,1.8027-8.5527l7.533,3.35A13.0253,13.0253,0,0,0,17.5968,28Z"></path> <rect id="_Transparent_Rectangle_" data-name="<Transparent Rectangle>" class="cls-1" width="32" height="32"></rect> </g></svg>',
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isMainMenuCleaned = !this.kxsClient.isMainMenuCleaned;
+                this.kxsClient.MainMenuCleaning();
+                this.kxsClient.updateLocalStorage();
+            },
+        });
         this.addOption(HUD, {
             label: "Show Ping",
             value: this.kxsClient.isPingVisible,
@@ -4326,6 +4393,9 @@ class KxsClientSecondaryMenu {
         this.menu = null;
         this.kxsClient = null;
     }
+    getMenuVisibility() {
+        return this.isClientMenuVisible;
+    }
 }
 
 
@@ -4352,6 +4422,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 class KxsClient {
     constructor() {
         this.deathObserver = null;
+        this.adBlockObserver = null;
         this.config = __webpack_require__(891);
         this.menu = document.createElement("div");
         this.lastFrameTime = performance.now();
@@ -4371,6 +4442,7 @@ class KxsClient {
         this.discordToken = null;
         this.counters = {};
         this.all_friends = '';
+        this.isMainMenuCleaned = false;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -4403,6 +4475,7 @@ class KxsClient {
         if (this.isSpotifyPlayerEnabled) {
             this.createSimpleSpotifyPlayer();
         }
+        this.MainMenuCleaning();
     }
     parseToken(token) {
         if (token) {
@@ -4441,7 +4514,8 @@ class KxsClient {
             isLegaySecondaryMenu: this.isLegaySecondaryMenu,
             isKillFeedBlint: this.isKillFeedBlint,
             all_friends: this.all_friends,
-            isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled
+            isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled,
+            isMainMenuCleaned: this.isMainMenuCleaned
         }));
     }
     ;
@@ -4813,7 +4887,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -4832,6 +4906,7 @@ class KxsClient {
             this.isKillFeedBlint = (_m = savedSettings.isKillFeedBlint) !== null && _m !== void 0 ? _m : this.isKillFeedBlint;
             this.all_friends = (_o = savedSettings.all_friends) !== null && _o !== void 0 ? _o : this.all_friends;
             this.isSpotifyPlayerEnabled = (_p = savedSettings.isSpotifyPlayerEnabled) !== null && _p !== void 0 ? _p : this.isSpotifyPlayerEnabled;
+            this.isMainMenuCleaned = (_q = savedSettings.isMainMenuCleaned) !== null && _q !== void 0 ? _q : this.isMainMenuCleaned;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
@@ -5132,6 +5207,230 @@ class KxsClient {
         }
         else {
             this.removeSimpleSpotifyPlayer();
+        }
+    }
+    applyCustomMainMenuStyle() {
+        // Sélectionner le menu principal
+        const startMenu = document.getElementById('start-menu');
+        const playButtons = document.querySelectorAll('.btn-green, #btn-help, .btn-team-option');
+        const playerOptions = document.getElementById('player-options');
+        const serverSelect = document.getElementById('server-select-main');
+        const nameInput = document.getElementById('player-name-input-solo');
+        const helpSection = document.getElementById('start-help');
+        if (startMenu) {
+            // Appliquer des styles au conteneur principal
+            Object.assign(startMenu.style, {
+                background: 'linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                padding: '15px',
+                backdropFilter: 'blur(10px)',
+                margin: '0 auto'
+            });
+        }
+        // Styliser les boutons
+        playButtons.forEach(button => {
+            if (button instanceof HTMLElement) {
+                if (button.classList.contains('btn-green')) {
+                    // Boutons Play
+                    Object.assign(button.style, {
+                        background: 'linear-gradient(135deg, #4287f5 0%, #3b76d9 100%)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.2s ease',
+                        color: 'white',
+                        fontWeight: 'bold'
+                    });
+                }
+                else {
+                    // Autres boutons
+                    Object.assign(button.style, {
+                        background: 'rgba(40, 45, 60, 0.7)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        transition: 'all 0.2s ease',
+                        color: 'white'
+                    });
+                }
+                // Effet de survol pour tous les boutons
+                button.addEventListener('mouseover', () => {
+                    button.style.transform = 'translateY(-2px)';
+                    button.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
+                    button.style.filter = 'brightness(1.1)';
+                });
+                button.addEventListener('mouseout', () => {
+                    button.style.transform = 'translateY(0)';
+                    button.style.boxShadow = button.classList.contains('btn-green') ?
+                        '0 4px 12px rgba(0, 0, 0, 0.2)' : 'none';
+                    button.style.filter = 'brightness(1)';
+                });
+            }
+        });
+        // Styliser le sélecteur de serveur
+        if (serverSelect instanceof HTMLSelectElement) {
+            Object.assign(serverSelect.style, {
+                background: 'rgba(30, 35, 50, 0.8)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                padding: '8px 12px',
+                outline: 'none'
+            });
+        }
+        // Styliser l'input du nom
+        if (nameInput instanceof HTMLInputElement) {
+            Object.assign(nameInput.style, {
+                background: 'rgba(30, 35, 50, 0.8)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'white',
+                padding: '8px 12px',
+                outline: 'none'
+            });
+            // Focus style
+            nameInput.addEventListener('focus', () => {
+                nameInput.style.border = '1px solid #4287f5';
+                nameInput.style.boxShadow = '0 0 8px rgba(66, 135, 245, 0.5)';
+            });
+            nameInput.addEventListener('blur', () => {
+                nameInput.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                nameInput.style.boxShadow = 'none';
+            });
+        }
+        // Styliser la section d'aide
+        if (helpSection) {
+            Object.assign(helpSection.style, {
+                background: 'rgba(20, 25, 40, 0.7)',
+                borderRadius: '8px',
+                padding: '15px',
+                margin: '15px 0',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#4287f5 rgba(25, 25, 35, 0.5)'
+            });
+            // Styliser les titres de la section d'aide
+            const helpTitles = helpSection.querySelectorAll('h1');
+            helpTitles.forEach(title => {
+                if (title instanceof HTMLElement) {
+                    Object.assign(title.style, {
+                        color: '#4287f5',
+                        fontSize: '18px',
+                        marginTop: '15px',
+                        marginBottom: '8px'
+                    });
+                }
+            });
+            // Styliser les paragraphes
+            const helpParagraphs = helpSection.querySelectorAll('p');
+            helpParagraphs.forEach(p => {
+                if (p instanceof HTMLElement) {
+                    p.style.color = 'rgba(255, 255, 255, 0.8)';
+                    p.style.fontSize = '14px';
+                    p.style.marginBottom = '8px';
+                }
+            });
+            // Styliser les termes d'action et contrôles
+            const actionTerms = helpSection.querySelectorAll('.help-action');
+            actionTerms.forEach(term => {
+                if (term instanceof HTMLElement) {
+                    term.style.color = '#ffc107'; // Jaune
+                    term.style.fontWeight = 'bold';
+                }
+            });
+            const controlTerms = helpSection.querySelectorAll('.help-control');
+            controlTerms.forEach(term => {
+                if (term instanceof HTMLElement) {
+                    term.style.color = '#4287f5'; // Bleu
+                    term.style.fontWeight = 'bold';
+                }
+            });
+        }
+        // Appliquer un style spécifique aux boutons doubles
+        const btnsDoubleRow = document.querySelector('.btns-double-row');
+        if (btnsDoubleRow instanceof HTMLElement) {
+            btnsDoubleRow.style.display = 'flex';
+            btnsDoubleRow.style.gap = '10px';
+            btnsDoubleRow.style.marginTop = '10px';
+        }
+    }
+    MainMenuCleaning() {
+        // Déconnecter l'observateur précédent s'il existe
+        if (this.adBlockObserver) {
+            this.adBlockObserver.disconnect();
+            this.adBlockObserver = null;
+        }
+        // Sélectionne les éléments à masquer/afficher
+        const newsWrapper = document.getElementById('news-wrapper');
+        const adBlockLeft = document.getElementById('ad-block-left');
+        const socialLeft = document.getElementById('social-share-block-wrapper');
+        const leftCollun = document.getElementById('left-column');
+        const elementsToMonitor = [
+            { element: newsWrapper, id: 'news-wrapper' },
+            { element: adBlockLeft, id: 'ad-block-left' },
+            { element: socialLeft, id: 'social-share-block-wrapper' },
+            { element: leftCollun, id: 'left-column' }
+        ];
+        // Appliquer le style personnalisé au menu principal
+        this.applyCustomMainMenuStyle();
+        if (this.isMainMenuCleaned) {
+            // Mode clean: masquer les éléments
+            elementsToMonitor.forEach(item => {
+                if (item.element)
+                    item.element.style.display = 'none';
+            });
+            // Créer un observateur pour empêcher que le site ne réaffiche les éléments
+            this.adBlockObserver = new MutationObserver((mutations) => {
+                let needsUpdate = false;
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const target = mutation.target;
+                        // Vérifier si l'élément est un de ceux que nous surveillons
+                        if (elementsToMonitor.some(item => item.id === target.id && target.style.display !== 'none')) {
+                            target.style.display = 'none';
+                            needsUpdate = true;
+                        }
+                    }
+                });
+                // Si le site essaie de réafficher un élément publicitaire, on l'empêche
+                if (needsUpdate) {
+                    console.log('[KxsClient] Détection de tentative de réaffichage de publicités - Masquage forcé');
+                }
+            });
+            // Observer les changements de style sur les éléments
+            elementsToMonitor.forEach(item => {
+                if (item.element && this.adBlockObserver) {
+                    this.adBlockObserver.observe(item.element, {
+                        attributes: true,
+                        attributeFilter: ['style']
+                    });
+                }
+            });
+            // Vérifier également le document body pour de nouveaux éléments ajoutés
+            const bodyObserver = new MutationObserver(() => {
+                // Réappliquer notre nettoyage après un court délai
+                setTimeout(() => {
+                    if (this.isMainMenuCleaned) {
+                        elementsToMonitor.forEach(item => {
+                            const element = document.getElementById(item.id);
+                            if (element && element.style.display !== 'none') {
+                                element.style.display = 'none';
+                            }
+                        });
+                    }
+                }, 100);
+            });
+            // Observer les changements dans le DOM
+            bodyObserver.observe(document.body, { childList: true, subtree: true });
+        }
+        else {
+            // Mode normal: rétablir l'affichage
+            elementsToMonitor.forEach(item => {
+                if (item.element)
+                    item.element.style.display = 'block';
+            });
         }
     }
     removeSimpleSpotifyPlayer() {
