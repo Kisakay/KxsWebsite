@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.1
+// @version      1.2.3
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -1268,7 +1268,7 @@ class PingTest {
             region: selectedServer.region,
             url: selectedServer.url.startsWith("ws://") || selectedServer.url.startsWith("wss://")
                 ? selectedServer.url
-                : `https://${selectedServer.url}/ping`, // If not WebSocket, assume HTTP
+                : `https://${selectedServer.url}`, // Store the base URL without /ping for HTTP
             ping: 0, // Initialize to 0 instead of 9999
             ws: null,
             sendTime: 0,
@@ -1307,15 +1307,9 @@ class PingTest {
         if (this.test.isConnecting)
             return;
         this.test.isConnecting = true;
-        const matchingUrl = this.getMatchingGameUrl();
-        if (matchingUrl) {
-            this.test.url = matchingUrl;
-        }
-        else {
-            console.error("No valid URL for ping test found.");
-            this.handleConnectionError();
-            return;
-        }
+        // We don't need to replace the URL with a matching game URL
+        // because we want to test the ping to the specific server selected
+        // The URL was already properly set in the constructor
         if (this.test.isWebSocket) {
             try {
                 const ws = new WebSocket(this.test.url);
@@ -1355,17 +1349,27 @@ class PingTest {
         }
     }
     sendHttpPing() {
+        // Use image loading technique to avoid CORS issues
         this.test.sendTime = Date.now();
-        fetch(this.test.url, { method: "HEAD", cache: "no-cache" })
-            .then(() => {
+        // Create a new image element
+        const img = new Image();
+        // Set up load and error handlers
+        img.onload = () => {
             const elapsed = Date.now() - this.test.sendTime;
             this.test.ping = Math.min(Math.round(elapsed), 999);
             setTimeout(() => this.sendHttpPing(), 250);
-        })
-            .catch((error) => {
-            console.error("HTTP Ping error:", error);
-            this.handleConnectionError();
-        });
+        };
+        img.onerror = () => {
+            // Even if the image fails to load, we can still measure the time it took to fail
+            // This gives us an approximate ping time
+            const elapsed = Date.now() - this.test.sendTime;
+            this.test.ping = Math.min(Math.round(elapsed), 999);
+            setTimeout(() => this.sendHttpPing(), 250);
+        };
+        // Add a cache-busting parameter to prevent caching
+        const cacheBuster = Date.now();
+        const baseUrl = this.test.url.replace('/ping', '');
+        img.src = `${baseUrl}/favicon.ico?cb=${cacheBuster}`;
     }
     handleConnectionError() {
         this.test.ping = 0;
@@ -1582,10 +1586,10 @@ class KxsClientHUD {
         padding: 20px !important;
         backdrop-filter: blur(10px) !important;
         max-width: 350px !important;
-        /* max-height: 80vh !important; */ /* Optionnel: Limiter la hauteur maximale */
+        /* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
         margin: auto !important;
         box-sizing: border-box !important;
-        overflow-y: auto !important; /* Permettre le défilement vertical si nécessaire */
+        overflow-y: auto !important; /* Allow vertical scrolling if necessary */
     }
 
     .ui-game-menu-desktop::-webkit-scrollbar {
@@ -3827,16 +3831,16 @@ class KxsClientSecondaryMenu {
                 this.searchTerm = e.target.value.toLowerCase();
                 this.filterOptions();
             });
-            // Empêcher les touches d'être interprétées par le jeu
-            // On bloque uniquement la propagation des événements clavier, sauf pour les touches spéciales
+            // Prevent keys from being interpreted by the game
+            // We only block the propagation of keyboard events, except for special keys
             ['keydown', 'keyup', 'keypress'].forEach(eventType => {
                 searchInput.addEventListener(eventType, (e) => {
                     const keyEvent = e;
-                    // Ne pas bloquer les touches spéciales (Escape, Shift)
+                    // Don't block special keys (Escape, Shift)
                     if (keyEvent.key === 'Escape' || (keyEvent.key === 'Shift' && keyEvent.location === 2)) {
-                        return; // Laisser l'événement se propager normalement
+                        return; // Let the event propagate normally
                     }
-                    // Bloquer la propagation pour toutes les autres touches
+                    // Block propagation for all other keys
                     e.stopPropagation();
                 });
             });
@@ -4727,7 +4731,7 @@ class KxsClient {
     makeResizable(element, storageKey) {
         let isResizing = false;
         let startX, startY, startWidth, startHeight;
-        // Ajouter une zone de redimensionnement en bas à droite
+        // Add a resize area in the bottom right
         const resizer = document.createElement("div");
         Object.assign(resizer.style, {
             width: "10px",
@@ -5101,7 +5105,7 @@ class KxsClient {
         const savedPlaylist = localStorage.getItem('kxsSpotifyPlaylist');
         if (savedPlaylist) {
             iframe.src = `https://open.spotify.com/embed/playlist/${savedPlaylist}`;
-            // Simuler une pochette d'album basée sur l'ID de la playlist
+            // Simulate an album cover based on the playlist ID
             albumArt.style.backgroundImage = `url('https://i.scdn.co/image/ab67706f00000002${savedPlaylist.substring(0, 16)}')`;
         }
         // Integrate the playlist change button into the controls
@@ -5218,7 +5222,7 @@ class KxsClient {
         const nameInput = document.getElementById('player-name-input-solo');
         const helpSection = document.getElementById('start-help');
         if (startMenu) {
-            // Appliquer des styles au conteneur principal
+            // Apply styles to the main container
             Object.assign(startMenu.style, {
                 background: 'linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -5229,7 +5233,7 @@ class KxsClient {
                 margin: '0 auto'
             });
         }
-        // Styliser les boutons
+        // Style the buttons
         playButtons.forEach(button => {
             if (button instanceof HTMLElement) {
                 if (button.classList.contains('btn-green')) {
@@ -5254,7 +5258,7 @@ class KxsClient {
                         color: 'white'
                     });
                 }
-                // Effet de survol pour tous les boutons
+                // Hover effect for all buttons
                 button.addEventListener('mouseover', () => {
                     button.style.transform = 'translateY(-2px)';
                     button.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
@@ -5311,7 +5315,7 @@ class KxsClient {
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#4287f5 rgba(25, 25, 35, 0.5)'
             });
-            // Styliser les titres de la section d'aide
+            // Style the help section titles
             const helpTitles = helpSection.querySelectorAll('h1');
             helpTitles.forEach(title => {
                 if (title instanceof HTMLElement) {
@@ -5323,7 +5327,7 @@ class KxsClient {
                     });
                 }
             });
-            // Styliser les paragraphes
+            // Style the paragraphs
             const helpParagraphs = helpSection.querySelectorAll('p');
             helpParagraphs.forEach(p => {
                 if (p instanceof HTMLElement) {
@@ -5332,11 +5336,11 @@ class KxsClient {
                     p.style.marginBottom = '8px';
                 }
             });
-            // Styliser les termes d'action et contrôles
+            // Style the action terms and controls
             const actionTerms = helpSection.querySelectorAll('.help-action');
             actionTerms.forEach(term => {
                 if (term instanceof HTMLElement) {
-                    term.style.color = '#ffc107'; // Jaune
+                    term.style.color = '#ffc107'; // Yellow
                     term.style.fontWeight = 'bold';
                 }
             });
@@ -5348,7 +5352,7 @@ class KxsClient {
                 }
             });
         }
-        // Appliquer un style spécifique aux boutons doubles
+        // Apply specific style to double buttons
         const btnsDoubleRow = document.querySelector('.btns-double-row');
         if (btnsDoubleRow instanceof HTMLElement) {
             btnsDoubleRow.style.display = 'flex';
@@ -5362,7 +5366,7 @@ class KxsClient {
             this.adBlockObserver.disconnect();
             this.adBlockObserver = null;
         }
-        // Sélectionne les éléments à masquer/afficher
+        // Select elements to hide/show
         const newsWrapper = document.getElementById('news-wrapper');
         const adBlockLeft = document.getElementById('ad-block-left');
         const socialLeft = document.getElementById('social-share-block-wrapper');
@@ -5376,30 +5380,30 @@ class KxsClient {
         // Appliquer le style personnalisé au menu principal
         this.applyCustomMainMenuStyle();
         if (this.isMainMenuCleaned) {
-            // Mode clean: masquer les éléments
+            // Clean mode: hide elements
             elementsToMonitor.forEach(item => {
                 if (item.element)
                     item.element.style.display = 'none';
             });
-            // Créer un observateur pour empêcher que le site ne réaffiche les éléments
+            // Create an observer to prevent the site from redisplaying elements
             this.adBlockObserver = new MutationObserver((mutations) => {
                 let needsUpdate = false;
                 mutations.forEach(mutation => {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                         const target = mutation.target;
-                        // Vérifier si l'élément est un de ceux que nous surveillons
+                        // Check if the element is one of those we are monitoring
                         if (elementsToMonitor.some(item => item.id === target.id && target.style.display !== 'none')) {
                             target.style.display = 'none';
                             needsUpdate = true;
                         }
                     }
                 });
-                // Si le site essaie de réafficher un élément publicitaire, on l'empêche
+                // If the site tries to redisplay an advertising element, we prevent it
                 if (needsUpdate) {
-                    console.log('[KxsClient] Détection de tentative de réaffichage de publicités - Masquage forcé');
+                    console.log('[KxsClient] Detection of attempt to redisplay ads - Forced hiding');
                 }
             });
-            // Observer les changements de style sur les éléments
+            // Observe style changes on elements
             elementsToMonitor.forEach(item => {
                 if (item.element && this.adBlockObserver) {
                     this.adBlockObserver.observe(item.element, {
@@ -5422,7 +5426,7 @@ class KxsClient {
                     }
                 }, 100);
             });
-            // Observer les changements dans le DOM
+            // Observe changes in the DOM
             bodyObserver.observe(document.body, { childList: true, subtree: true });
         }
         else {
@@ -5451,8 +5455,8 @@ class KxsClient {
 /**
  * LoadingScreen.ts
  *
- * Ce module fournit une animation de chargement avec un logo et un cercle de chargement rotatif
- * qui s'affiche pendant le chargement des ressources du jeu.
+ * This module provides a loading animation with a logo and a rotating loading circle
+ * that displays during the loading of game resources.
  */
 class LoadingScreen {
     /**
