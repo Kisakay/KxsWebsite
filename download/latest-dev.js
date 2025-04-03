@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.3
+// @version      1.2.4
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.4","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -796,7 +796,7 @@ __webpack_require__.d(__webpack_exports__, {
   fW: () => (/* binding */ kxs_logo)
 });
 
-// UNUSED EXPORTS: background_song
+// UNUSED EXPORTS: background_song, full_logo
 
 ;// ./src/ButtonManager.ts
 class MenuButton {
@@ -5620,6 +5620,7 @@ const src_packageInfo = __webpack_require__(330);
 const src_config = __webpack_require__(891);
 const background_song = src_config.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
 const kxs_logo = src_config.base_url + "/assets/KysClientLogo.png";
+const full_logo = src_config.base_url + "/assets/KysClient.gif";
 const background_image = src_config.base_url + "/assets/background.jpg";
 const loadingScreen = new LoadingScreen(kxs_logo);
 loadingScreen.show();
@@ -5633,10 +5634,10 @@ favicon.href = kxs_logo;
 document.head.appendChild(favicon);
 document.title = "KxsClient";
 intercept("audio/ambient/menu_music_01.mp3", background_song);
-intercept('img/survev_logo_full.png', kxs_logo);
+intercept('img/survev_logo_full.png', full_logo);
 const uiStatsLogo = document.querySelector('#ui-stats-logo');
 if (uiStatsLogo) {
-    uiStatsLogo.style.backgroundImage = `url('${kxs_logo}')`;
+    uiStatsLogo.style.backgroundImage = `url('${full_logo}')`;
 }
 const newChangelogUrl = src_config.base_url;
 const startBottomMiddle = document.getElementById("start-bottom-middle");
