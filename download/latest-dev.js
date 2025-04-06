@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.9
+// @version      1.2.10
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.10","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -793,10 +793,12 @@ var __webpack_exports__ = {};
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
   h3: () => (/* binding */ background_image),
-  fW: () => (/* binding */ kxs_logo)
+  hD: () => (/* binding */ background_song),
+  LF: () => (/* binding */ death_sound),
+  SD: () => (/* binding */ full_logo),
+  fW: () => (/* binding */ kxs_logo),
+  zB: () => (/* binding */ win_sound)
 });
-
-// UNUSED EXPORTS: background_song, full_logo
 
 ;// ./src/ButtonManager.ts
 class MenuButton {
@@ -3417,6 +3419,25 @@ class KxsLegacyClientSecondaryMenu {
     }
     loadOption() {
         let HUD = this.addSection("HUD");
+        let SOUND = this.addSection("SOUND");
+        this.addOption(SOUND, {
+            label: "Win sound",
+            value: this.kxsClient.soundLibrary.win_sound_url,
+            type: "input",
+            onChange: (value) => {
+                this.kxsClient.soundLibrary.win_sound_url = value;
+                this.kxsClient.updateLocalStorage();
+            }
+        });
+        this.addOption(SOUND, {
+            label: "Death sound",
+            value: this.kxsClient.soundLibrary.death_sound_url,
+            type: "input",
+            onChange: (value) => {
+                this.kxsClient.soundLibrary.death_sound_url = value;
+                this.kxsClient.updateLocalStorage();
+            }
+        });
         this.addOption(HUD, {
             label: "Use Legacy Menu",
             value: this.kxsClient.isLegaySecondaryMenu,
@@ -3945,7 +3966,7 @@ class KxsClientSecondaryMenu {
           </div>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box;">
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px;">
-              ${["ALL", "HUD", "SERVER", "MECHANIC"].map(cat => `
+              ${["ALL", "HUD", "SERVER", "MECHANIC", "SOUND"].map(cat => `
                 <button class="category-btn" data-category="${cat}" style="
                   padding: 6px 16px;
                   background: ${this.activeCategory === cat ? '#3B82F6' : 'rgba(55, 65, 81, 0.8)'};
@@ -4049,6 +4070,29 @@ class KxsClientSecondaryMenu {
         let HUD = this.addSection("HUD", 'HUD');
         let MECHANIC = this.addSection("MECHANIC", 'MECHANIC');
         let SERVER = this.addSection("SERVER", 'SERVER');
+        let SOUND = this.addSection("SOUND", 'SOUND');
+        this.addOption(SOUND, {
+            label: "Win sound",
+            value: this.kxsClient.soundLibrary.win_sound_url,
+            category: "SOUND",
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 6V18M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+            type: "input",
+            onChange: (value) => {
+                this.kxsClient.soundLibrary.win_sound_url = value;
+                this.kxsClient.updateLocalStorage();
+            }
+        });
+        this.addOption(SOUND, {
+            label: "Death sound",
+            value: this.kxsClient.soundLibrary.death_sound_url,
+            category: "SOUND",
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 12V18M15 6V8M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+            type: "input",
+            onChange: (value) => {
+                this.kxsClient.soundLibrary.death_sound_url = value;
+                this.kxsClient.updateLocalStorage();
+            }
+        });
         this.addOption(HUD, {
             label: "Clean Main Menu",
             value: this.kxsClient.isMainMenuCleaned,
@@ -4612,6 +4656,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
 class KxsClient {
     constructor() {
         this.deathObserver = null;
@@ -4647,6 +4692,11 @@ class KxsClient {
             fps: { width: 100, height: 30 },
             ping: { width: 100, height: 30 },
             kills: { width: 100, height: 30 },
+        };
+        this.soundLibrary = {
+            win_sound_url: win_sound,
+            death_sound_url: death_sound,
+            background_sound_url: background_song,
         };
         // Before all, load local storage
         this.loadLocalStorage();
@@ -4689,7 +4739,7 @@ class KxsClient {
         var startRowHeader = document.querySelector("#start-row-header");
         if (startRowHeader) {
             startRowHeader.style.backgroundImage =
-                `url("${this.config.base_url}/assets/KysClient.gif")`;
+                `url("${full_logo}")`;
         }
     }
     updateLocalStorage() {
@@ -4711,7 +4761,8 @@ class KxsClient {
             all_friends: this.all_friends,
             isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled,
             isMainMenuCleaned: this.isMainMenuCleaned,
-            isNotifyingForToggleMenu: this.isNotifyingForToggleMenu
+            isNotifyingForToggleMenu: this.isNotifyingForToggleMenu,
+            soundLibrary: this.soundLibrary
         }));
     }
     ;
@@ -4758,7 +4809,7 @@ class KxsClient {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             try {
                 if (this.isDeathSoundEnabled) {
-                    const audio = new Audio(this.config.base_url + "/assets/dead.m4a");
+                    const audio = new Audio(this.soundLibrary.death_sound_url);
                     audio.volume = 0.3;
                     audio.play().catch((err) => false);
                 }
@@ -4869,7 +4920,7 @@ class KxsClient {
             }
         }, 100);
         if (this.isWinSoundEnabled) {
-            const audio = new Audio(this.config.base_url + "/assets/win.m4a");
+            const audio = new Audio(this.soundLibrary.win_sound_url);
             audio.play().catch((err) => console.error("Erreur lecture:", err));
         }
         setTimeout(() => {
@@ -5096,6 +5147,18 @@ class KxsClient {
             this.isSpotifyPlayerEnabled = (_p = savedSettings.isSpotifyPlayerEnabled) !== null && _p !== void 0 ? _p : this.isSpotifyPlayerEnabled;
             this.isMainMenuCleaned = (_q = savedSettings.isMainMenuCleaned) !== null && _q !== void 0 ? _q : this.isMainMenuCleaned;
             this.isNotifyingForToggleMenu = (_r = savedSettings.isNotifyingForToggleMenu) !== null && _r !== void 0 ? _r : this.isNotifyingForToggleMenu;
+            if (savedSettings.soundLibrary) {
+                // Check if the sound value exists
+                if (savedSettings.soundLibrary.win_sound_url) {
+                    this.soundLibrary.win_sound_url = savedSettings.soundLibrary.win_sound_url;
+                }
+                if (savedSettings.soundLibrary.death_sound_url) {
+                    this.soundLibrary.death_sound_url = savedSettings.soundLibrary.death_sound_url;
+                }
+                if (savedSettings.soundLibrary.background_sound_url) {
+                    this.soundLibrary.background_sound_url = savedSettings.soundLibrary.background_sound_url;
+                }
+            }
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
@@ -5807,6 +5870,8 @@ const background_song = src_config.base_url + "/assets/Stranger_Things_Theme_Son
 const kxs_logo = src_config.base_url + "/assets/KysClientLogo.png";
 const full_logo = src_config.base_url + "/assets/KysClient.gif";
 const background_image = src_config.base_url + "/assets/background.jpg";
+const win_sound = src_config.base_url + "/assets/win.m4a";
+const death_sound = src_config.base_url + "/assets/dead.m4a";
 const loadingScreen = new LoadingScreen(kxs_logo);
 loadingScreen.show();
 const backgroundElement = document.getElementById("background");
