@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.8
+// @version      1.2.9
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -2300,7 +2300,7 @@ class HealthWarning {
         this.isDraggable = false;
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
-        this.position = { x: 285, y: 742 };
+        this.POSITION_KEY = 'lowHpWarning';
         this.menuCheckInterval = null;
         this.warningElement = null;
         this.kxsClient = kxsClient;
@@ -2355,9 +2355,32 @@ class HealthWarning {
     setFixedPosition() {
         if (!this.warningElement)
             return;
-        // Set position based on saved values
-        this.warningElement.style.top = `${this.position.y}px`;
-        this.warningElement.style.left = `${this.position.x}px`;
+        // Récupérer la position depuis le localStorage ou les valeurs par défaut
+        const storageKey = `position_${this.POSITION_KEY}`;
+        const savedPosition = localStorage.getItem(storageKey);
+        let position;
+        if (savedPosition) {
+            try {
+                // Utiliser la position sauvegardée
+                const { x, y } = JSON.parse(savedPosition);
+                position = { left: x, top: y };
+                console.log('Position LOW HP chargée:', position);
+            }
+            catch (error) {
+                // En cas d'erreur, utiliser la position par défaut
+                position = this.kxsClient.defaultPositions[this.POSITION_KEY];
+                console.error('Erreur lors du chargement de la position LOW HP:', error);
+            }
+        }
+        else {
+            // Utiliser la position par défaut
+            position = this.kxsClient.defaultPositions[this.POSITION_KEY];
+        }
+        // Appliquer la position
+        if (position) {
+            this.warningElement.style.top = `${position.top}px`;
+            this.warningElement.style.left = `${position.left}px`;
+        }
     }
     addPulseAnimation() {
         const keyframes = `
@@ -2480,11 +2503,18 @@ class HealthWarning {
         // Update element position
         this.warningElement.style.left = `${newX}px`;
         this.warningElement.style.top = `${newY}px`;
-        // Store position
-        this.position = { x: newX, y: newY };
     }
     handleMouseUp() {
-        this.isDragging = false;
+        if (this.isDragging && this.warningElement) {
+            this.isDragging = false;
+            // Récupérer les positions actuelles
+            const left = parseInt(this.warningElement.style.left);
+            const top = parseInt(this.warningElement.style.top);
+            // Sauvegarder la position
+            const storageKey = `position_${this.POSITION_KEY}`;
+            localStorage.setItem(storageKey, JSON.stringify({ x: left, y: top }));
+            console.log('Position LOW HP sauvegardée:', { x: left, y: top });
+        }
     }
     startMenuCheckInterval() {
         // Créer un intervalle qui vérifie régulièrement l'état du menu RSHIFT
@@ -4611,6 +4641,7 @@ class KxsClient {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
             kills: { left: 20, top: 280 },
+            lowHpWarning: { left: 285, top: 742 },
         };
         this.defaultSizes = {
             fps: { width: 100, height: 30 },
