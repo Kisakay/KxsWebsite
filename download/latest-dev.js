@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.7
+// @version      1.2.8
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.7","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -2297,10 +2297,17 @@ function intercept(link, targetUrl) {
 ;// ./src/HealthWarning.ts
 class HealthWarning {
     constructor(kxsClient) {
+        this.isDraggable = false;
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
+        this.position = { x: 285, y: 742 };
+        this.menuCheckInterval = null;
         this.warningElement = null;
         this.kxsClient = kxsClient;
         this.createWarningElement();
         this.setFixedPosition();
+        this.setupDragAndDrop();
+        this.startMenuCheckInterval();
     }
     createWarningElement() {
         const warning = document.createElement("div");
@@ -2318,6 +2325,7 @@ class HealthWarning {
             display: none;
             backdrop-filter: blur(5px);
             pointer-events: none;
+            transition: border-color 0.3s ease;
         `;
         const content = document.createElement("div");
         content.style.cssText = `
@@ -2347,10 +2355,9 @@ class HealthWarning {
     setFixedPosition() {
         if (!this.warningElement)
             return;
-        // Example
-        this.warningElement.style.top = "742px";
-        this.warningElement.style.left = "285px";
-        //OR use transform use somethin like, this.warningElement.style.transform = `translate(20px, 20px)`; 
+        // Set position based on saved values
+        this.warningElement.style.top = `${this.position.y}px`;
+        this.warningElement.style.left = `${this.position.x}px`;
     }
     addPulseAnimation() {
         const keyframes = `
@@ -2379,15 +2386,121 @@ class HealthWarning {
     hide() {
         if (!this.warningElement)
             return;
+        // Ne pas masquer si en mode placement
+        if (this.isDraggable)
+            return;
         this.warningElement.style.display = "none";
     }
     update(health) {
+        // Si le mode placement est actif (isDraggable), on ne fait rien pour maintenir l'affichage
+        if (this.isDraggable) {
+            return;
+        }
+        // Sinon, comportement normal
         if (health <= 30 && health > 0) {
             this.show(health);
         }
         else {
             this.hide();
         }
+    }
+    setupDragAndDrop() {
+        // Nous n'avons plus besoin d'écouteurs pour RSHIFT car nous utilisons maintenant
+        // l'état du menu secondaire pour déterminer quand activer/désactiver le mode placement
+        // Écouteurs d'événements de souris pour le glisser-déposer
+        document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    }
+    enableDragging() {
+        if (!this.warningElement)
+            return;
+        this.isDraggable = true;
+        this.warningElement.style.pointerEvents = 'auto';
+        this.warningElement.style.cursor = 'move';
+        this.warningElement.style.borderColor = '#00ff00'; // Feedback visuel quand déplaçable
+        // Force l'affichage de l'avertissement LOW HP, peu importe la santé actuelle
+        this.warningElement.style.display = 'block';
+        const span = this.warningElement.querySelector("span");
+        if (span) {
+            span.textContent = 'LOW HP: Mode placement';
+        }
+        // Log feedback for the user
+        console.log('Mode placement LOW HP activé');
+    }
+    disableDragging() {
+        if (!this.warningElement)
+            return;
+        this.isDraggable = false;
+        this.isDragging = false;
+        this.warningElement.style.pointerEvents = 'none';
+        this.warningElement.style.cursor = 'default';
+        this.warningElement.style.borderColor = '#ff0000'; // Retour à la couleur normale
+        // Remet le texte original si l'avertissement est visible
+        if (this.warningElement.style.display === 'block') {
+            const span = this.warningElement.querySelector("span");
+            if (span) {
+                span.textContent = 'LOW HP';
+            }
+        }
+        // Récupérer la santé actuelle à partir de l'élément UI de santé du jeu
+        const healthBars = document.querySelectorAll("#ui-health-container");
+        if (healthBars.length > 0) {
+            const bar = healthBars[0].querySelector("#ui-health-actual");
+            if (bar) {
+                const currentHealth = Math.round(parseFloat(bar.style.width));
+                // Forcer une mise à jour immédiate en fonction de la santé actuelle
+                this.update(currentHealth);
+            }
+        }
+        console.log('Position du LOW HP mise à jour');
+    }
+    handleMouseDown(event) {
+        if (!this.isDraggable || !this.warningElement)
+            return;
+        // Check if click was on the warning element
+        if (this.warningElement.contains(event.target)) {
+            this.isDragging = true;
+            // Calculate offset from mouse position to element corner
+            const rect = this.warningElement.getBoundingClientRect();
+            this.dragOffset = {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+            // Prevent text selection during drag
+            event.preventDefault();
+        }
+    }
+    handleMouseMove(event) {
+        if (!this.isDragging || !this.warningElement)
+            return;
+        // Calculate new position
+        const newX = event.clientX - this.dragOffset.x;
+        const newY = event.clientY - this.dragOffset.y;
+        // Update element position
+        this.warningElement.style.left = `${newX}px`;
+        this.warningElement.style.top = `${newY}px`;
+        // Store position
+        this.position = { x: newX, y: newY };
+    }
+    handleMouseUp() {
+        this.isDragging = false;
+    }
+    startMenuCheckInterval() {
+        // Créer un intervalle qui vérifie régulièrement l'état du menu RSHIFT
+        this.menuCheckInterval = window.setInterval(() => {
+            var _a;
+            // Vérifier si le menu secondaire est ouvert
+            const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.isOpen) || false;
+            // Si le menu est ouvert et que nous ne sommes pas en mode placement, activer le mode placement
+            if (isMenuOpen && !this.isDraggable) {
+                this.enableDragging();
+            }
+            // Si le menu est fermé et que nous sommes en mode placement, désactiver le mode placement
+            else if (!isMenuOpen && this.isDraggable) {
+                this.disableDragging();
+            }
+        }, 100); // Vérifier toutes les 100ms
     }
 }
 
@@ -3224,6 +3337,7 @@ class KxsLegacyClientSecondaryMenu {
         this.dragOffset = { x: 0, y: 0 };
         this.sections = [];
         this.menu = document.createElement("div");
+        this.isOpen = false;
         this.boundShiftListener = this.handleShiftPress.bind(this);
         this.boundMouseDownListener = this.handleMouseDown.bind(this);
         this.boundMouseMoveListener = this.handleMouseMove.bind(this);
@@ -3659,6 +3773,8 @@ class KxsLegacyClientSecondaryMenu {
     }
     toggleMenuVisibility() {
         this.isClientMenuVisible = !this.isClientMenuVisible;
+        // Mettre à jour la propriété publique en même temps
+        this.isOpen = this.isClientMenuVisible;
         if (this.kxsClient.isNotifyingForToggleMenu) {
             this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
         }
@@ -3742,6 +3858,7 @@ class KxsClientSecondaryMenu {
         this.sections = [];
         this.allOptions = [];
         this.activeCategory = "ALL";
+        this.isOpen = false;
         this.menu = document.createElement("div");
         this.initMenu();
         this.addShiftListener();
@@ -4392,6 +4509,8 @@ class KxsClientSecondaryMenu {
     }
     toggleMenuVisibility() {
         this.isClientMenuVisible = !this.isClientMenuVisible;
+        // Mettre à jour la propriété publique en même temps
+        this.isOpen = this.isClientMenuVisible;
         if (this.kxsClient.isNotifyingForToggleMenu) {
             this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
         }
