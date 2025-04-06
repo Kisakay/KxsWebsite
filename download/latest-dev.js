@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.6
+// @version      1.2.7
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.6","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.7","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -3295,6 +3295,15 @@ class KxsLegacyClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
+            label: "Message Open/Close RSHIFT Menu",
+            value: this.kxsClient.isNotifyingForToggleMenu,
+            type: "toggle",
+            onChange: (value) => {
+                this.kxsClient.isNotifyingForToggleMenu = !this.kxsClient.isNotifyingForToggleMenu;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(HUD, {
             label: "Show Ping",
             value: this.kxsClient.isPingVisible,
             type: "toggle",
@@ -3650,7 +3659,9 @@ class KxsLegacyClientSecondaryMenu {
     }
     toggleMenuVisibility() {
         this.isClientMenuVisible = !this.isClientMenuVisible;
-        this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
+        if (this.kxsClient.isNotifyingForToggleMenu) {
+            this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
+        }
         this.menu.style.display = this.isClientMenuVisible ? "block" : "none";
     }
     destroy() {
@@ -3971,6 +3982,17 @@ class KxsClientSecondaryMenu {
             category: "HUD",
             onChange: (value) => {
                 this.kxsClient.isWinSoundEnabled = !this.kxsClient.isWinSoundEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(HUD, {
+            label: "Message Open/Close RSHIFT Menu",
+            value: this.kxsClient.isNotifyingForToggleMenu,
+            type: "toggle",
+            icon: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g id="Complete"> <g id="info-circle"> <g> <circle cx="12" cy="12" data-name="--Circle" fill="none" id="_--Circle" r="10" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle> <line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="12" x2="12" y1="12" y2="16"></line> <line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="12" x2="12" y1="8" y2="8"></line> </g> </g> </g> </g></svg>',
+            category: "HUD",
+            onChange: (value) => {
+                this.kxsClient.isNotifyingForToggleMenu = !this.kxsClient.isNotifyingForToggleMenu;
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -4370,7 +4392,9 @@ class KxsClientSecondaryMenu {
     }
     toggleMenuVisibility() {
         this.isClientMenuVisible = !this.isClientMenuVisible;
-        this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
+        if (this.kxsClient.isNotifyingForToggleMenu) {
+            this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
+        }
         this.menu.style.display = this.isClientMenuVisible ? "block" : "none";
         // If opening the menu, make sure to display options
         if (this.isClientMenuVisible) {
@@ -4463,6 +4487,7 @@ class KxsClient {
         this.counters = {};
         this.all_friends = '';
         this.isMainMenuCleaned = false;
+        this.isNotifyingForToggleMenu = true;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -4535,7 +4560,8 @@ class KxsClient {
             isKillFeedBlint: this.isKillFeedBlint,
             all_friends: this.all_friends,
             isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled,
-            isMainMenuCleaned: this.isMainMenuCleaned
+            isMainMenuCleaned: this.isMainMenuCleaned,
+            isNotifyingForToggleMenu: this.isNotifyingForToggleMenu
         }));
     }
     ;
@@ -4899,7 +4925,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -4919,6 +4945,7 @@ class KxsClient {
             this.all_friends = (_o = savedSettings.all_friends) !== null && _o !== void 0 ? _o : this.all_friends;
             this.isSpotifyPlayerEnabled = (_p = savedSettings.isSpotifyPlayerEnabled) !== null && _p !== void 0 ? _p : this.isSpotifyPlayerEnabled;
             this.isMainMenuCleaned = (_q = savedSettings.isMainMenuCleaned) !== null && _q !== void 0 ? _q : this.isMainMenuCleaned;
+            this.isNotifyingForToggleMenu = (_r = savedSettings.isNotifyingForToggleMenu) !== null && _r !== void 0 ? _r : this.isNotifyingForToggleMenu;
         }
         this.updateKillsVisibility();
         this.updateFpsVisibility();
