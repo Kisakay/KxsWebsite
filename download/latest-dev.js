@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.11
+// @version      1.2.12
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.11","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.12","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -4041,11 +4041,23 @@ class KxsClientSecondaryMenu {
                     e.stopPropagation();
                 });
             });
-            // Assurer que le champ garde le focus
-            searchInput.addEventListener('blur', () => {
-                // Retarder légèrement pour permettre d'autres interactions
+            // Éviter que la barre de recherche ne reprenne automatiquement le focus
+            // lorsque l'utilisateur interagit avec un autre champ de texte
+            searchInput.addEventListener('blur', (e) => {
+                // Ne pas reprendre le focus si l'utilisateur clique sur un autre input
+                const newFocusElement = e.relatedTarget;
+                if (newFocusElement && (newFocusElement.tagName === 'INPUT' || newFocusElement.tagName === 'TEXTAREA')) {
+                    // L'utilisateur a cliqué sur un autre champ de texte, ne pas reprendre le focus
+                    return;
+                }
+                // Pour les autres cas, seulement si aucun autre élément n'a le focus
                 setTimeout(() => {
-                    if (this.isClientMenuVisible) {
+                    const activeElement = document.activeElement;
+                    if (this.isClientMenuVisible &&
+                        activeElement &&
+                        activeElement !== searchInput &&
+                        activeElement.tagName !== 'INPUT' &&
+                        activeElement.tagName !== 'TEXTAREA') {
                         searchInput.focus();
                     }
                 }, 100);
@@ -5194,17 +5206,46 @@ class KxsClient {
         this.saveFpsUncappedToLocalStorage();
     }
     createSimpleSpotifyPlayer() {
+        // Ajouter une règle CSS globale pour supprimer toutes les bordures et améliorer le redimensionnement
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+			#spotify-player-container, 
+			#spotify-player-container *, 
+			#spotify-player-iframe, 
+			.spotify-resize-handle {
+				border: none !important;
+				outline: none !important;
+				box-sizing: content-box !important;
+			}
+			#spotify-player-iframe {
+				padding-bottom: 0 !important;
+				margin-bottom: 0 !important;
+			}
+			.spotify-resize-handle {
+				touch-action: none;
+				backface-visibility: hidden;
+			}
+			.spotify-resizing {
+				user-select: none !important;
+				pointer-events: none !important;
+			}
+			.spotify-resizing .spotify-resize-handle {
+				pointer-events: all !important;
+			}
+		`;
+        document.head.appendChild(styleElement);
         // Main container
         const container = document.createElement('div');
         container.id = 'spotify-player-container';
+        // Récupérer la position sauvegardée si disponible
+        const savedLeft = localStorage.getItem('kxsSpotifyPlayerLeft');
+        const savedTop = localStorage.getItem('kxsSpotifyPlayerTop');
         Object.assign(container.style, {
             position: 'fixed',
-            bottom: '20px',
-            right: '20px',
             width: '320px',
             backgroundColor: '#121212',
-            borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+            borderRadius: '0px',
+            boxShadow: 'none',
             overflow: 'hidden',
             zIndex: '10000',
             fontFamily: 'Montserrat, Arial, sans-serif',
@@ -5212,6 +5253,17 @@ class KxsClient {
             transform: 'translateY(0)',
             opacity: '1'
         });
+        // Appliquer la position sauvegardée ou la position par défaut
+        if (savedLeft && savedTop) {
+            container.style.left = savedLeft;
+            container.style.top = savedTop;
+            container.style.right = 'auto';
+            container.style.bottom = 'auto';
+        }
+        else {
+            container.style.right = '20px';
+            container.style.bottom = '20px';
+        }
         // Player header
         const header = document.createElement('div');
         Object.assign(header.style, {
@@ -5221,7 +5273,7 @@ class KxsClient {
             padding: '12px 16px',
             backgroundColor: '#070707',
             color: 'white',
-            borderBottom: '1px solid #282828',
+            borderBottom: 'none',
             position: 'relative' // For absolute positioning of the button
         });
         // Spotify logo
@@ -5304,12 +5356,19 @@ class KxsClient {
         // Spotify iframe
         const iframe = document.createElement('iframe');
         iframe.id = 'spotify-player-iframe';
-        iframe.src = 'https://open.spotify.com/embed/playlist/37i9dQZEVXcJZyENOWUFo7';
+        iframe.src = 'https://open.spotify.com/embed/playlist/37i9dQZEVXcJZyENOWUFo7?utm_source=generator&theme=1';
         iframe.width = '100%';
-        iframe.height = '80px';
+        iframe.height = '152px';
         iframe.frameBorder = '0';
-        iframe.allow = 'encrypted-media';
+        iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
         iframe.style.border = 'none';
+        iframe.style.margin = '0';
+        iframe.style.padding = '0';
+        iframe.style.boxSizing = 'content-box';
+        iframe.style.display = 'block'; // Forcer display block pour éviter les problèmes d'espacement
+        iframe.setAttribute('frameBorder', '0');
+        iframe.setAttribute('allowtransparency', 'true');
+        iframe.setAttribute('scrolling', 'no'); // Désactiver le défilement interne
         content.appendChild(iframe);
         // Playlist change button integrated in the header
         const changePlaylistContainer = document.createElement('div');
@@ -5343,7 +5402,7 @@ class KxsClient {
         changePlaylistBtn.addEventListener('click', () => {
             const id = prompt('Enter the Spotify playlist ID:', '37i9dQZEVXcJZyENOWUFo7');
             if (id) {
-                iframe.src = `https://open.spotify.com/embed/playlist/${id}`;
+                iframe.src = `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
                 localStorage.setItem('kxsSpotifyPlaylist', id);
                 // Simulate an album cover based on the playlist ID
                 albumArt.style.backgroundImage = `url('https://i.scdn.co/image/ab67706f00000002${id.substring(0, 16)}')`;
@@ -5353,7 +5412,7 @@ class KxsClient {
         // Load saved playlist
         const savedPlaylist = localStorage.getItem('kxsSpotifyPlaylist');
         if (savedPlaylist) {
-            iframe.src = `https://open.spotify.com/embed/playlist/${savedPlaylist}`;
+            iframe.src = `https://open.spotify.com/embed/playlist/${savedPlaylist}?utm_source=generator&theme=0`;
             // Simulate an album cover based on the playlist ID
             albumArt.style.backgroundImage = `url('https://i.scdn.co/image/ab67706f00000002${savedPlaylist.substring(0, 16)}')`;
         }
@@ -5366,6 +5425,107 @@ class KxsClient {
         changePlaylistBtn.title = "Change playlist";
         // Add to document
         document.body.appendChild(container);
+        // Ajouter un bord redimensionnable au lecteur
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'spotify-resize-handle';
+        Object.assign(resizeHandle.style, {
+            position: 'absolute',
+            bottom: '0',
+            right: '0',
+            width: '30px',
+            height: '30px',
+            cursor: 'nwse-resize',
+            background: 'rgba(255, 255, 255, 0.1)',
+            zIndex: '10001',
+            pointerEvents: 'all'
+        });
+        // Ajouter un indicateur visuel de redimensionnement plus visible
+        resizeHandle.innerHTML = `
+			<svg width="14" height="14" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; bottom: 4px; right: 4px;">
+				<path d="M9 9L5 9L9 5L9 9Z" fill="white"/>
+				<path d="M5 9L1 9L9 1L9 5L5 9Z" fill="white"/>
+				<path d="M1 9L1 5L5 1L9 1L1 9Z" fill="white"/>
+				<path d="M1 5L1 1L5 1L1 5Z" fill="white"/>
+			</svg>
+		`;
+        // Logique de redimensionnement
+        let isResizing = false;
+        let startX = 0, startY = 0;
+        let startWidth = 0, startHeight = 0;
+        resizeHandle.addEventListener('mousedown', (e) => {
+            // Arrêter la propagation pour éviter que d'autres éléments interceptent l'événement
+            e.stopPropagation();
+            e.preventDefault();
+            isResizing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = container.offsetWidth;
+            startHeight = container.offsetHeight;
+            // Ajouter une classe spéciale pendant le redimensionnement
+            container.classList.add('spotify-resizing');
+            // Appliquer le style pendant le redimensionnement
+            container.style.transition = 'none';
+            container.style.border = 'none';
+            container.style.outline = 'none';
+            iframe.style.border = 'none';
+            iframe.style.outline = 'none';
+            document.body.style.userSelect = 'none';
+            // Ajouter un overlay de redimensionnement temporairement
+            const resizeOverlay = document.createElement('div');
+            resizeOverlay.id = 'spotify-resize-overlay';
+            resizeOverlay.style.position = 'fixed';
+            resizeOverlay.style.top = '0';
+            resizeOverlay.style.left = '0';
+            resizeOverlay.style.width = '100%';
+            resizeOverlay.style.height = '100%';
+            resizeOverlay.style.zIndex = '9999';
+            resizeOverlay.style.cursor = 'nwse-resize';
+            resizeOverlay.style.background = 'transparent';
+            document.body.appendChild(resizeOverlay);
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing)
+                return;
+            // Calculer les nouvelles dimensions
+            const newWidth = startWidth + (e.clientX - startX);
+            const newHeight = startHeight + (e.clientY - startY);
+            // Limiter les dimensions minimales
+            const minWidth = 320; // Largeur minimale
+            const minHeight = 200; // Hauteur minimale
+            // Appliquer les nouvelles dimensions si elles sont supérieures aux minimums
+            if (newWidth >= minWidth) {
+                container.style.width = newWidth + 'px';
+                iframe.style.width = '100%';
+            }
+            if (newHeight >= minHeight) {
+                container.style.height = newHeight + 'px';
+                iframe.style.height = (newHeight - 50) + 'px'; // Ajuster la hauteur de l'iframe en conséquence
+            }
+            // Empêcher la sélection pendant le drag
+            e.preventDefault();
+        });
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                container.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                container.style.border = 'none';
+                container.style.outline = 'none';
+                iframe.style.border = 'none';
+                iframe.style.outline = 'none';
+                document.body.style.userSelect = '';
+                // Supprimer l'overlay de redimensionnement
+                const overlay = document.getElementById('spotify-resize-overlay');
+                if (overlay)
+                    overlay.remove();
+                // Supprimer la classe de redimensionnement
+                container.classList.remove('spotify-resizing');
+                // Sauvegarder les dimensions pour la prochaine fois
+                localStorage.setItem('kxsSpotifyPlayerWidth', container.style.width);
+                localStorage.setItem('kxsSpotifyPlayerHeight', container.style.height);
+            }
+        });
+        // Ajouter la poignée de redimensionnement au conteneur
+        container.appendChild(resizeHandle);
         // Player states
         let isMinimized = false;
         // Events
@@ -5413,8 +5573,13 @@ class KxsClient {
             }
         });
         document.addEventListener('mouseup', () => {
-            isDragging = false;
-            container.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            if (isDragging) {
+                isDragging = false;
+                container.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                // Sauvegarder la position pour la prochaine fois
+                localStorage.setItem('kxsSpotifyPlayerLeft', container.style.left);
+                localStorage.setItem('kxsSpotifyPlayerTop', container.style.top);
+            }
         });
         // Button to show the player again
         const showButton = document.createElement('button');
