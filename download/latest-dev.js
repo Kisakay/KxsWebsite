@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.13
+// @version      1.2.14
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -724,7 +724,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileNam
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.13","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.14","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
 
 /***/ })
 
@@ -2114,8 +2114,30 @@ class KxsClientHUD {
             const observer = new MutationObserver(() => {
                 var _a, _b, _c;
                 const weaponName = ((_b = (_a = weaponNameElement.textContent) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.toUpperCase()) || '';
-                const colorKey = (((_c = Object.entries(WEAPON_COLOR_MAPPING)
-                    .find(([_, weapons]) => weapons.includes(weaponName))) === null || _c === void 0 ? void 0 : _c[0]) || 'DEFAULT');
+                let colorKey = 'DEFAULT';
+                // Do a hack for "VECTOR" gun (because can be 2 weapons: yellow or purple)
+                if (weaponName === "VECTOR") {
+                    // Get the weapon container and image element
+                    const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
+                    const weaponImage = weaponContainer === null || weaponContainer === void 0 ? void 0 : weaponContainer.querySelector(".ui-weapon-image");
+                    if (weaponImage && weaponImage.src) {
+                        // Check the image source to determine which Vector it is
+                        if (weaponImage.src.includes("-acp") || weaponImage.src.includes("45")) {
+                            colorKey = 'PURPLE';
+                        }
+                        else {
+                            colorKey = 'ORANGE';
+                        }
+                    }
+                    else {
+                        // Default to orange if we can't determine the type
+                        colorKey = 'ORANGE';
+                    }
+                }
+                else {
+                    colorKey = (((_c = Object.entries(WEAPON_COLOR_MAPPING)
+                        .find(([_, weapons]) => weapons.includes(weaponName))) === null || _c === void 0 ? void 0 : _c[0]) || 'DEFAULT');
+                }
                 if (weaponContainer && weaponContainer.id !== "ui-weapon-id-4") {
                     weaponContainer.style.border = `3px solid ${WEAPON_COLORS[colorKey]}`;
                 }
