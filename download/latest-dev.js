@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.16
+// @version      1.2.17
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.16","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.17","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -1698,6 +1698,13 @@ class KxsClientHUD {
     .btn-game-container {
         flex: 1 !important;
     }
+
+	#btn-touch-styles,
+	#btn-game-aim-line {
+    	display: none !important;
+    	pointer-events: none !important;
+    	visibility: hidden !important;
+	}
     `;
         const addCustomStyles = () => {
             const styleElement = document.createElement('style');
@@ -1716,9 +1723,24 @@ class KxsClientHUD {
             header.appendChild(title);
             menuContainer.insertBefore(header, menuContainer.firstChild);
         };
+        const disableUnwantedButtons = () => {
+            const touchStyles = document.getElementById('btn-touch-styles');
+            const aimLine = document.getElementById('btn-game-aim-line');
+            if (touchStyles) {
+                touchStyles.style.display = 'none';
+                touchStyles.style.pointerEvents = 'none';
+                touchStyles.style.visibility = 'hidden';
+            }
+            if (aimLine) {
+                aimLine.style.display = 'none';
+                aimLine.style.pointerEvents = 'none';
+                aimLine.style.visibility = 'hidden';
+            }
+        };
         if (document.querySelector('#ui-game-menu')) {
             addCustomStyles();
             addKxsHeader();
+            disableUnwantedButtons();
         }
     }
     handleMessage(element) {
