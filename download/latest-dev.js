@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.15
+// @version      1.2.16
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.15","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.16","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -1275,15 +1275,26 @@ class PingTest {
         this.hasPing = false;
         this.ptcDataBuf = new ArrayBuffer(1);
         this.waitForServerSelectElements();
+        this.startKeepAlive();
+    }
+    startKeepAlive() {
+        setInterval(() => {
+            var _a;
+            if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
+                this.ws.send(this.ptcDataBuf);
+            }
+        }, 5000); // envoie toutes les 5s
     }
     waitForServerSelectElements() {
         const checkInterval = setInterval(() => {
             const teamSelect = document.getElementById("team-server-select");
             const mainSelect = document.getElementById("server-select-main");
-            if (teamSelect || mainSelect) {
+            const selectedValue = (teamSelect === null || teamSelect === void 0 ? void 0 : teamSelect.value) || (mainSelect === null || mainSelect === void 0 ? void 0 : mainSelect.value);
+            if ((teamSelect || mainSelect) && selectedValue) {
                 clearInterval(checkInterval);
                 this.setServerFromDOM();
                 this.attachRegionChangeListener();
+                this.start(); // ← Démarrage auto ici
             }
         }, 100); // Vérifie toutes les 100ms
     }
@@ -1291,6 +1302,7 @@ class PingTest {
         const { region, url } = this.detectSelectedServer();
         this.region = region;
         this.url = `wss://${url}/ptc`;
+        this.start();
     }
     detectSelectedServer() {
         const currentUrl = window.location.href;
@@ -1339,12 +1351,19 @@ class PingTest {
             this.retryCount = 0;
             this.isConnecting = false;
             this.sendPing();
+            setTimeout(() => {
+                var _a;
+                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
+                    console.warn("WebSocket bloquée, tentative de reconnexion");
+                    this.restart();
+                }
+            }, 3000); // 3s pour sécuriser
         };
         ws.onmessage = () => {
             this.hasPing = true;
             const elapsed = (Date.now() - this.sendTime) / 1e3;
             this.ping = Math.round(elapsed * 1000);
-            setTimeout(() => this.sendPing(), 250);
+            setTimeout(() => this.sendPing(), 1000);
         };
         ws.onerror = () => {
             var _a;
@@ -1372,6 +1391,10 @@ class PingTest {
     }
     stop() {
         if (this.ws) {
+            this.ws.onclose = null;
+            this.ws.onerror = null;
+            this.ws.onmessage = null;
+            this.ws.onopen = null;
             this.ws.close();
             this.ws = null;
         }
@@ -1382,12 +1405,11 @@ class PingTest {
     restart() {
         this.stop();
         this.setServerFromDOM();
-        this.start();
     }
     getPingResult() {
         return {
             region: this.region,
-            ping: this.hasPing ? this.ping : null,
+            ping: this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing ? this.ping : null,
         };
     }
 }
@@ -1414,7 +1436,6 @@ class KxsClientHUD {
         if (this.kxsClient.isKillsVisible) {
             this.initCounter("kills", "Kills", "0");
         }
-        this.pingManager.start();
         this.setupWeaponBorderHandler();
         this.startUpdateLoop();
         this.escapeMenu();
