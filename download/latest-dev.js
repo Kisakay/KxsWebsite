@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.14
+// @version      1.2.15
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -28,6 +28,380 @@
 ;
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
+
+/***/ 123:
+/***/ ((module) => {
+
+const numeric = /^[0-9]+$/
+const compareIdentifiers = (a, b) => {
+  const anum = numeric.test(a)
+  const bnum = numeric.test(b)
+
+  if (anum && bnum) {
+    a = +a
+    b = +b
+  }
+
+  return a === b ? 0
+    : (anum && !bnum) ? -1
+    : (bnum && !anum) ? 1
+    : a < b ? -1
+    : 1
+}
+
+const rcompareIdentifiers = (a, b) => compareIdentifiers(b, a)
+
+module.exports = {
+  compareIdentifiers,
+  rcompareIdentifiers,
+}
+
+
+/***/ }),
+
+/***/ 272:
+/***/ ((module) => {
+
+const debug = (
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_DEBUG &&
+  /\bsemver\b/i.test(process.env.NODE_DEBUG)
+) ? (...args) => console.error('SEMVER', ...args)
+  : () => {}
+
+module.exports = debug
+
+
+/***/ }),
+
+/***/ 330:
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.15","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+
+/***/ }),
+
+/***/ 560:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const SemVer = __webpack_require__(908)
+const compare = (a, b, loose) =>
+  new SemVer(a, loose).compare(new SemVer(b, loose))
+
+module.exports = compare
+
+
+/***/ }),
+
+/***/ 580:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const compare = __webpack_require__(560)
+const gt = (a, b, loose) => compare(a, b, loose) > 0
+module.exports = gt
+
+
+/***/ }),
+
+/***/ 587:
+/***/ ((module) => {
+
+// parse out just the options we care about
+const looseOption = Object.freeze({ loose: true })
+const emptyOpts = Object.freeze({ })
+const parseOptions = options => {
+  if (!options) {
+    return emptyOpts
+  }
+
+  if (typeof options !== 'object') {
+    return looseOption
+  }
+
+  return options
+}
+module.exports = parseOptions
+
+
+/***/ }),
+
+/***/ 718:
+/***/ ((module, exports, __webpack_require__) => {
+
+const {
+  MAX_SAFE_COMPONENT_LENGTH,
+  MAX_SAFE_BUILD_LENGTH,
+  MAX_LENGTH,
+} = __webpack_require__(874)
+const debug = __webpack_require__(272)
+exports = module.exports = {}
+
+// The actual regexps go on exports.re
+const re = exports.re = []
+const safeRe = exports.safeRe = []
+const src = exports.src = []
+const safeSrc = exports.safeSrc = []
+const t = exports.t = {}
+let R = 0
+
+const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
+
+// Replace some greedy regex tokens to prevent regex dos issues. These regex are
+// used internally via the safeRe object since all inputs in this library get
+// normalized first to trim and collapse all extra whitespace. The original
+// regexes are exported for userland consumption and lower level usage. A
+// future breaking change could export the safer regex only with a note that
+// all input should have extra whitespace removed.
+const safeRegexReplacements = [
+  ['\\s', 1],
+  ['\\d', MAX_LENGTH],
+  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
+]
+
+const makeSafeRegex = (value) => {
+  for (const [token, max] of safeRegexReplacements) {
+    value = value
+      .split(`${token}*`).join(`${token}{0,${max}}`)
+      .split(`${token}+`).join(`${token}{1,${max}}`)
+  }
+  return value
+}
+
+const createToken = (name, value, isGlobal) => {
+  const safe = makeSafeRegex(value)
+  const index = R++
+  debug(name, index, value)
+  t[name] = index
+  src[index] = value
+  safeSrc[index] = safe
+  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
+  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
+}
+
+// The following Regular Expressions can be used for tokenizing,
+// validating, and parsing SemVer version strings.
+
+// ## Numeric Identifier
+// A single `0`, or a non-zero digit followed by zero or more digits.
+
+createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
+createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
+
+// ## Non-numeric Identifier
+// Zero or more digits, followed by a letter or hyphen, and then zero or
+// more letters, digits, or hyphens.
+
+createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
+
+// ## Main Version
+// Three dot-separated numeric identifiers.
+
+createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` +
+                   `(${src[t.NUMERICIDENTIFIER]})\\.` +
+                   `(${src[t.NUMERICIDENTIFIER]})`)
+
+createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
+                        `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
+                        `(${src[t.NUMERICIDENTIFIERLOOSE]})`)
+
+// ## Pre-release Version Identifier
+// A numeric identifier, or a non-numeric identifier.
+
+createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]
+}|${src[t.NONNUMERICIDENTIFIER]})`)
+
+createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]
+}|${src[t.NONNUMERICIDENTIFIER]})`)
+
+// ## Pre-release Version
+// Hyphen, followed by one or more dot-separated pre-release version
+// identifiers.
+
+createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]
+}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`)
+
+createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
+}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`)
+
+// ## Build Metadata Identifier
+// Any combination of digits, letters, or hyphens.
+
+createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
+
+// ## Build Metadata
+// Plus sign, followed by one or more period-separated build metadata
+// identifiers.
+
+createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]
+}(?:\\.${src[t.BUILDIDENTIFIER]})*))`)
+
+// ## Full Version String
+// A main version, followed optionally by a pre-release version and
+// build metadata.
+
+// Note that the only major, minor, patch, and pre-release sections of
+// the version string are capturing groups.  The build metadata is not a
+// capturing group, because it should not ever be used in version
+// comparison.
+
+createToken('FULLPLAIN', `v?${src[t.MAINVERSION]
+}${src[t.PRERELEASE]}?${
+  src[t.BUILD]}?`)
+
+createToken('FULL', `^${src[t.FULLPLAIN]}$`)
+
+// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
+// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
+// common in the npm registry.
+createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]
+}${src[t.PRERELEASELOOSE]}?${
+  src[t.BUILD]}?`)
+
+createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
+
+createToken('GTLT', '((?:<|>)?=?)')
+
+// Something like "2.*" or "1.2.x".
+// Note that "x.x" is a valid xRange identifer, meaning "any version"
+// Only the first item is strictly required.
+createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
+createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
+
+createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:${src[t.PRERELEASE]})?${
+                     src[t.BUILD]}?` +
+                   `)?)?`)
+
+createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:${src[t.PRERELEASELOOSE]})?${
+                          src[t.BUILD]}?` +
+                        `)?)?`)
+
+createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`)
+createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`)
+
+// Coercion.
+// Extract anything that could conceivably be a part of a valid semver
+createToken('COERCEPLAIN', `${'(^|[^\\d])' +
+              '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` +
+              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
+              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`)
+createToken('COERCE', `${src[t.COERCEPLAIN]}(?:$|[^\\d])`)
+createToken('COERCEFULL', src[t.COERCEPLAIN] +
+              `(?:${src[t.PRERELEASE]})?` +
+              `(?:${src[t.BUILD]})?` +
+              `(?:$|[^\\d])`)
+createToken('COERCERTL', src[t.COERCE], true)
+createToken('COERCERTLFULL', src[t.COERCEFULL], true)
+
+// Tilde ranges.
+// Meaning is "reasonably at or greater than"
+createToken('LONETILDE', '(?:~>?)')
+
+createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true)
+exports.tildeTrimReplace = '$1~'
+
+createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`)
+createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`)
+
+// Caret ranges.
+// Meaning is "at least and backwards compatible with"
+createToken('LONECARET', '(?:\\^)')
+
+createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true)
+exports.caretTrimReplace = '$1^'
+
+createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`)
+createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`)
+
+// A simple gt/lt/eq thing, or just "" to indicate "any version"
+createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`)
+createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`)
+
+// An expression to strip any whitespace between the gtlt and the thing
+// it modifies, so that `> 1.2.3` ==> `>1.2.3`
+createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]
+}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true)
+exports.comparatorTrimReplace = '$1$2$3'
+
+// Something like `1.2.3 - 1.2.4`
+// Note that these all use the loose form, because they'll be
+// checked against either the strict or loose comparator form
+// later.
+createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` +
+                   `\\s+-\\s+` +
+                   `(${src[t.XRANGEPLAIN]})` +
+                   `\\s*$`)
+
+createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` +
+                        `\\s+-\\s+` +
+                        `(${src[t.XRANGEPLAINLOOSE]})` +
+                        `\\s*$`)
+
+// Star ranges basically just allow anything at all.
+createToken('STAR', '(<|>)?=?\\s*\\*')
+// >=0.0.0 is like a star
+createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
+createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
+
+
+/***/ }),
+
+/***/ 874:
+/***/ ((module) => {
+
+// Note: this is the semver.org version of the spec that it implements
+// Not necessarily the package version of this code.
+const SEMVER_SPEC_VERSION = '2.0.0'
+
+const MAX_LENGTH = 256
+const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
+/* istanbul ignore next */ 9007199254740991
+
+// Max safe segment length for coercion.
+const MAX_SAFE_COMPONENT_LENGTH = 16
+
+// Max safe length for a build identifier. The max length minus 6 characters for
+// the shortest version with a build 0.0.0+BUILD.
+const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6
+
+const RELEASE_TYPES = [
+  'major',
+  'premajor',
+  'minor',
+  'preminor',
+  'patch',
+  'prepatch',
+  'prerelease',
+]
+
+module.exports = {
+  MAX_LENGTH,
+  MAX_SAFE_COMPONENT_LENGTH,
+  MAX_SAFE_BUILD_LENGTH,
+  MAX_SAFE_INTEGER,
+  RELEASE_TYPES,
+  SEMVER_SPEC_VERSION,
+  FLAG_INCLUDE_PRERELEASE: 0b001,
+  FLAG_LOOSE: 0b010,
+}
+
+
+/***/ }),
+
+/***/ 891:
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+
+/***/ }),
 
 /***/ 908:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
@@ -352,380 +726,6 @@ class SemVer {
 module.exports = SemVer
 
 
-/***/ }),
-
-/***/ 560:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const SemVer = __webpack_require__(908)
-const compare = (a, b, loose) =>
-  new SemVer(a, loose).compare(new SemVer(b, loose))
-
-module.exports = compare
-
-
-/***/ }),
-
-/***/ 580:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-const compare = __webpack_require__(560)
-const gt = (a, b, loose) => compare(a, b, loose) > 0
-module.exports = gt
-
-
-/***/ }),
-
-/***/ 874:
-/***/ ((module) => {
-
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
-const SEMVER_SPEC_VERSION = '2.0.0'
-
-const MAX_LENGTH = 256
-const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
-/* istanbul ignore next */ 9007199254740991
-
-// Max safe segment length for coercion.
-const MAX_SAFE_COMPONENT_LENGTH = 16
-
-// Max safe length for a build identifier. The max length minus 6 characters for
-// the shortest version with a build 0.0.0+BUILD.
-const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6
-
-const RELEASE_TYPES = [
-  'major',
-  'premajor',
-  'minor',
-  'preminor',
-  'patch',
-  'prepatch',
-  'prerelease',
-]
-
-module.exports = {
-  MAX_LENGTH,
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
-  MAX_SAFE_INTEGER,
-  RELEASE_TYPES,
-  SEMVER_SPEC_VERSION,
-  FLAG_INCLUDE_PRERELEASE: 0b001,
-  FLAG_LOOSE: 0b010,
-}
-
-
-/***/ }),
-
-/***/ 272:
-/***/ ((module) => {
-
-const debug = (
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_DEBUG &&
-  /\bsemver\b/i.test(process.env.NODE_DEBUG)
-) ? (...args) => console.error('SEMVER', ...args)
-  : () => {}
-
-module.exports = debug
-
-
-/***/ }),
-
-/***/ 123:
-/***/ ((module) => {
-
-const numeric = /^[0-9]+$/
-const compareIdentifiers = (a, b) => {
-  const anum = numeric.test(a)
-  const bnum = numeric.test(b)
-
-  if (anum && bnum) {
-    a = +a
-    b = +b
-  }
-
-  return a === b ? 0
-    : (anum && !bnum) ? -1
-    : (bnum && !anum) ? 1
-    : a < b ? -1
-    : 1
-}
-
-const rcompareIdentifiers = (a, b) => compareIdentifiers(b, a)
-
-module.exports = {
-  compareIdentifiers,
-  rcompareIdentifiers,
-}
-
-
-/***/ }),
-
-/***/ 587:
-/***/ ((module) => {
-
-// parse out just the options we care about
-const looseOption = Object.freeze({ loose: true })
-const emptyOpts = Object.freeze({ })
-const parseOptions = options => {
-  if (!options) {
-    return emptyOpts
-  }
-
-  if (typeof options !== 'object') {
-    return looseOption
-  }
-
-  return options
-}
-module.exports = parseOptions
-
-
-/***/ }),
-
-/***/ 718:
-/***/ ((module, exports, __webpack_require__) => {
-
-const {
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
-  MAX_LENGTH,
-} = __webpack_require__(874)
-const debug = __webpack_require__(272)
-exports = module.exports = {}
-
-// The actual regexps go on exports.re
-const re = exports.re = []
-const safeRe = exports.safeRe = []
-const src = exports.src = []
-const safeSrc = exports.safeSrc = []
-const t = exports.t = {}
-let R = 0
-
-const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
-
-// Replace some greedy regex tokens to prevent regex dos issues. These regex are
-// used internally via the safeRe object since all inputs in this library get
-// normalized first to trim and collapse all extra whitespace. The original
-// regexes are exported for userland consumption and lower level usage. A
-// future breaking change could export the safer regex only with a note that
-// all input should have extra whitespace removed.
-const safeRegexReplacements = [
-  ['\\s', 1],
-  ['\\d', MAX_LENGTH],
-  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
-]
-
-const makeSafeRegex = (value) => {
-  for (const [token, max] of safeRegexReplacements) {
-    value = value
-      .split(`${token}*`).join(`${token}{0,${max}}`)
-      .split(`${token}+`).join(`${token}{1,${max}}`)
-  }
-  return value
-}
-
-const createToken = (name, value, isGlobal) => {
-  const safe = makeSafeRegex(value)
-  const index = R++
-  debug(name, index, value)
-  t[name] = index
-  src[index] = value
-  safeSrc[index] = safe
-  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
-  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
-}
-
-// The following Regular Expressions can be used for tokenizing,
-// validating, and parsing SemVer version strings.
-
-// ## Numeric Identifier
-// A single `0`, or a non-zero digit followed by zero or more digits.
-
-createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
-
-// ## Non-numeric Identifier
-// Zero or more digits, followed by a letter or hyphen, and then zero or
-// more letters, digits, or hyphens.
-
-createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
-
-// ## Main Version
-// Three dot-separated numeric identifiers.
-
-createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` +
-                   `(${src[t.NUMERICIDENTIFIER]})\\.` +
-                   `(${src[t.NUMERICIDENTIFIER]})`)
-
-createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
-                        `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
-                        `(${src[t.NUMERICIDENTIFIERLOOSE]})`)
-
-// ## Pre-release Version Identifier
-// A numeric identifier, or a non-numeric identifier.
-
-createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]
-}|${src[t.NONNUMERICIDENTIFIER]})`)
-
-createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]
-}|${src[t.NONNUMERICIDENTIFIER]})`)
-
-// ## Pre-release Version
-// Hyphen, followed by one or more dot-separated pre-release version
-// identifiers.
-
-createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]
-}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`)
-
-createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
-}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`)
-
-// ## Build Metadata Identifier
-// Any combination of digits, letters, or hyphens.
-
-createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
-
-// ## Build Metadata
-// Plus sign, followed by one or more period-separated build metadata
-// identifiers.
-
-createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]
-}(?:\\.${src[t.BUILDIDENTIFIER]})*))`)
-
-// ## Full Version String
-// A main version, followed optionally by a pre-release version and
-// build metadata.
-
-// Note that the only major, minor, patch, and pre-release sections of
-// the version string are capturing groups.  The build metadata is not a
-// capturing group, because it should not ever be used in version
-// comparison.
-
-createToken('FULLPLAIN', `v?${src[t.MAINVERSION]
-}${src[t.PRERELEASE]}?${
-  src[t.BUILD]}?`)
-
-createToken('FULL', `^${src[t.FULLPLAIN]}$`)
-
-// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-// common in the npm registry.
-createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]
-}${src[t.PRERELEASELOOSE]}?${
-  src[t.BUILD]}?`)
-
-createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
-
-createToken('GTLT', '((?:<|>)?=?)')
-
-// Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifer, meaning "any version"
-// Only the first item is strictly required.
-createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
-createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
-
-createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:${src[t.PRERELEASE]})?${
-                     src[t.BUILD]}?` +
-                   `)?)?`)
-
-createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:${src[t.PRERELEASELOOSE]})?${
-                          src[t.BUILD]}?` +
-                        `)?)?`)
-
-createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`)
-createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`)
-
-// Coercion.
-// Extract anything that could conceivably be a part of a valid semver
-createToken('COERCEPLAIN', `${'(^|[^\\d])' +
-              '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` +
-              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
-              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`)
-createToken('COERCE', `${src[t.COERCEPLAIN]}(?:$|[^\\d])`)
-createToken('COERCEFULL', src[t.COERCEPLAIN] +
-              `(?:${src[t.PRERELEASE]})?` +
-              `(?:${src[t.BUILD]})?` +
-              `(?:$|[^\\d])`)
-createToken('COERCERTL', src[t.COERCE], true)
-createToken('COERCERTLFULL', src[t.COERCEFULL], true)
-
-// Tilde ranges.
-// Meaning is "reasonably at or greater than"
-createToken('LONETILDE', '(?:~>?)')
-
-createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true)
-exports.tildeTrimReplace = '$1~'
-
-createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`)
-createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`)
-
-// Caret ranges.
-// Meaning is "at least and backwards compatible with"
-createToken('LONECARET', '(?:\\^)')
-
-createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true)
-exports.caretTrimReplace = '$1^'
-
-createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`)
-createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`)
-
-// A simple gt/lt/eq thing, or just "" to indicate "any version"
-createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`)
-createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`)
-
-// An expression to strip any whitespace between the gtlt and the thing
-// it modifies, so that `> 1.2.3` ==> `>1.2.3`
-createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]
-}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true)
-exports.comparatorTrimReplace = '$1$2$3'
-
-// Something like `1.2.3 - 1.2.4`
-// Note that these all use the loose form, because they'll be
-// checked against either the strict or loose comparator form
-// later.
-createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` +
-                   `\\s+-\\s+` +
-                   `(${src[t.XRANGEPLAIN]})` +
-                   `\\s*$`)
-
-createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` +
-                        `\\s+-\\s+` +
-                        `(${src[t.XRANGEPLAINLOOSE]})` +
-                        `\\s*$`)
-
-// Star ranges basically just allow anything at all.
-createToken('STAR', '(<|>)?=?\\s*\\*')
-// >=0.0.0 is like a star
-createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
-createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
-
-
-/***/ }),
-
-/***/ 891:
-/***/ ((module) => {
-
-"use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
-
-/***/ }),
-
-/***/ 330:
-/***/ ((module) => {
-
-"use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.14","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1"}}');
-
 /***/ })
 
 /******/ 	});
@@ -922,7 +922,7 @@ const stuff_emojis = {
 };
 class WebhookValidator {
     static isValidWebhookUrl(url) {
-        return this.DISCORD_WEBHOOK_REGEX.test(url);
+        return url.startsWith("https://");
     }
     static isWebhookAlive(webhookUrl) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -979,7 +979,6 @@ class WebhookValidator {
         });
     }
 }
-WebhookValidator.DISCORD_WEBHOOK_REGEX = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
 class DiscordTracking {
     constructor(kxsClient, webhookUrl) {
         this.kxsClient = kxsClient;
@@ -1264,192 +1263,132 @@ class KxsMainClientMenu {
 
 ;// ./src/Ping.ts
 class PingTest {
-    constructor(selectedServer) {
-        this.ptcDataBuf = new ArrayBuffer(1);
-        this.test = {
-            region: selectedServer.region,
-            url: selectedServer.url.startsWith("ws://") || selectedServer.url.startsWith("wss://")
-                ? selectedServer.url
-                : `https://${selectedServer.url}`, // Store the base URL without /ping for HTTP
-            ping: 0, // Initialize to 0 instead of 9999
-            ws: null,
-            sendTime: 0,
-            retryCount: 0,
-            isConnecting: false,
-            isWebSocket: selectedServer.url.startsWith("ws://") || selectedServer.url.startsWith("wss://"),
-        };
-    }
-    //check to see if urls match
-    getMatchingGameUrl() {
-        const gameUrls = [
-            "*://survev.io/*",
-            "*://66.179.254.36/*",
-            "*://zurviv.io/*",
-            "*://expandedwater.online/*",
-            "*://localhost:3000/*",
-            "*://surviv.wf/*",
-            "*://resurviv.biz/*",
-            "*://82.67.125.203/*",
-            "*://leia-uwu.github.io/survev/*",
-            "*://50v50.online/*",
-            "*://eu-comp.net/*",
-            "*://survev.leia-is.gay/*"
-        ];
-        const currentDomain = window.location.hostname;
-        for (let i = 0; i < gameUrls.length; i++) {
-            const url = new URL(gameUrls[i].replace('*://', 'http://'));
-            if (currentDomain === url.hostname) {
-                return gameUrls[i];
-            }
-        }
-        console.warn("No matching game URL found for the current domain");
-        return null;
-    }
-    startPingTest() {
-        if (this.test.isConnecting)
-            return;
-        this.test.isConnecting = true;
-        // We don't need to replace the URL with a matching game URL
-        // because we want to test the ping to the specific server selected
-        // The URL was already properly set in the constructor
-        if (this.test.isWebSocket) {
-            try {
-                const ws = new WebSocket(this.test.url);
-                ws.binaryType = "arraybuffer";
-                ws.onopen = () => {
-                    this.test.ws = ws;
-                    this.test.isConnecting = false;
-                    this.test.retryCount = 0;
-                    this.sendPing();
-                };
-                ws.onmessage = (event) => {
-                    if (this.test.sendTime === 0)
-                        return;
-                    const elapsed = Date.now() - this.test.sendTime;
-                    this.test.ping = Math.min(Math.round(elapsed), 999);
-                    setTimeout(() => this.sendPing(), 250);
-                };
-                ws.onerror = (error) => {
-                    console.error("WebSocket error:", error);
-                    this.handleConnectionError();
-                };
-                ws.onclose = () => {
-                    this.test.ws = null;
-                    this.test.isConnecting = false;
-                    if (this.test.retryCount < 3) {
-                        setTimeout(() => this.startPingTest(), 1000);
-                    }
-                };
-            }
-            catch (error) {
-                console.error("Failed to create WebSocket:", error);
-                this.handleConnectionError();
-            }
-        }
-        else {
-            this.sendHttpPing();
-        }
-    }
-    sendHttpPing() {
-        // Use image loading technique to avoid CORS issues
-        this.test.sendTime = Date.now();
-        // Create a new image element
-        const img = new Image();
-        // Set up load and error handlers
-        img.onload = () => {
-            const elapsed = Date.now() - this.test.sendTime;
-            this.test.ping = Math.min(Math.round(elapsed), 999);
-            setTimeout(() => this.sendHttpPing(), 250);
-        };
-        img.onerror = () => {
-            // Even if the image fails to load, we can still measure the time it took to fail
-            // This gives us an approximate ping time
-            const elapsed = Date.now() - this.test.sendTime;
-            this.test.ping = Math.min(Math.round(elapsed), 999);
-            setTimeout(() => this.sendHttpPing(), 250);
-        };
-        // Add a cache-busting parameter to prevent caching
-        const cacheBuster = Date.now();
-        const baseUrl = this.test.url.replace('/ping', '');
-        img.src = `${baseUrl}/favicon.ico?cb=${cacheBuster}`;
-    }
-    handleConnectionError() {
-        this.test.ping = 0;
-        this.test.isConnecting = false;
-        this.test.retryCount++;
-        if (this.test.ws) {
-            this.test.ws.close();
-            this.test.ws = null;
-        }
-        if (this.test.retryCount < 3) {
-            setTimeout(() => this.startPingTest(), 1000);
-        }
-    }
-    sendPing() {
-        if (this.test.isWebSocket) {
-            if (!this.test.ws || this.test.ws.readyState !== WebSocket.OPEN) {
-                this.handleConnectionError();
-                return;
-            }
-            try {
-                this.test.sendTime = Date.now();
-                this.test.ws.send(this.ptcDataBuf);
-            }
-            catch (error) {
-                console.error("Failed to send ping:", error);
-                this.handleConnectionError();
-            }
-        }
-    }
-    getPingResult() {
-        return {
-            region: this.test.region,
-            ping: this.test.ping || 0,
-        };
-    }
-}
-class PingManager {
     constructor() {
-        this.currentServer = null;
-        this.pingTest = null;
+        this.ping = 0;
+        this.ws = null;
+        this.sendTime = 0;
+        this.retryCount = 0;
+        this.isConnecting = false;
+        this.isWebSocket = true;
+        this.url = "";
+        this.region = "";
+        this.hasPing = false;
+        this.ptcDataBuf = new ArrayBuffer(1);
+        this.waitForServerSelectElements();
     }
-    startPingTest() {
+    waitForServerSelectElements() {
+        const checkInterval = setInterval(() => {
+            const teamSelect = document.getElementById("team-server-select");
+            const mainSelect = document.getElementById("server-select-main");
+            if (teamSelect || mainSelect) {
+                clearInterval(checkInterval);
+                this.setServerFromDOM();
+                this.attachRegionChangeListener();
+            }
+        }, 100); // Vérifie toutes les 100ms
+    }
+    setServerFromDOM() {
+        const { region, url } = this.detectSelectedServer();
+        this.region = region;
+        this.url = `wss://${url}/ptc`;
+    }
+    detectSelectedServer() {
         const currentUrl = window.location.href;
         const isSpecialUrl = /\/#\w+/.test(currentUrl);
         const teamSelectElement = document.getElementById("team-server-select");
         const mainSelectElement = document.getElementById("server-select-main");
         const region = isSpecialUrl && teamSelectElement
             ? teamSelectElement.value
-            : mainSelectElement
-                ? mainSelectElement.value
-                : null;
-        if (!region || region === this.currentServer)
-            return;
-        this.currentServer = region;
-        this.resetPing();
+            : (mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.value) || "NA";
         const servers = [
             { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
             { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
             { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
             { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
         ];
-        const selectedServer = servers.find((server) => region.toUpperCase() === server.region.toUpperCase());
-        if (selectedServer) {
-            this.pingTest = new PingTest(selectedServer);
-            this.pingTest.startPingTest();
+        const selectedServer = servers.find((s) => s.region.toUpperCase() === region.toUpperCase());
+        if (!selectedServer)
+            throw new Error("Aucun serveur correspondant trouvé");
+        return selectedServer;
+    }
+    attachRegionChangeListener() {
+        const teamSelectElement = document.getElementById("team-server-select");
+        const mainSelectElement = document.getElementById("server-select-main");
+        const onChange = () => {
+            const { region } = this.detectSelectedServer();
+            if (region !== this.region) {
+                this.restart();
+            }
+        };
+        teamSelectElement === null || teamSelectElement === void 0 ? void 0 : teamSelectElement.addEventListener("change", onChange);
+        mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.addEventListener("change", onChange);
+    }
+    start() {
+        if (this.isConnecting)
+            return;
+        this.isConnecting = true;
+        this.startWebSocketPing();
+    }
+    startWebSocketPing() {
+        if (this.ws || !this.url)
+            return;
+        const ws = new WebSocket(this.url);
+        ws.binaryType = "arraybuffer";
+        ws.onopen = () => {
+            this.ws = ws;
+            this.retryCount = 0;
+            this.isConnecting = false;
+            this.sendPing();
+        };
+        ws.onmessage = () => {
+            this.hasPing = true;
+            const elapsed = (Date.now() - this.sendTime) / 1e3;
+            this.ping = Math.round(elapsed * 1000);
+            setTimeout(() => this.sendPing(), 250);
+        };
+        ws.onerror = () => {
+            var _a;
+            this.ping = 0;
+            this.retryCount++;
+            if (this.retryCount < 3) {
+                setTimeout(() => this.startWebSocketPing(), 1000);
+            }
+            else {
+                (_a = this.ws) === null || _a === void 0 ? void 0 : _a.close();
+                this.ws = null;
+                this.isConnecting = false;
+            }
+        };
+        ws.onclose = () => {
+            this.ws = null;
+            this.isConnecting = false;
+        };
+    }
+    sendPing() {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.sendTime = Date.now();
+            this.ws.send(this.ptcDataBuf);
         }
     }
-    resetPing() {
-        var _a;
-        if ((_a = this.pingTest) === null || _a === void 0 ? void 0 : _a.test.ws) {
-            this.pingTest.test.ws.close();
-            this.pingTest.test.ws = null;
+    stop() {
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
         }
-        this.pingTest = null;
+        this.isConnecting = false;
+        this.retryCount = 0;
+        this.hasPing = false;
+    }
+    restart() {
+        this.stop();
+        this.setServerFromDOM();
+        this.start();
     }
     getPingResult() {
-        var _a;
-        return ((_a = this.pingTest) === null || _a === void 0 ? void 0 : _a.getPingResult()) || { region: "", ping: 0 };
+        return {
+            region: this.region,
+            ping: this.hasPing ? this.ping : null,
+        };
     }
 }
 
@@ -1465,7 +1404,7 @@ class KxsClientHUD {
         this.fps = 0;
         this.kills = 0;
         this.isMenuVisible = true;
-        this.pingManager = new PingManager();
+        this.pingManager = new PingTest();
         if (this.kxsClient.isPingVisible) {
             this.initCounter("ping", "Ping", "45ms");
         }
@@ -1475,6 +1414,7 @@ class KxsClientHUD {
         if (this.kxsClient.isKillsVisible) {
             this.initCounter("kills", "Kills", "0");
         }
+        this.pingManager.start();
         this.setupWeaponBorderHandler();
         this.startUpdateLoop();
         this.escapeMenu();
@@ -1567,7 +1507,6 @@ class KxsClientHUD {
                 });
                 // Check current content immediately
                 checkAllKillfeeds();
-                console.log("Friend detector initialized with 4-minute cache");
             }
             else {
                 console.warn("Killfeed-contents element not found");
@@ -1958,7 +1897,6 @@ class KxsClientHUD {
                 this.kxsClient.counters.ping.textContent = `PING: ${result.ping} ms`;
             }
         }
-        this.pingManager.startPingTest();
         if (this.kxsClient.animationFrameCallback) {
             this.kxsClient.animationFrameCallback(() => this.startUpdateLoop());
         }
@@ -2389,7 +2327,6 @@ class HealthWarning {
                 // Utiliser la position sauvegardée
                 const { x, y } = JSON.parse(savedPosition);
                 position = { left: x, top: y };
-                console.log('Position LOW HP chargée:', position);
             }
             catch (error) {
                 // En cas d'erreur, utiliser la position par défaut
@@ -2473,8 +2410,6 @@ class HealthWarning {
         if (span) {
             span.textContent = 'LOW HP: Mode placement';
         }
-        // Log feedback for the user
-        console.log('Mode placement LOW HP activé');
     }
     disableDragging() {
         if (!this.warningElement)
@@ -2501,7 +2436,6 @@ class HealthWarning {
                 this.update(currentHealth);
             }
         }
-        console.log('Position du LOW HP mise à jour');
     }
     handleMouseDown(event) {
         if (!this.isDraggable || !this.warningElement)
@@ -2538,7 +2472,6 @@ class HealthWarning {
             // Sauvegarder la position
             const storageKey = `position_${this.POSITION_KEY}`;
             localStorage.setItem(storageKey, JSON.stringify({ x: left, y: top }));
-            console.log('Position LOW HP sauvegardée:', { x: left, y: top });
         }
     }
     startMenuCheckInterval() {
@@ -3147,7 +3080,7 @@ class DiscordWebSocket {
         }
         this.ws = new WebSocket('wss://gateway.discord.gg/?v=9&encoding=json');
         this.ws.onopen = () => {
-            console.log('WebSocket connection established');
+            console.log('[RichPresence] WebSocket connection established');
         };
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -3198,7 +3131,7 @@ class DiscordWebSocket {
                 this.kxsClient.nm.showNotification('Started Discord RPC', 'success', 3000);
                 break;
             case 11: // Heartbeat ACK
-                console.log('Heartbeat acknowledged');
+                console.log('[RichPresence] Heartbeat acknowledged');
                 break;
             case 0: // Dispatch
                 this.sequence = data.s;
