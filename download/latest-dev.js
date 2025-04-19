@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.18
+// @version      1.2.20
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.18","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.20","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -800,1509 +800,6 @@ __webpack_require__.d(__webpack_exports__, {
   zB: () => (/* binding */ win_sound)
 });
 
-;// ./src/ButtonManager.ts
-class MenuButton {
-    constructor(params) {
-        var _a;
-        this.isEnabled = (_a = params.initialState) !== null && _a !== void 0 ? _a : false;
-        this.button = this.createButton(params);
-    }
-    createButton(params) {
-        const button = document.createElement("button");
-        // Set initial text
-        this.updateButtonText(button, params.text);
-        // Set styles
-        Object.assign(button.style, {
-            backgroundColor: this.getBackgroundColor(params.color),
-            border: "none",
-            color: "#fff",
-            padding: "10px",
-            borderRadius: "5px",
-            width: "100%",
-            marginBottom: "10px",
-            fontSize: "14px",
-            cursor: "pointer",
-        });
-        // Set click handler
-        button.onclick = () => {
-            this.isEnabled = !this.isEnabled;
-            params.onClick();
-            if (params.updateText !== false) {
-                this.updateButtonText(button, params.text);
-                this.updateButtonColor(button, params.color);
-            }
-        };
-        return button;
-    }
-    updateButtonText(button, baseText) {
-        button.textContent = `${baseText} ${this.isEnabled ? "✅" : "❌"}`;
-    }
-    getBackgroundColor(color) {
-        if (color)
-            return color;
-        return this.isEnabled ? "#4CAF50" : "#FF0000";
-    }
-    updateButtonColor(button, color) {
-        button.style.backgroundColor = this.getBackgroundColor(color);
-    }
-    getElement() {
-        return this.button;
-    }
-    setState(enabled) {
-        this.isEnabled = enabled;
-        this.updateButtonColor(this.button);
-    }
-}
-class MenuManager {
-    constructor(menu) {
-        this.buttons = {};
-        this.menu = menu;
-    }
-    addToggleButton(params) {
-        const button = new MenuButton({
-            text: params.text,
-            initialState: params.initialState,
-            color: params.color,
-            onClick: params.onClick,
-            updateText: params.updateText,
-        });
-        this.buttons[params.id] = button;
-        this.menu.appendChild(button.getElement());
-        return button;
-    }
-    addButton(params) {
-        var _a;
-        const button = document.createElement("button");
-        // Set initial text
-        button.textContent = params.text;
-        // Set styles
-        Object.assign(button.style, {
-            backgroundColor: (_a = params.color) !== null && _a !== void 0 ? _a : "#007BFF", // Default color
-            border: "none",
-            color: "#fff",
-            padding: "10px",
-            borderRadius: "5px",
-            width: "100%",
-            marginBottom: "10px",
-            fontSize: "14px",
-            cursor: "pointer",
-        });
-        // Set click handler
-        button.onclick = params.onClick;
-        this.menu.appendChild(button);
-    }
-    getButton(id) {
-        return this.buttons[id];
-    }
-}
-
-
-;// ./src/DiscordTracking.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const stuff_emojis = {
-    main_weapon: "🔫",
-    secondary_weapon: "🔫",
-    grenades: "💣",
-    melees: "🔪",
-    soda: "🥤",
-    medkit: "🩹",
-    bandage: "🩹",
-    pills: "💊",
-    backpack: "🎒",
-    chest: "📦",
-    helmet: "⛑️"
-};
-class WebhookValidator {
-    static isValidWebhookUrl(url) {
-        return url.startsWith("https://");
-    }
-    static isWebhookAlive(webhookUrl) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                // First check if the URL format is valid
-                if (!this.isValidWebhookUrl(webhookUrl)) {
-                    throw new Error("Invalid webhook URL format");
-                }
-                // Test the webhook with a GET request (Discord allows GET on webhooks)
-                const response = yield fetch(webhookUrl, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-                // Discord returns 200 for valid webhooks
-                return response.status === 200;
-            }
-            catch (error) {
-                console.error("Error validating webhook:", error);
-                return false;
-            }
-        });
-    }
-    static testWebhook(webhookUrl) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                if (!webhookUrl) {
-                    return {
-                        isValid: false,
-                        message: "Please enter a webhook URL",
-                    };
-                }
-                if (!this.isValidWebhookUrl(webhookUrl)) {
-                    return {
-                        isValid: false,
-                        message: "Invalid Discord webhook URL format",
-                    };
-                }
-                const isAlive = yield this.isWebhookAlive(webhookUrl);
-                return {
-                    isValid: isAlive,
-                    message: isAlive
-                        ? "Webhook is valid and working!"
-                        : "Webhook is not responding or has been deleted",
-                };
-            }
-            catch (error) {
-                return {
-                    isValid: false,
-                    message: "Error testing webhook connection",
-                };
-            }
-        });
-    }
-}
-class DiscordTracking {
-    constructor(kxsClient, webhookUrl) {
-        this.kxsClient = kxsClient;
-        this.webhookUrl = webhookUrl;
-    }
-    setWebhookUrl(webhookUrl) {
-        this.webhookUrl = webhookUrl;
-    }
-    validateCurrentWebhook() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return WebhookValidator.isWebhookAlive(this.webhookUrl);
-        });
-    }
-    sendWebhookMessage(message) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!WebhookValidator.isValidWebhookUrl(this.webhookUrl)) {
-                return;
-            }
-            this.kxsClient.nm.showNotification("Sending Discord message...", "info", 2300);
-            try {
-                const response = yield fetch(this.webhookUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(message),
-                });
-                if (!response.ok) {
-                    throw new Error(`Discord Webhook Error: ${response.status}`);
-                }
-            }
-            catch (error) {
-                console.error("Error sending Discord message:", error);
-            }
-        });
-    }
-    getEmbedColor(isWin) {
-        return isWin ? 0x2ecc71 : 0xe74c3c; // Green for victory, red for defeat
-    }
-    trackGameEnd(result) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const title = result.isWin
-                ? "🏆 VICTORY ROYALE!"
-                : `${result.position} - Game Over`;
-            const embed = {
-                title,
-                description: `${result.username}'s Match`,
-                color: this.getEmbedColor(result.isWin),
-                fields: [
-                    {
-                        name: "💀 Eliminations",
-                        value: result.kills.toString(),
-                        inline: true,
-                    },
-                ],
-            };
-            if (result.duration) {
-                embed.fields.push({
-                    name: "⏱️ Duration",
-                    value: result.duration,
-                    inline: true,
-                });
-            }
-            if (result.damageDealt) {
-                embed.fields.push({
-                    name: "💥 Damage Dealt",
-                    value: Math.round(result.damageDealt).toString(),
-                    inline: true,
-                });
-            }
-            if (result.damageTaken) {
-                embed.fields.push({
-                    name: "💢 Damage Taken",
-                    value: Math.round(result.damageTaken).toString(),
-                    inline: true,
-                });
-            }
-            if (result.username) {
-                embed.fields.push({
-                    name: "📝 Username",
-                    value: result.username,
-                    inline: true,
-                });
-            }
-            if (result.stuff) {
-                for (const [key, value] of Object.entries(result.stuff)) {
-                    if (value) {
-                        embed.fields.push({
-                            name: `${stuff_emojis[key]} ${key.replace("_", " ").toUpperCase()}`,
-                            value,
-                            inline: true,
-                        });
-                    }
-                }
-            }
-            const message = {
-                username: result.username,
-                content: result.isWin ? "🎉 New Victory!" : "Match Ended",
-                embeds: [embed],
-            };
-            yield this.sendWebhookMessage(message);
-        });
-    }
-}
-
-
-;// ./src/ClientMainMenu.ts
-var ClientMainMenu_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-class KxsMainClientMenu {
-    constructor(kxsClient) {
-        this.kxsClient = kxsClient;
-        // this.setupKeyListeners();
-        // this.initMenu();
-    }
-    initMenu() {
-        this.menu = document.createElement("div");
-        this.menu.id = "kxsMenu";
-        Object.assign(this.menu.style, {
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            padding: "15px",
-            marginLeft: "15px",
-            borderRadius: "10px",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.6)",
-            zIndex: "10001",
-            width: "250px",
-            fontFamily: "Arial, sans-serif",
-            color: "#fff",
-            maxHeight: "400px",
-            overflowY: "auto",
-        });
-        const title = document.createElement("h2");
-        title.textContent = "Kxs Client";
-        title.style.margin = "0 0 10px";
-        title.style.textAlign = "center";
-        title.style.fontSize = "18px";
-        title.style.color = "#FFAE00";
-        this.menu.appendChild(title);
-        window.onload = () => {
-            const savedBackground = localStorage.getItem("backgroundImage");
-            if (savedBackground) {
-                const backgroundElement = document.getElementById("background");
-                if (backgroundElement) {
-                    backgroundElement.style.backgroundImage = `url(${savedBackground})`;
-                }
-            }
-        };
-        const startRowTop = document.getElementById("start-row-top");
-        if (startRowTop) {
-            startRowTop.appendChild(this.menu);
-        }
-        this.menuManager = new MenuManager(this.menu);
-        this.menuManager.addToggleButton({
-            id: "fps",
-            text: "Show FPS",
-            initialState: this.kxsClient.isFpsVisible,
-            onClick: () => {
-                this.kxsClient.isFpsVisible = !this.kxsClient.isFpsVisible;
-                this.kxsClient.updateFpsVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.menuManager.addToggleButton({
-            id: "ping",
-            text: `Show Ping`,
-            initialState: this.kxsClient.isPingVisible,
-            onClick: () => {
-                this.kxsClient.isPingVisible = !this.kxsClient.isPingVisible;
-                this.kxsClient.updatePingVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.menuManager.addToggleButton({
-            id: "kills",
-            text: `Show Kills`,
-            initialState: this.kxsClient.isKillsVisible,
-            onClick: () => {
-                this.kxsClient.isKillsVisible = !this.kxsClient.isKillsVisible;
-                this.kxsClient.updateKillsVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.menuManager.addToggleButton({
-            id: "uncapFps",
-            text: `Uncap FPS`,
-            initialState: this.kxsClient.isFpsUncapped,
-            onClick: () => {
-                this.kxsClient.toggleFpsUncap();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.menuManager.addButton({
-            id: "hideShow",
-            text: "👀 Hide/Show Menu [P]",
-            color: "#6F42C1",
-            onClick: () => this.toggleMenuVisibility(),
-        });
-        this.menuManager.addButton({
-            id: "background",
-            text: `🎨 Change Background`,
-            color: "#007BFF",
-            onClick: () => {
-                const backgroundElement = document.getElementById("background");
-                if (!backgroundElement) {
-                    alert("Element with id 'background' not found.");
-                    return;
-                }
-                const choice = prompt("Enter '1' to provide a URL or '2' to upload a local image:");
-                if (choice === "1") {
-                    const newBackgroundUrl = prompt("Enter the URL of the new background image:");
-                    if (newBackgroundUrl) {
-                        backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
-                        this.kxsClient.saveBackgroundToLocalStorage(newBackgroundUrl);
-                        alert("Background updated successfully!");
-                    }
-                }
-                else if (choice === "2") {
-                    const fileInput = document.createElement("input");
-                    fileInput.type = "file";
-                    fileInput.accept = "image/*";
-                    fileInput.onchange = (event) => {
-                        var _a, _b;
-                        const file = (_b = (_a = event.target) === null || _a === void 0 ? void 0 : _a.files) === null || _b === void 0 ? void 0 : _b[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                backgroundElement.style.backgroundImage = `url(${reader.result})`;
-                                this.kxsClient.saveBackgroundToLocalStorage(file);
-                                alert("Background updated successfully!");
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    };
-                    fileInput.click();
-                }
-            },
-        });
-        this.menuManager.addButton({
-            id: "webhook",
-            text: `🕸️ Change Discord Webhook`,
-            color: "#007BFF",
-            onClick: () => ClientMainMenu_awaiter(this, void 0, void 0, function* () {
-                const choice = prompt("enter the new discord webhook url:");
-                if (choice) {
-                    const result = yield WebhookValidator.testWebhook(choice);
-                    if (result.isValid) {
-                        this.kxsClient.discordWebhookUrl = choice;
-                        this.kxsClient.discordTracker.setWebhookUrl(choice);
-                        this.kxsClient.updateLocalStorage();
-                        alert(result.message);
-                    }
-                    else {
-                        alert(result.message);
-                    }
-                }
-            }),
-        });
-    }
-    setupKeyListeners() {
-        document.addEventListener("keydown", (event) => {
-            if (event.key.toLowerCase() === "p") {
-                this.toggleMenuVisibility();
-            }
-        });
-    }
-    toggleMenuVisibility() {
-        var _a;
-        const isVisible = ((_a = this.menu) === null || _a === void 0 ? void 0 : _a.style.display) !== "none";
-        this.menu.style.display = isVisible ? "none" : "block";
-    }
-}
-
-
-;// ./src/Ping.ts
-class PingTest {
-    constructor() {
-        this.ping = 0;
-        this.ws = null;
-        this.sendTime = 0;
-        this.retryCount = 0;
-        this.isConnecting = false;
-        this.isWebSocket = true;
-        this.url = "";
-        this.region = "";
-        this.hasPing = false;
-        this.ptcDataBuf = new ArrayBuffer(1);
-        this.waitForServerSelectElements();
-        this.startKeepAlive();
-    }
-    startKeepAlive() {
-        setInterval(() => {
-            var _a;
-            if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
-                this.ws.send(this.ptcDataBuf);
-            }
-        }, 5000); // envoie toutes les 5s
-    }
-    waitForServerSelectElements() {
-        const checkInterval = setInterval(() => {
-            const teamSelect = document.getElementById("team-server-select");
-            const mainSelect = document.getElementById("server-select-main");
-            const selectedValue = (teamSelect === null || teamSelect === void 0 ? void 0 : teamSelect.value) || (mainSelect === null || mainSelect === void 0 ? void 0 : mainSelect.value);
-            if ((teamSelect || mainSelect) && selectedValue) {
-                clearInterval(checkInterval);
-                this.setServerFromDOM();
-                this.attachRegionChangeListener();
-                this.start(); // ← Démarrage auto ici
-            }
-        }, 100); // Vérifie toutes les 100ms
-    }
-    setServerFromDOM() {
-        const { region, url } = this.detectSelectedServer();
-        this.region = region;
-        this.url = `wss://${url}/ptc`;
-        this.start();
-    }
-    detectSelectedServer() {
-        const currentUrl = window.location.href;
-        const isSpecialUrl = /\/#\w+/.test(currentUrl);
-        const teamSelectElement = document.getElementById("team-server-select");
-        const mainSelectElement = document.getElementById("server-select-main");
-        const region = isSpecialUrl && teamSelectElement
-            ? teamSelectElement.value
-            : (mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.value) || "NA";
-        const servers = [
-            { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
-            { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
-            { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
-            { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
-        ];
-        const selectedServer = servers.find((s) => s.region.toUpperCase() === region.toUpperCase());
-        if (!selectedServer)
-            throw new Error("Aucun serveur correspondant trouvé");
-        return selectedServer;
-    }
-    attachRegionChangeListener() {
-        const teamSelectElement = document.getElementById("team-server-select");
-        const mainSelectElement = document.getElementById("server-select-main");
-        const onChange = () => {
-            const { region } = this.detectSelectedServer();
-            if (region !== this.region) {
-                this.restart();
-            }
-        };
-        teamSelectElement === null || teamSelectElement === void 0 ? void 0 : teamSelectElement.addEventListener("change", onChange);
-        mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.addEventListener("change", onChange);
-    }
-    start() {
-        if (this.isConnecting)
-            return;
-        this.isConnecting = true;
-        this.startWebSocketPing();
-    }
-    startWebSocketPing() {
-        if (this.ws || !this.url)
-            return;
-        const ws = new WebSocket(this.url);
-        ws.binaryType = "arraybuffer";
-        ws.onopen = () => {
-            this.ws = ws;
-            this.retryCount = 0;
-            this.isConnecting = false;
-            this.sendPing();
-            setTimeout(() => {
-                var _a;
-                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
-                    console.warn("WebSocket bloquée, tentative de reconnexion");
-                    this.restart();
-                }
-            }, 3000); // 3s pour sécuriser
-        };
-        ws.onmessage = () => {
-            this.hasPing = true;
-            const elapsed = (Date.now() - this.sendTime) / 1e3;
-            this.ping = Math.round(elapsed * 1000);
-            setTimeout(() => this.sendPing(), 1000);
-        };
-        ws.onerror = () => {
-            var _a;
-            this.ping = 0;
-            this.retryCount++;
-            if (this.retryCount < 3) {
-                setTimeout(() => this.startWebSocketPing(), 1000);
-            }
-            else {
-                (_a = this.ws) === null || _a === void 0 ? void 0 : _a.close();
-                this.ws = null;
-                this.isConnecting = false;
-            }
-        };
-        ws.onclose = () => {
-            this.ws = null;
-            this.isConnecting = false;
-        };
-    }
-    sendPing() {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.sendTime = Date.now();
-            this.ws.send(this.ptcDataBuf);
-        }
-    }
-    stop() {
-        if (this.ws) {
-            this.ws.onclose = null;
-            this.ws.onerror = null;
-            this.ws.onmessage = null;
-            this.ws.onopen = null;
-            this.ws.close();
-            this.ws = null;
-        }
-        this.isConnecting = false;
-        this.retryCount = 0;
-        this.hasPing = false;
-    }
-    restart() {
-        this.stop();
-        this.setServerFromDOM();
-    }
-    getPingResult() {
-        return {
-            region: this.region,
-            ping: this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing ? this.ping : null,
-        };
-    }
-}
-
-
-;// ./src/ClientHUD.ts
-
-class KxsClientHUD {
-    constructor(kxsClient) {
-        this.healthAnimations = [];
-        this.lastHealthValue = 100;
-        this.kxsClient = kxsClient;
-        this.frameCount = 0;
-        this.fps = 0;
-        this.kills = 0;
-        this.isMenuVisible = true;
-        this.pingManager = new PingTest();
-        if (this.kxsClient.isPingVisible) {
-            this.initCounter("ping", "Ping", "45ms");
-        }
-        if (this.kxsClient.isFpsVisible) {
-            this.initCounter("fps", "FPS", "60");
-        }
-        if (this.kxsClient.isKillsVisible) {
-            this.initCounter("kills", "Kills", "0");
-        }
-        this.setupWeaponBorderHandler();
-        this.startUpdateLoop();
-        this.escapeMenu();
-        this.initFriendDetector();
-        if (this.kxsClient.isKillFeedBlint) {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', this.initKillFeed);
-            }
-            else {
-                this.initKillFeed();
-            }
-        }
-    }
-    initFriendDetector() {
-        // Initialize friends list
-        let all_friends = this.kxsClient.all_friends.split(',') || [];
-        if (all_friends.length >= 1) {
-            // Create a cache for detected friends
-            // Structure will be: { "friendName": timestamp }
-            const friendsCache = {};
-            // Cache duration in milliseconds (4 minutes = 240000 ms)
-            const cacheDuration = 4 * 60 * 1000;
-            // Select the element containing kill feeds
-            const killfeedContents = document.querySelector('#ui-killfeed-contents');
-            if (killfeedContents) {
-                // Keep track of last seen content for each div
-                const lastSeenContent = {
-                    "ui-killfeed-0": "",
-                    "ui-killfeed-1": "",
-                    "ui-killfeed-2": "",
-                    "ui-killfeed-3": "",
-                    "ui-killfeed-4": "",
-                    "ui-killfeed-5": ""
-                };
-                // Function to check if a friend is in the text with cache management
-                const checkForFriends = (text, divId) => {
-                    // If the text is identical to the last seen, ignore
-                    // @ts-ignore
-                    if (text === lastSeenContent[divId])
-                        return;
-                    // Update the last seen content
-                    // @ts-ignore
-                    lastSeenContent[divId] = text;
-                    // Ignore empty messages
-                    if (!text.trim())
-                        return;
-                    // Current timestamp
-                    const currentTime = Date.now();
-                    // Check if a friend is mentioned
-                    for (let friend of all_friends) {
-                        if (friend !== "" && text.includes(friend)) {
-                            // Check if the friend is in the cache and if the cache is still valid
-                            // @ts-ignore
-                            const lastSeen = friendsCache[friend];
-                            if (!lastSeen || (currentTime - lastSeen > cacheDuration)) {
-                                // Update the cache
-                                // @ts-ignore
-                                friendsCache[friend] = currentTime;
-                                // Display notification
-                                this.kxsClient.nm.showNotification(`[FriendDetector] ${friend} is in this game`, "info", 2300);
-                            }
-                            break;
-                        }
-                    }
-                };
-                // Function to check all kill feeds
-                const checkAllKillfeeds = () => {
-                    all_friends = this.kxsClient.all_friends.split(',') || [];
-                    for (let i = 0; i <= 5; i++) {
-                        const divId = `ui-killfeed-${i}`;
-                        const killDiv = document.getElementById(divId);
-                        if (killDiv) {
-                            const textElement = killDiv.querySelector('.killfeed-text');
-                            if (textElement && textElement.textContent) {
-                                checkForFriends(textElement.textContent, divId);
-                            }
-                        }
-                    }
-                };
-                // Observe style or text changes in the entire container
-                const observer = new MutationObserver(() => {
-                    checkAllKillfeeds();
-                });
-                // Start observing with a configuration that detects all changes
-                observer.observe(killfeedContents, {
-                    childList: true, // Observe changes to child elements
-                    subtree: true, // Observe the entire tree
-                    characterData: true, // Observe text changes
-                    attributes: true // Observe attribute changes (like style/opacity)
-                });
-                // Check current content immediately
-                checkAllKillfeeds();
-            }
-            else {
-                console.warn("Killfeed-contents element not found");
-            }
-        }
-    }
-    initKillFeed() {
-        this.applyCustomStyles();
-        this.setupObserver();
-    }
-    escapeMenu() {
-        const customStyles = `
-    .ui-game-menu-desktop {
-        background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-        padding: 20px !important;
-        backdrop-filter: blur(10px) !important;
-        max-width: 350px !important;
-        /* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
-        margin: auto !important;
-        box-sizing: border-box !important;
-        overflow-y: auto !important; /* Allow vertical scrolling if necessary */
-    }
-    
-    /* Style pour les boutons de mode de jeu qui ont une image de fond */
-    .btn-mode-cobalt,
-    [style*="background: url("] {
-        background-repeat: no-repeat !important;
-        background-position: right center !important;
-        background-size: auto 80% !important;
-        position: relative !important;
-        padding-right: 40px !important;
-    }
-    
-    /* Ne pas appliquer ce style aux boutons standards comme Play Solo */
-    #btn-start-mode-0 {
-        background-repeat: initial !important;
-        background-position: initial !important;
-        background-size: initial !important;
-        padding-right: initial !important;
-    }
-
-    .ui-game-menu-desktop::-webkit-scrollbar {
-        width: 8px !important;
-    }
-    .ui-game-menu-desktop::-webkit-scrollbar-track {
-        background: rgba(25, 25, 35, 0.5) !important;
-        border-radius: 10px !important;
-    }
-    .ui-game-menu-desktop::-webkit-scrollbar-thumb {
-        background-color: #4287f5 !important;
-        border-radius: 10px !important;
-        border: 2px solid rgba(25, 25, 35, 0.5) !important;
-    }
-    .ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
-        background-color: #5a9eff !important;
-    }
-
-    .ui-game-menu-desktop {
-        scrollbar-width: thin !important;
-        scrollbar-color: #4287f5 rgba(25, 25, 35, 0.5) !important;
-    }
-
-    .kxs-header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        margin-bottom: 20px;
-        padding: 10px;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .kxs-logo {
-        width: 30px;
-        height: 30px;
-        margin-right: 10px;
-        border-radius: 6px;
-    }
-
-    .kxs-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #ffffff;
-        text-transform: uppercase;
-        text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
-        font-family: 'Arial', sans-serif;
-        letter-spacing: 2px;
-    }
-
-    .kxs-title span {
-        color: #4287f5;
-    }
-        
-    
-    .btn-game-menu {
-        background: linear-gradient(135deg, rgba(66, 135, 245, 0.1) 0%, rgba(66, 135, 245, 0.2) 100%) !important;
-        border: 1px solid rgba(66, 135, 245, 0.3) !important;
-        border-radius: 8px !important;
-        color: #ffffff !important;
-        transition: all 0.3s ease !important;
-        margin: 5px 0 !important;
-        padding: 12px !important;
-        font-weight: 600 !important;
-        width: 100% !important;
-        text-align: center !important;
-        display: block !important;
-        box-sizing: border-box !important;
-		line-height: 15px !important;
-    }
-
-    .btn-game-menu:hover {
-        background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, rgba(66, 135, 245, 0.3) 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(66, 135, 245, 0.2) !important;
-    }
-
-    .slider-container {
-        background: rgba(66, 135, 245, 0.1) !important;
-        border-radius: 8px !important;
-        padding: 10px 15px !important;
-        margin: 10px 0 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    .slider-text {
-        color: #ffffff !important;
-        font-size: 14px !important;
-        margin-bottom: 8px !important;
-        text-align: center !important;
-    }
-
-    .slider {
-        -webkit-appearance: none !important;
-        width: 100% !important;
-        height: 6px !important;
-        border-radius: 3px !important;
-        background: rgba(66, 135, 245, 0.3) !important;
-        outline: none !important;
-        margin: 10px 0 !important;
-    }
-
-    .slider::-webkit-slider-thumb {
-        -webkit-appearance: none !important;
-        width: 16px !important;
-        height: 16px !important;
-        border-radius: 50% !important;
-        background: #4287f5 !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-    }
-
-    .slider::-webkit-slider-thumb:hover {
-        transform: scale(1.2) !important;
-        box-shadow: 0 0 10px rgba(66, 135, 245, 0.5) !important;
-    }
-
-    .btns-game-double-row {
-        display: flex !important;
-        justify-content: center !important;
-        gap: 10px !important;
-        margin-bottom: 10px !important;
-        width: 100% !important;
-    }
-
-    .btn-game-container {
-        flex: 1 !important;
-    }
-
-	#btn-touch-styles,
-	#btn-game-aim-line {
-    	display: none !important;
-    	pointer-events: none !important;
-    	visibility: hidden !important;
-	}
-    `;
-        const addCustomStyles = () => {
-            const styleElement = document.createElement('style');
-            styleElement.textContent = customStyles;
-            document.head.appendChild(styleElement);
-        };
-        const addKxsHeader = () => {
-            const menuContainer = document.querySelector('#ui-game-menu');
-            if (!menuContainer)
-                return;
-            const header = document.createElement('div');
-            header.className = 'kxs-header';
-            const title = document.createElement('span');
-            title.className = 'kxs-title';
-            title.innerHTML = '<span>Kxs</span> CLIENT';
-            header.appendChild(title);
-            menuContainer.insertBefore(header, menuContainer.firstChild);
-        };
-        const disableUnwantedButtons = () => {
-            const touchStyles = document.getElementById('btn-touch-styles');
-            const aimLine = document.getElementById('btn-game-aim-line');
-            if (touchStyles) {
-                touchStyles.style.display = 'none';
-                touchStyles.style.pointerEvents = 'none';
-                touchStyles.style.visibility = 'hidden';
-            }
-            if (aimLine) {
-                aimLine.style.display = 'none';
-                aimLine.style.pointerEvents = 'none';
-                aimLine.style.visibility = 'hidden';
-            }
-        };
-        if (document.querySelector('#ui-game-menu')) {
-            addCustomStyles();
-            addKxsHeader();
-            disableUnwantedButtons();
-            // Désactiver uniquement le slider Music Volume
-            const sliders = document.querySelectorAll('.slider-container.ui-slider-container');
-            sliders.forEach(slider => {
-                const label = slider.querySelector('p.slider-text[data-l10n="index-music-volume"]');
-                if (label) {
-                    slider.style.display = 'none';
-                }
-            });
-            // Ajout du bouton Toggle Right Shift Menu
-            const menuContainer = document.querySelector('#ui-game-menu');
-            if (menuContainer) {
-                const toggleRightShiftBtn = document.createElement('button');
-                toggleRightShiftBtn.textContent = 'Toggle Right Shift Menu';
-                toggleRightShiftBtn.className = 'btn-game-menu';
-                toggleRightShiftBtn.style.marginTop = '10px';
-                toggleRightShiftBtn.onclick = () => {
-                    if (this.kxsClient.secondaryMenu && typeof this.kxsClient.secondaryMenu.toggleMenuVisibility === 'function') {
-                        this.kxsClient.secondaryMenu.toggleMenuVisibility();
-                    }
-                };
-                menuContainer.appendChild(toggleRightShiftBtn);
-            }
-        }
-    }
-    handleMessage(element) {
-        if (element instanceof HTMLElement && element.classList.contains('killfeed-div')) {
-            const killfeedText = element.querySelector('.killfeed-text');
-            if (killfeedText instanceof HTMLElement) {
-                if (killfeedText.textContent && killfeedText.textContent.trim() !== '') {
-                    if (!killfeedText.hasAttribute('data-glint')) {
-                        killfeedText.setAttribute('data-glint', 'true');
-                        element.style.opacity = '1';
-                        setTimeout(() => {
-                            element.style.opacity = '0';
-                        }, 5000);
-                    }
-                }
-                else {
-                    element.style.opacity = '0';
-                }
-            }
-        }
-    }
-    setupObserver() {
-        const killfeedContents = document.getElementById('ui-killfeed-contents');
-        if (killfeedContents) {
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.target instanceof HTMLElement &&
-                        mutation.target.classList.contains('killfeed-text')) {
-                        const parentDiv = mutation.target.closest('.killfeed-div');
-                        if (parentDiv) {
-                            this.handleMessage(parentDiv);
-                        }
-                    }
-                    mutation.addedNodes.forEach((node) => {
-                        if (node instanceof HTMLElement) {
-                            this.handleMessage(node);
-                        }
-                    });
-                });
-            });
-            observer.observe(killfeedContents, {
-                childList: true,
-                subtree: true,
-                characterData: true,
-                attributes: true,
-                attributeFilter: ['style', 'class']
-            });
-            killfeedContents.querySelectorAll('.killfeed-div').forEach(this.handleMessage);
-        }
-    }
-    applyCustomStyles() {
-        const customStyles = document.createElement('style');
-        if (this.kxsClient.isKillFeedBlint) {
-            customStyles.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@600&display=swap');
-  
-        .killfeed-div {
-            position: absolute !important;
-            padding: 5px 10px !important;
-            background: rgba(0, 0, 0, 0.7) !important;
-            border-radius: 5px !important;
-            transition: opacity 0.5s ease-out !important;
-        }
-  
-        .killfeed-text {
-            font-family: 'Oxanium', sans-serif !important;
-            font-weight: bold !important;
-            font-size: 16px !important;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
-            background: linear-gradient(90deg, 
-                rgb(255, 0, 0), 
-                rgb(255, 127, 0), 
-                rgb(255, 255, 0), 
-                rgb(0, 255, 0), 
-                rgb(0, 0, 255), 
-                rgb(75, 0, 130), 
-                rgb(148, 0, 211), 
-                rgb(255, 0, 0));
-            background-size: 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: glint 3s linear infinite;
-        }
-  
-        @keyframes glint {
-            0% {
-                background-position: 200% 0;
-            }
-            100% {
-                background-position: -200% 0;
-            }
-        }
-  
-        .killfeed-div .killfeed-text:empty {
-            display: none !important;
-        }
-      `;
-        }
-        else {
-            customStyles.innerHTML = `
-        .killfeed-div {
-            position: absolute;
-            padding: 5px 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 5px;
-            transition: opacity 0.5s ease-out;
-        }
-  
-        .killfeed-text {
-            font-family: inherit;
-            font-weight: normal;
-            font-size: inherit;
-            color: inherit;
-            text-shadow: none;
-            background: none;
-        }
-  
-        .killfeed-div .killfeed-text:empty {
-            display: none;
-        }
-      `;
-        }
-        document.head.appendChild(customStyles);
-    }
-    handleResize() {
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        for (const name of ['fps', 'kills', 'ping']) {
-            const counterContainer = document.getElementById(`${name}CounterContainer`);
-            if (!counterContainer)
-                continue;
-            const counter = this.kxsClient.counters[name];
-            if (!counter)
-                continue;
-            const rect = counterContainer.getBoundingClientRect();
-            const savedPosition = this.getSavedPosition(name);
-            let newPosition = this.calculateSafePosition(savedPosition, rect.width, rect.height, viewportWidth, viewportHeight);
-            this.applyPosition(counterContainer, newPosition);
-            this.savePosition(name, newPosition);
-        }
-    }
-    calculateSafePosition(currentPosition, elementWidth, elementHeight, viewportWidth, viewportHeight) {
-        let { left, top } = currentPosition;
-        if (left + elementWidth > viewportWidth) {
-            left = viewportWidth - elementWidth;
-        }
-        if (left < 0) {
-            left = 0;
-        }
-        if (top + elementHeight > viewportHeight) {
-            top = viewportHeight - elementHeight;
-        }
-        if (top < 0) {
-            top = 0;
-        }
-        return { left, top };
-    }
-    getSavedPosition(name) {
-        const savedPosition = localStorage.getItem(`${name}CounterPosition`);
-        if (savedPosition) {
-            try {
-                return JSON.parse(savedPosition);
-            }
-            catch (_a) {
-                return this.kxsClient.defaultPositions[name];
-            }
-        }
-        return this.kxsClient.defaultPositions[name];
-    }
-    applyPosition(element, position) {
-        element.style.left = `${position.left}px`;
-        element.style.top = `${position.top}px`;
-    }
-    savePosition(name, position) {
-        localStorage.setItem(`${name}CounterPosition`, JSON.stringify(position));
-    }
-    startUpdateLoop() {
-        var _a;
-        const now = performance.now();
-        const delta = now - this.kxsClient.lastFrameTime;
-        this.frameCount++;
-        if (delta >= 1000) {
-            this.fps = Math.round((this.frameCount * 1000) / delta);
-            this.frameCount = 0;
-            this.kxsClient.lastFrameTime = now;
-            this.kills = this.kxsClient.getKills();
-            if (this.kxsClient.isFpsVisible && this.kxsClient.counters.fps) {
-                this.kxsClient.counters.fps.textContent = `FPS: ${this.fps}`;
-            }
-            if (this.kxsClient.isKillsVisible && this.kxsClient.counters.kills) {
-                this.kxsClient.counters.kills.textContent = `Kills: ${this.kills}`;
-            }
-            if (this.kxsClient.isPingVisible &&
-                this.kxsClient.counters.ping &&
-                this.pingManager) {
-                const result = this.pingManager.getPingResult();
-                this.kxsClient.counters.ping.textContent = `PING: ${result.ping} ms`;
-            }
-        }
-        if (this.kxsClient.animationFrameCallback) {
-            this.kxsClient.animationFrameCallback(() => this.startUpdateLoop());
-        }
-        this.updateUiElements();
-        this.updateBoostBars();
-        this.updateHealthBars();
-        (_a = this.kxsClient.kill_leader) === null || _a === void 0 ? void 0 : _a.update(this.kills);
-    }
-    initCounter(name, label, initialText) {
-        const counter = document.createElement("div");
-        counter.id = `${name}Counter`;
-        const counterContainer = document.createElement("div");
-        counterContainer.id = `${name}CounterContainer`;
-        Object.assign(counterContainer.style, {
-            position: "absolute",
-            left: `${this.kxsClient.defaultPositions[name].left}px`,
-            top: `${this.kxsClient.defaultPositions[name].top}px`,
-            zIndex: "10000",
-        });
-        Object.assign(counter.style, {
-            color: "white",
-            backgroundColor: "rgba(0, 0, 0, 0.2)",
-            borderRadius: "5px",
-            fontFamily: "Arial, sans-serif",
-            padding: "5px 10px",
-            pointerEvents: "none",
-            cursor: "default",
-            width: `${this.kxsClient.defaultSizes[name].width}px`,
-            height: `${this.kxsClient.defaultSizes[name].height}px`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            resize: "both",
-            overflow: "hidden",
-        });
-        counter.textContent = `${label}: ${initialText}`;
-        counterContainer.appendChild(counter);
-        const uiTopLeft = document.getElementById("ui-top-left");
-        if (uiTopLeft) {
-            uiTopLeft.appendChild(counterContainer);
-        }
-        const adjustFontSize = () => {
-            const { width, height } = counter.getBoundingClientRect();
-            const size = Math.min(width, height) * 0.4;
-            counter.style.fontSize = `${size}px`;
-        };
-        new ResizeObserver(adjustFontSize).observe(counter);
-        counter.addEventListener("mousedown", (event) => {
-            if (event.button === 1) {
-                this.resetCounter(name, label, initialText);
-                event.preventDefault();
-            }
-        });
-        this.kxsClient.makeDraggable(counterContainer, `${name}CounterPosition`);
-        this.kxsClient.counters[name] = counter;
-    }
-    resetCounter(name, label, initialText) {
-        const counter = this.kxsClient.counters[name];
-        const container = document.getElementById(`${name}CounterContainer`);
-        if (!counter || !container)
-            return;
-        // Reset only this counter's position and size
-        Object.assign(container.style, {
-            left: `${this.kxsClient.defaultPositions[name].left}px`,
-            top: `${this.kxsClient.defaultPositions[name].top}px`,
-        });
-        Object.assign(counter.style, {
-            width: `${this.kxsClient.defaultSizes[name].width}px`,
-            height: `${this.kxsClient.defaultSizes[name].height}px`,
-            fontSize: "18px",
-        });
-        counter.textContent = `${label}: ${initialText}`;
-        // Clear the saved position for this counter only
-        localStorage.removeItem(`${name}CounterPosition`);
-    }
-    updateBoostBars() {
-        const boostCounter = document.querySelector("#ui-boost-counter");
-        if (boostCounter) {
-            const boostBars = boostCounter.querySelectorAll(".ui-boost-base .ui-bar-inner");
-            let totalBoost = 0;
-            const weights = [25, 25, 40, 10];
-            boostBars.forEach((bar, index) => {
-                const width = parseFloat(bar.style.width);
-                if (!isNaN(width)) {
-                    totalBoost += width * (weights[index] / 100);
-                }
-            });
-            const averageBoost = Math.round(totalBoost);
-            let boostDisplay = boostCounter.querySelector(".boost-display");
-            if (!boostDisplay) {
-                boostDisplay = document.createElement("div");
-                boostDisplay.classList.add("boost-display");
-                Object.assign(boostDisplay.style, {
-                    position: "absolute",
-                    bottom: "75px",
-                    right: "335px",
-                    color: "#FF901A",
-                    backgroundColor: "rgba(0, 0, 0, 0.4)",
-                    padding: "5px 10px",
-                    borderRadius: "5px",
-                    fontFamily: "Arial, sans-serif",
-                    fontSize: "14px",
-                    zIndex: "10",
-                    textAlign: "center",
-                });
-                boostCounter.appendChild(boostDisplay);
-            }
-            boostDisplay.textContent = `AD: ${averageBoost}%`;
-        }
-    }
-    setupWeaponBorderHandler() {
-        const weaponContainers = Array.from(document.getElementsByClassName("ui-weapon-switch"));
-        weaponContainers.forEach((container) => {
-            if (container.id === "ui-weapon-id-4") {
-                container.style.border = "3px solid #2f4032";
-            }
-            else {
-                container.style.border = "3px solid #FFFFFF";
-            }
-        });
-        const weaponNames = Array.from(document.getElementsByClassName("ui-weapon-name"));
-        const WEAPON_COLORS = {
-            ORANGE: '#FFAE00',
-            BLUE: '#007FFF',
-            GREEN: '#0f690d',
-            RED: '#FF0000',
-            BLACK: '#000000',
-            OLIVE: '#808000',
-            ORANGE_RED: '#FF4500',
-            PURPLE: '#800080',
-            TEAL: '#008080',
-            BROWN: '#A52A2A',
-            PINK: '#FFC0CB',
-            DEFAULT: '#FFFFFF'
-        };
-        const WEAPON_COLOR_MAPPING = {
-            ORANGE: ['CZ-3A1', 'G18C', 'M9', 'M93R', 'MAC-10', 'MP5', 'P30L', 'DUAL P30L', 'UMP9', 'VECTOR', 'VSS', 'FLAMETHROWER'],
-            BLUE: ['AK-47', 'OT-38', 'OTS-38', 'M39 EMR', 'DP-28', 'MOSIN-NAGANT', 'SCAR-H', 'SV-98', 'M1 GARAND', 'PKP PECHENEG', 'AN-94', 'BAR M1918', 'BLR 81', 'SVD-63', 'M134', 'WATER GUN', 'GROZA', 'GROZA-S'],
-            GREEN: ['FAMAS', 'M416', 'M249', 'QBB-97', 'MK 12 SPR', 'M4A1-S', 'SCOUT ELITE', 'L86A2'],
-            RED: ['M870', 'MP220', 'SAIGA-12', 'SPAS-12', 'USAS-12', 'SUPER 90', 'LASR GUN', 'M1100'],
-            BLACK: ['DEAGLE 50', 'RAINBOW BLASTER'],
-            OLIVE: ['AWM-S', 'MK 20 SSR'],
-            ORANGE_RED: ['FLARE GUN'],
-            PURPLE: ['MODEL 94', 'PEACEMAKER', 'VECTOR (.45 ACP)', 'M1911', 'M1A1', 'MK45G'],
-            TEAL: ['M79'],
-            BROWN: ['POTATO CANNON', 'SPUD GUN'],
-            PINK: ['HEART CANNON'],
-            DEFAULT: []
-        };
-        weaponNames.forEach((weaponNameElement) => {
-            const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
-            const observer = new MutationObserver(() => {
-                var _a, _b, _c;
-                const weaponName = ((_b = (_a = weaponNameElement.textContent) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.toUpperCase()) || '';
-                let colorKey = 'DEFAULT';
-                // Do a hack for "VECTOR" gun (because can be 2 weapons: yellow or purple)
-                if (weaponName === "VECTOR") {
-                    // Get the weapon container and image element
-                    const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
-                    const weaponImage = weaponContainer === null || weaponContainer === void 0 ? void 0 : weaponContainer.querySelector(".ui-weapon-image");
-                    if (weaponImage && weaponImage.src) {
-                        // Check the image source to determine which Vector it is
-                        if (weaponImage.src.includes("-acp") || weaponImage.src.includes("45")) {
-                            colorKey = 'PURPLE';
-                        }
-                        else {
-                            colorKey = 'ORANGE';
-                        }
-                    }
-                    else {
-                        // Default to orange if we can't determine the type
-                        colorKey = 'ORANGE';
-                    }
-                }
-                else {
-                    colorKey = (((_c = Object.entries(WEAPON_COLOR_MAPPING)
-                        .find(([_, weapons]) => weapons.includes(weaponName))) === null || _c === void 0 ? void 0 : _c[0]) || 'DEFAULT');
-                }
-                if (weaponContainer && weaponContainer.id !== "ui-weapon-id-4") {
-                    weaponContainer.style.border = `3px solid ${WEAPON_COLORS[colorKey]}`;
-                }
-            });
-            observer.observe(weaponNameElement, { childList: true, characterData: true, subtree: true });
-        });
-    }
-    updateUiElements() {
-        const currentUrl = window.location.href;
-        const isSpecialUrl = /\/#\w+/.test(currentUrl);
-        const playerOptions = document.getElementById("player-options");
-        const teamMenuContents = document.getElementById("team-menu-contents");
-        const startMenuContainer = document.querySelector("#start-menu .play-button-container");
-        // Update counters draggable state based on LSHIFT menu visibility
-        this.updateCountersDraggableState();
-        if (!playerOptions)
-            return;
-        if (isSpecialUrl &&
-            teamMenuContents &&
-            playerOptions.parentNode !== teamMenuContents) {
-            teamMenuContents.appendChild(playerOptions);
-        }
-        else if (!isSpecialUrl &&
-            startMenuContainer &&
-            playerOptions.parentNode !== startMenuContainer) {
-            const firstChild = startMenuContainer.firstChild;
-            startMenuContainer.insertBefore(playerOptions, firstChild);
-        }
-        const teamMenu = document.getElementById("team-menu");
-        if (teamMenu) {
-            teamMenu.style.height = "355px";
-        }
-        const menuBlocks = document.querySelectorAll(".menu-block");
-        menuBlocks.forEach((block) => {
-            block.style.maxHeight = "355px";
-        });
-        //scalable?
-    }
-    updateMenuButtonText() {
-        const hideButton = document.getElementById("hideMenuButton");
-        hideButton.textContent = this.isMenuVisible
-            ? "Hide Menu [P]"
-            : "Show Menu [P]";
-    }
-    updateHealthBars() {
-        const healthBars = document.querySelectorAll("#ui-health-container");
-        healthBars.forEach((container) => {
-            var _a, _b;
-            const bar = container.querySelector("#ui-health-actual");
-            if (bar) {
-                const currentHealth = Math.round(parseFloat(bar.style.width));
-                let percentageText = container.querySelector(".health-text");
-                // Create or update percentage text
-                if (!percentageText) {
-                    percentageText = document.createElement("span");
-                    percentageText.classList.add("health-text");
-                    Object.assign(percentageText.style, {
-                        width: "100%",
-                        textAlign: "center",
-                        marginTop: "5px",
-                        color: "#333",
-                        fontSize: "20px",
-                        fontWeight: "bold",
-                        position: "absolute",
-                        zIndex: "10",
-                    });
-                    container.appendChild(percentageText);
-                }
-                // Check for health change
-                if (currentHealth !== this.lastHealthValue) {
-                    const healthChange = currentHealth - this.lastHealthValue;
-                    if (healthChange !== 0) {
-                        this.showHealthChangeAnimation(container, healthChange);
-                    }
-                    this.lastHealthValue = currentHealth;
-                }
-                if (this.kxsClient.isHealthWarningEnabled) {
-                    (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.update(currentHealth);
-                }
-                else {
-                    (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
-                }
-                percentageText.textContent = `${currentHealth}%`;
-                // Update animations
-                this.updateHealthAnimations();
-            }
-        });
-    }
-    showHealthChangeAnimation(container, change) {
-        const animation = document.createElement("div");
-        const isPositive = change > 0;
-        Object.assign(animation.style, {
-            position: "absolute",
-            color: isPositive ? "#2ecc71" : "#e74c3c",
-            fontSize: "24px",
-            fontWeight: "bold",
-            fontFamily: "Arial, sans-serif",
-            textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
-            pointerEvents: "none",
-            zIndex: "100",
-            opacity: "1",
-            top: "50%",
-            right: "-80px", // Position à droite de la barre de vie
-            transform: "translateY(-50%)", // Centre verticalement
-            whiteSpace: "nowrap", // Empêche le retour à la ligne
-        });
-        // Check if change is a valid number before displaying it
-        if (!isNaN(change)) {
-            animation.textContent = `${isPositive ? "+" : ""}${change} HP`;
-        }
-        else {
-            // Skip showing animation if change is NaN
-            return;
-        }
-        container.appendChild(animation);
-        this.healthAnimations.push({
-            element: animation,
-            startTime: performance.now(),
-            duration: 1500, // Animation duration in milliseconds
-            value: change,
-        });
-    }
-    updateCountersDraggableState() {
-        var _a;
-        const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.getMenuVisibility()) || false;
-        const counters = ['fps', 'kills', 'ping'];
-        counters.forEach(name => {
-            const counter = document.getElementById(`${name}Counter`);
-            if (counter) {
-                // Mise à jour des propriétés de draggabilité
-                counter.style.pointerEvents = isMenuOpen ? 'auto' : 'none';
-                counter.style.cursor = isMenuOpen ? 'move' : 'default';
-                // Mise à jour de la possibilité de redimensionnement
-                counter.style.resize = isMenuOpen ? 'both' : 'none';
-            }
-        });
-    }
-    updateHealthAnimations() {
-        const currentTime = performance.now();
-        this.healthAnimations = this.healthAnimations.filter(animation => {
-            const elapsed = currentTime - animation.startTime;
-            const progress = Math.min(elapsed / animation.duration, 1);
-            if (progress < 1) {
-                // Update animation position and opacity
-                // Maintenant l'animation se déplace horizontalement vers la droite
-                const translateX = progress * 20; // Déplacement horizontal
-                Object.assign(animation.element.style, {
-                    transform: `translateY(-50%) translateX(${translateX}px)`,
-                    opacity: String(1 - progress),
-                });
-                return true;
-            }
-            else {
-                // Remove completed animation
-                animation.element.remove();
-                return false;
-            }
-        });
-    }
-}
-
-
 ;// ./src/intercept.ts
 function intercept(link, targetUrl) {
     const open = XMLHttpRequest.prototype.open;
@@ -2868,6 +1365,194 @@ class GridSystem {
             hHighlight.classList.add("grid-highlight");
             this.gridContainer.appendChild(hHighlight);
         }
+    }
+}
+
+
+;// ./src/DiscordTracking.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const stuff_emojis = {
+    main_weapon: "🔫",
+    secondary_weapon: "🔫",
+    grenades: "💣",
+    melees: "🔪",
+    soda: "🥤",
+    medkit: "🩹",
+    bandage: "🩹",
+    pills: "💊",
+    backpack: "🎒",
+    chest: "📦",
+    helmet: "⛑️"
+};
+class WebhookValidator {
+    static isValidWebhookUrl(url) {
+        return url.startsWith("https://");
+    }
+    static isWebhookAlive(webhookUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // First check if the URL format is valid
+                if (!this.isValidWebhookUrl(webhookUrl)) {
+                    throw new Error("Invalid webhook URL format");
+                }
+                // Test the webhook with a GET request (Discord allows GET on webhooks)
+                const response = yield fetch(webhookUrl, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+                // Discord returns 200 for valid webhooks
+                return response.status === 200;
+            }
+            catch (error) {
+                console.error("Error validating webhook:", error);
+                return false;
+            }
+        });
+    }
+    static testWebhook(webhookUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!webhookUrl) {
+                    return {
+                        isValid: false,
+                        message: "Please enter a webhook URL",
+                    };
+                }
+                if (!this.isValidWebhookUrl(webhookUrl)) {
+                    return {
+                        isValid: false,
+                        message: "Invalid Discord webhook URL format",
+                    };
+                }
+                const isAlive = yield this.isWebhookAlive(webhookUrl);
+                return {
+                    isValid: isAlive,
+                    message: isAlive
+                        ? "Webhook is valid and working!"
+                        : "Webhook is not responding or has been deleted",
+                };
+            }
+            catch (error) {
+                return {
+                    isValid: false,
+                    message: "Error testing webhook connection",
+                };
+            }
+        });
+    }
+}
+class DiscordTracking {
+    constructor(kxsClient, webhookUrl) {
+        this.kxsClient = kxsClient;
+        this.webhookUrl = webhookUrl;
+    }
+    setWebhookUrl(webhookUrl) {
+        this.webhookUrl = webhookUrl;
+    }
+    validateCurrentWebhook() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return WebhookValidator.isWebhookAlive(this.webhookUrl);
+        });
+    }
+    sendWebhookMessage(message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!WebhookValidator.isValidWebhookUrl(this.webhookUrl)) {
+                return;
+            }
+            this.kxsClient.nm.showNotification("Sending Discord message...", "info", 2300);
+            try {
+                const response = yield fetch(this.webhookUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(message),
+                });
+                if (!response.ok) {
+                    throw new Error(`Discord Webhook Error: ${response.status}`);
+                }
+            }
+            catch (error) {
+                console.error("Error sending Discord message:", error);
+            }
+        });
+    }
+    getEmbedColor(isWin) {
+        return isWin ? 0x2ecc71 : 0xe74c3c; // Green for victory, red for defeat
+    }
+    trackGameEnd(result) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const title = result.isWin
+                ? "🏆 VICTORY ROYALE!"
+                : `${result.position} - Game Over`;
+            const embed = {
+                title,
+                description: `${result.username}'s Match`,
+                color: this.getEmbedColor(result.isWin),
+                fields: [
+                    {
+                        name: "💀 Eliminations",
+                        value: result.kills.toString(),
+                        inline: true,
+                    },
+                ],
+            };
+            if (result.duration) {
+                embed.fields.push({
+                    name: "⏱️ Duration",
+                    value: result.duration,
+                    inline: true,
+                });
+            }
+            if (result.damageDealt) {
+                embed.fields.push({
+                    name: "💥 Damage Dealt",
+                    value: Math.round(result.damageDealt).toString(),
+                    inline: true,
+                });
+            }
+            if (result.damageTaken) {
+                embed.fields.push({
+                    name: "💢 Damage Taken",
+                    value: Math.round(result.damageTaken).toString(),
+                    inline: true,
+                });
+            }
+            if (result.username) {
+                embed.fields.push({
+                    name: "📝 Username",
+                    value: result.username,
+                    inline: true,
+                });
+            }
+            if (result.stuff) {
+                for (const [key, value] of Object.entries(result.stuff)) {
+                    if (value) {
+                        embed.fields.push({
+                            name: `${stuff_emojis[key]} ${key.replace("_", " ").toUpperCase()}`,
+                            value,
+                            inline: true,
+                        });
+                    }
+                }
+            }
+            const message = {
+                username: result.username,
+                content: result.isWin ? "🎉 New Victory!" : "Match Ended",
+                embeds: [embed],
+            };
+            yield this.sendWebhookMessage(message);
+        });
     }
 }
 
@@ -3520,12 +2205,13 @@ class KxsLegacyClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
-            label: "Kill Feed Blint Text",
+            label: "Kill Feed Chroma",
             value: this.kxsClient.isKillFeedBlint,
             type: "toggle",
             onChange: (value) => {
                 this.kxsClient.isKillFeedBlint = !this.kxsClient.isKillFeedBlint;
                 this.kxsClient.updateLocalStorage();
+                this.kxsClient.hud.toggleKillFeed();
             },
         });
         let musicSection = this.addSection("Music");
@@ -4290,7 +2976,7 @@ class KxsClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
-            label: "Kill Feed Blint Text",
+            label: "Kill Feed Chroma",
             value: this.kxsClient.isKillFeedBlint,
             icon: `<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g data-name="Layer 2" id="Layer_2"> <path d="M18,11a1,1,0,0,1-1,1,5,5,0,0,0-5,5,1,1,0,0,1-2,0,5,5,0,0,0-5-5,1,1,0,0,1,0-2,5,5,0,0,0,5-5,1,1,0,0,1,2,0,5,5,0,0,0,5,5A1,1,0,0,1,18,11Z"></path> <path d="M19,24a1,1,0,0,1-1,1,2,2,0,0,0-2,2,1,1,0,0,1-2,0,2,2,0,0,0-2-2,1,1,0,0,1,0-2,2,2,0,0,0,2-2,1,1,0,0,1,2,0,2,2,0,0,0,2,2A1,1,0,0,1,19,24Z"></path> <path d="M28,17a1,1,0,0,1-1,1,4,4,0,0,0-4,4,1,1,0,0,1-2,0,4,4,0,0,0-4-4,1,1,0,0,1,0-2,4,4,0,0,0,4-4,1,1,0,0,1,2,0,4,4,0,0,0,4,4A1,1,0,0,1,28,17Z"></path> </g> </g></svg>`,
             category: "HUD",
@@ -4298,6 +2984,7 @@ class KxsClientSecondaryMenu {
             onChange: () => {
                 this.kxsClient.isKillFeedBlint = !this.kxsClient.isKillFeedBlint;
                 this.kxsClient.updateLocalStorage();
+                this.kxsClient.hud.toggleKillFeed();
             },
         });
         this.addOption(SERVER, {
@@ -4668,6 +3355,1101 @@ class KxsClientSecondaryMenu {
 }
 
 
+;// ./src/Ping.ts
+class PingTest {
+    constructor() {
+        this.ping = 0;
+        this.ws = null;
+        this.sendTime = 0;
+        this.retryCount = 0;
+        this.isConnecting = false;
+        this.isWebSocket = true;
+        this.url = "";
+        this.region = "";
+        this.hasPing = false;
+        this.ptcDataBuf = new ArrayBuffer(1);
+        this.waitForServerSelectElements();
+        this.startKeepAlive();
+    }
+    startKeepAlive() {
+        setInterval(() => {
+            var _a;
+            if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
+                this.ws.send(this.ptcDataBuf);
+            }
+        }, 5000); // envoie toutes les 5s
+    }
+    waitForServerSelectElements() {
+        const checkInterval = setInterval(() => {
+            const teamSelect = document.getElementById("team-server-select");
+            const mainSelect = document.getElementById("server-select-main");
+            const selectedValue = (teamSelect === null || teamSelect === void 0 ? void 0 : teamSelect.value) || (mainSelect === null || mainSelect === void 0 ? void 0 : mainSelect.value);
+            if ((teamSelect || mainSelect) && selectedValue) {
+                clearInterval(checkInterval);
+                this.setServerFromDOM();
+                this.attachRegionChangeListener();
+                this.start(); // ← Démarrage auto ici
+            }
+        }, 100); // Vérifie toutes les 100ms
+    }
+    setServerFromDOM() {
+        const { region, url } = this.detectSelectedServer();
+        this.region = region;
+        this.url = `wss://${url}/ptc`;
+        this.start();
+    }
+    detectSelectedServer() {
+        const currentUrl = window.location.href;
+        const isSpecialUrl = /\/#\w+/.test(currentUrl);
+        const teamSelectElement = document.getElementById("team-server-select");
+        const mainSelectElement = document.getElementById("server-select-main");
+        const region = isSpecialUrl && teamSelectElement
+            ? teamSelectElement.value
+            : (mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.value) || "NA";
+        const servers = [
+            { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
+            { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
+            { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
+            { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
+        ];
+        const selectedServer = servers.find((s) => s.region.toUpperCase() === region.toUpperCase());
+        if (!selectedServer)
+            throw new Error("Aucun serveur correspondant trouvé");
+        return selectedServer;
+    }
+    attachRegionChangeListener() {
+        const teamSelectElement = document.getElementById("team-server-select");
+        const mainSelectElement = document.getElementById("server-select-main");
+        const onChange = () => {
+            const { region } = this.detectSelectedServer();
+            if (region !== this.region) {
+                this.restart();
+            }
+        };
+        teamSelectElement === null || teamSelectElement === void 0 ? void 0 : teamSelectElement.addEventListener("change", onChange);
+        mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.addEventListener("change", onChange);
+    }
+    start() {
+        if (this.isConnecting)
+            return;
+        this.isConnecting = true;
+        this.startWebSocketPing();
+    }
+    startWebSocketPing() {
+        if (this.ws || !this.url)
+            return;
+        const ws = new WebSocket(this.url);
+        ws.binaryType = "arraybuffer";
+        ws.onopen = () => {
+            this.ws = ws;
+            this.retryCount = 0;
+            this.isConnecting = false;
+            this.sendPing();
+            setTimeout(() => {
+                var _a;
+                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
+                    console.warn("WebSocket bloquée, tentative de reconnexion");
+                    this.restart();
+                }
+            }, 3000); // 3s pour sécuriser
+        };
+        ws.onmessage = () => {
+            this.hasPing = true;
+            const elapsed = (Date.now() - this.sendTime) / 1e3;
+            this.ping = Math.round(elapsed * 1000);
+            setTimeout(() => this.sendPing(), 1000);
+        };
+        ws.onerror = () => {
+            var _a;
+            this.ping = 0;
+            this.retryCount++;
+            if (this.retryCount < 3) {
+                setTimeout(() => this.startWebSocketPing(), 1000);
+            }
+            else {
+                (_a = this.ws) === null || _a === void 0 ? void 0 : _a.close();
+                this.ws = null;
+                this.isConnecting = false;
+            }
+        };
+        ws.onclose = () => {
+            this.ws = null;
+            this.isConnecting = false;
+        };
+    }
+    sendPing() {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.sendTime = Date.now();
+            this.ws.send(this.ptcDataBuf);
+        }
+    }
+    stop() {
+        if (this.ws) {
+            this.ws.onclose = null;
+            this.ws.onerror = null;
+            this.ws.onmessage = null;
+            this.ws.onopen = null;
+            this.ws.close();
+            this.ws = null;
+        }
+        this.isConnecting = false;
+        this.retryCount = 0;
+        this.hasPing = false;
+    }
+    restart() {
+        this.stop();
+        this.setServerFromDOM();
+    }
+    getPingResult() {
+        return {
+            region: this.region,
+            ping: this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing ? this.ping : null,
+        };
+    }
+}
+
+
+;// ./src/ClientHUD.ts
+
+class KxsClientHUD {
+    constructor(kxsClient) {
+        this.healthAnimations = [];
+        this.lastHealthValue = 100;
+        this.killFeedObserver = null;
+        this.kxsClient = kxsClient;
+        this.frameCount = 0;
+        this.fps = 0;
+        this.kills = 0;
+        this.isMenuVisible = true;
+        this.pingManager = new PingTest();
+        if (this.kxsClient.isPingVisible) {
+            this.initCounter("ping", "Ping", "45ms");
+        }
+        if (this.kxsClient.isFpsVisible) {
+            this.initCounter("fps", "FPS", "60");
+        }
+        if (this.kxsClient.isKillsVisible) {
+            this.initCounter("kills", "Kills", "0");
+        }
+        this.setupWeaponBorderHandler();
+        this.startUpdateLoop();
+        this.escapeMenu();
+        this.initFriendDetector();
+        if (this.kxsClient.isKillFeedBlint) {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', this.initKillFeed);
+            }
+            else {
+                this.initKillFeed();
+            }
+        }
+    }
+    initFriendDetector() {
+        // Initialize friends list
+        let all_friends = this.kxsClient.all_friends.split(',') || [];
+        if (all_friends.length >= 1) {
+            // Create a cache for detected friends
+            // Structure will be: { "friendName": timestamp }
+            const friendsCache = {};
+            // Cache duration in milliseconds (4 minutes = 240000 ms)
+            const cacheDuration = 4 * 60 * 1000;
+            // Select the element containing kill feeds
+            const killfeedContents = document.querySelector('#ui-killfeed-contents');
+            if (killfeedContents) {
+                // Keep track of last seen content for each div
+                const lastSeenContent = {
+                    "ui-killfeed-0": "",
+                    "ui-killfeed-1": "",
+                    "ui-killfeed-2": "",
+                    "ui-killfeed-3": "",
+                    "ui-killfeed-4": "",
+                    "ui-killfeed-5": ""
+                };
+                // Function to check if a friend is in the text with cache management
+                const checkForFriends = (text, divId) => {
+                    // If the text is identical to the last seen, ignore
+                    // @ts-ignore
+                    if (text === lastSeenContent[divId])
+                        return;
+                    // Update the last seen content
+                    // @ts-ignore
+                    lastSeenContent[divId] = text;
+                    // Ignore empty messages
+                    if (!text.trim())
+                        return;
+                    // Current timestamp
+                    const currentTime = Date.now();
+                    // Check if a friend is mentioned
+                    for (let friend of all_friends) {
+                        if (friend !== "" && text.includes(friend)) {
+                            // Check if the friend is in the cache and if the cache is still valid
+                            // @ts-ignore
+                            const lastSeen = friendsCache[friend];
+                            if (!lastSeen || (currentTime - lastSeen > cacheDuration)) {
+                                // Update the cache
+                                // @ts-ignore
+                                friendsCache[friend] = currentTime;
+                                // Display notification
+                                this.kxsClient.nm.showNotification(`[FriendDetector] ${friend} is in this game`, "info", 2300);
+                            }
+                            break;
+                        }
+                    }
+                };
+                // Function to check all kill feeds
+                const checkAllKillfeeds = () => {
+                    all_friends = this.kxsClient.all_friends.split(',') || [];
+                    for (let i = 0; i <= 5; i++) {
+                        const divId = `ui-killfeed-${i}`;
+                        const killDiv = document.getElementById(divId);
+                        if (killDiv) {
+                            const textElement = killDiv.querySelector('.killfeed-text');
+                            if (textElement && textElement.textContent) {
+                                checkForFriends(textElement.textContent, divId);
+                            }
+                        }
+                    }
+                };
+                // Observe style or text changes in the entire container
+                const observer = new MutationObserver(() => {
+                    checkAllKillfeeds();
+                });
+                // Start observing with a configuration that detects all changes
+                observer.observe(killfeedContents, {
+                    childList: true, // Observe changes to child elements
+                    subtree: true, // Observe the entire tree
+                    characterData: true, // Observe text changes
+                    attributes: true // Observe attribute changes (like style/opacity)
+                });
+                // Check current content immediately
+                checkAllKillfeeds();
+            }
+            else {
+                console.warn("Killfeed-contents element not found");
+            }
+        }
+    }
+    initKillFeed() {
+        this.applyCustomStyles();
+        this.setupObserver();
+    }
+    toggleKillFeed() {
+        if (this.kxsClient.isKillFeedBlint) {
+            this.initKillFeed(); // <-- injecte le CSS custom et observer
+        }
+        else {
+            this.resetKillFeed(); // <-- supprime styles et contenu
+        }
+    }
+    /**
+     * Réinitialise le Kill Feed à l'état par défaut (vide)
+     */
+    /**
+     * Supprime tous les styles custom KillFeed injectés par applyCustomStyles
+     */
+    resetKillFeedStyles() {
+        // Supprime tous les <style> contenant .killfeed-div ou .killfeed-text
+        const styles = Array.from(document.head.querySelectorAll('style'));
+        styles.forEach(style => {
+            if (style.textContent &&
+                (style.textContent.includes('.killfeed-div') || style.textContent.includes('.killfeed-text'))) {
+                style.remove();
+            }
+        });
+    }
+    resetKillFeed() {
+        // Supprime les styles custom KillFeed
+        this.resetKillFeedStyles();
+        // Sélectionne le container du killfeed
+        const killfeedContents = document.getElementById('ui-killfeed-contents');
+        if (killfeedContents) {
+            // Vide tous les killfeed-div et killfeed-text
+            killfeedContents.querySelectorAll('.killfeed-div').forEach(div => {
+                const text = div.querySelector('.killfeed-text');
+                if (text)
+                    text.textContent = '';
+                div.style.opacity = '0';
+            });
+        }
+    }
+    escapeMenu() {
+        const customStyles = `
+    .ui-game-menu-desktop {
+        background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        padding: 20px !important;
+        backdrop-filter: blur(10px) !important;
+        max-width: 350px !important;
+        /* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
+        margin: auto !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important; /* Allow vertical scrolling if necessary */
+    }
+    
+    /* Style pour les boutons de mode de jeu qui ont une image de fond */
+    .btn-mode-cobalt,
+    [style*="background: url("] {
+        background-repeat: no-repeat !important;
+        background-position: right center !important;
+        background-size: auto 80% !important;
+        position: relative !important;
+        padding-right: 40px !important;
+    }
+    
+    /* Ne pas appliquer ce style aux boutons standards comme Play Solo */
+    #btn-start-mode-0 {
+        background-repeat: initial !important;
+        background-position: initial !important;
+        background-size: initial !important;
+        padding-right: initial !important;
+    }
+
+    .ui-game-menu-desktop::-webkit-scrollbar {
+        width: 8px !important;
+    }
+    .ui-game-menu-desktop::-webkit-scrollbar-track {
+        background: rgba(25, 25, 35, 0.5) !important;
+        border-radius: 10px !important;
+    }
+    .ui-game-menu-desktop::-webkit-scrollbar-thumb {
+        background-color: #4287f5 !important;
+        border-radius: 10px !important;
+        border: 2px solid rgba(25, 25, 35, 0.5) !important;
+    }
+    .ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
+        background-color: #5a9eff !important;
+    }
+
+    .ui-game-menu-desktop {
+        scrollbar-width: thin !important;
+        scrollbar-color: #4287f5 rgba(25, 25, 35, 0.5) !important;
+    }
+
+    .kxs-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 20px;
+        padding: 10px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .kxs-logo {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        border-radius: 6px;
+    }
+
+    .kxs-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ffffff;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+        font-family: 'Arial', sans-serif;
+        letter-spacing: 2px;
+    }
+
+    .kxs-title span {
+        color: #4287f5;
+    }
+        
+    
+    .btn-game-menu {
+        background: linear-gradient(135deg, rgba(66, 135, 245, 0.1) 0%, rgba(66, 135, 245, 0.2) 100%) !important;
+        border: 1px solid rgba(66, 135, 245, 0.3) !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease !important;
+        margin: 5px 0 !important;
+        padding: 12px !important;
+        font-weight: 600 !important;
+        width: 100% !important;
+        text-align: center !important;
+        display: block !important;
+        box-sizing: border-box !important;
+		line-height: 15px !important;
+    }
+
+    .btn-game-menu:hover {
+        background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, rgba(66, 135, 245, 0.3) 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(66, 135, 245, 0.2) !important;
+    }
+
+    .slider-container {
+        background: rgba(66, 135, 245, 0.1) !important;
+        border-radius: 8px !important;
+        padding: 10px 15px !important;
+        margin: 10px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .slider-text {
+        color: #ffffff !important;
+        font-size: 14px !important;
+        margin-bottom: 8px !important;
+        text-align: center !important;
+    }
+
+    .slider {
+        -webkit-appearance: none !important;
+        width: 100% !important;
+        height: 6px !important;
+        border-radius: 3px !important;
+        background: rgba(66, 135, 245, 0.3) !important;
+        outline: none !important;
+        margin: 10px 0 !important;
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        background: #4287f5 !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2) !important;
+        box-shadow: 0 0 10px rgba(66, 135, 245, 0.5) !important;
+    }
+
+    .btns-game-double-row {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+        width: 100% !important;
+    }
+
+    .btn-game-container {
+        flex: 1 !important;
+    }
+
+	#btn-touch-styles,
+	#btn-game-aim-line {
+    	display: none !important;
+    	pointer-events: none !important;
+    	visibility: hidden !important;
+	}
+    `;
+        const addCustomStyles = () => {
+            const styleElement = document.createElement('style');
+            styleElement.textContent = customStyles;
+            document.head.appendChild(styleElement);
+        };
+        const addKxsHeader = () => {
+            const menuContainer = document.querySelector('#ui-game-menu');
+            if (!menuContainer)
+                return;
+            const header = document.createElement('div');
+            header.className = 'kxs-header';
+            const title = document.createElement('span');
+            title.className = 'kxs-title';
+            title.innerHTML = '<span>Kxs</span> CLIENT';
+            header.appendChild(title);
+            menuContainer.insertBefore(header, menuContainer.firstChild);
+        };
+        const disableUnwantedButtons = () => {
+            const touchStyles = document.getElementById('btn-touch-styles');
+            const aimLine = document.getElementById('btn-game-aim-line');
+            if (touchStyles) {
+                touchStyles.style.display = 'none';
+                touchStyles.style.pointerEvents = 'none';
+                touchStyles.style.visibility = 'hidden';
+            }
+            if (aimLine) {
+                aimLine.style.display = 'none';
+                aimLine.style.pointerEvents = 'none';
+                aimLine.style.visibility = 'hidden';
+            }
+        };
+        if (document.querySelector('#ui-game-menu')) {
+            addCustomStyles();
+            addKxsHeader();
+            disableUnwantedButtons();
+            // Désactiver uniquement le slider Music Volume
+            const sliders = document.querySelectorAll('.slider-container.ui-slider-container');
+            sliders.forEach(slider => {
+                const label = slider.querySelector('p.slider-text[data-l10n="index-music-volume"]');
+                if (label) {
+                    slider.style.display = 'none';
+                }
+            });
+            // Ajout du bouton Toggle Right Shift Menu
+            const menuContainer = document.querySelector('#ui-game-menu');
+            if (menuContainer) {
+                const toggleRightShiftBtn = document.createElement('button');
+                toggleRightShiftBtn.textContent = 'Toggle Right Shift Menu';
+                toggleRightShiftBtn.className = 'btn-game-menu';
+                toggleRightShiftBtn.style.marginTop = '10px';
+                toggleRightShiftBtn.onclick = () => {
+                    if (this.kxsClient.secondaryMenu && typeof this.kxsClient.secondaryMenu.toggleMenuVisibility === 'function') {
+                        this.kxsClient.secondaryMenu.toggleMenuVisibility();
+                    }
+                };
+                menuContainer.appendChild(toggleRightShiftBtn);
+            }
+        }
+    }
+    handleMessage(element) {
+        if (element instanceof HTMLElement && element.classList.contains('killfeed-div')) {
+            const killfeedText = element.querySelector('.killfeed-text');
+            if (killfeedText instanceof HTMLElement) {
+                if (killfeedText.textContent && killfeedText.textContent.trim() !== '') {
+                    if (!killfeedText.hasAttribute('data-glint')) {
+                        killfeedText.setAttribute('data-glint', 'true');
+                        element.style.opacity = '1';
+                        setTimeout(() => {
+                            element.style.opacity = '0';
+                        }, 5000);
+                    }
+                }
+                else {
+                    element.style.opacity = '0';
+                }
+            }
+        }
+    }
+    setupObserver() {
+        const killfeedContents = document.getElementById('ui-killfeed-contents');
+        if (killfeedContents) {
+            // Détruit l'ancien observer s'il existe
+            if (this.killFeedObserver) {
+                this.killFeedObserver.disconnect();
+            }
+            this.killFeedObserver = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.target instanceof HTMLElement &&
+                        mutation.target.classList.contains('killfeed-text')) {
+                        const parentDiv = mutation.target.closest('.killfeed-div');
+                        if (parentDiv) {
+                            this.handleMessage(parentDiv);
+                        }
+                    }
+                    mutation.addedNodes.forEach((node) => {
+                        if (node instanceof HTMLElement) {
+                            this.handleMessage(node);
+                        }
+                    });
+                });
+            });
+            this.killFeedObserver.observe(killfeedContents, {
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributes: true,
+                attributeFilter: ['style', 'class']
+            });
+            killfeedContents.querySelectorAll('.killfeed-div').forEach(this.handleMessage);
+        }
+    }
+    /**
+     * Détruit l'observer du killfeed s'il existe
+     */
+    disableKillFeedObserver() {
+        if (this.killFeedObserver) {
+            this.killFeedObserver.disconnect();
+            this.killFeedObserver = null;
+        }
+    }
+    applyCustomStyles() {
+        const customStyles = document.createElement('style');
+        if (this.kxsClient.isKillFeedBlint) {
+            customStyles.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@600&display=swap');
+  
+        .killfeed-div {
+            position: absolute !important;
+            padding: 5px 10px !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            border-radius: 5px !important;
+            transition: opacity 0.5s ease-out !important;
+        }
+  
+        .killfeed-text {
+            font-family: 'Oxanium', sans-serif !important;
+            font-weight: bold !important;
+            font-size: 16px !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+            background: linear-gradient(90deg, 
+                rgb(255, 0, 0), 
+                rgb(255, 127, 0), 
+                rgb(255, 255, 0), 
+                rgb(0, 255, 0), 
+                rgb(0, 0, 255), 
+                rgb(75, 0, 130), 
+                rgb(148, 0, 211), 
+                rgb(255, 0, 0));
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glint 3s linear infinite;
+        }
+  
+        @keyframes glint {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+  
+        .killfeed-div .killfeed-text:empty {
+            display: none !important;
+        }
+      `;
+        }
+        else {
+            customStyles.innerHTML = `
+        .killfeed-div {
+            position: absolute;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            transition: opacity 0.5s ease-out;
+        }
+  
+        .killfeed-text {
+            font-family: inherit;
+            font-weight: normal;
+            font-size: inherit;
+            color: inherit;
+            text-shadow: none;
+            background: none;
+        }
+  
+        .killfeed-div .killfeed-text:empty {
+            display: none;
+        }
+      `;
+        }
+        document.head.appendChild(customStyles);
+    }
+    handleResize() {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        for (const name of ['fps', 'kills', 'ping']) {
+            const counterContainer = document.getElementById(`${name}CounterContainer`);
+            if (!counterContainer)
+                continue;
+            const counter = this.kxsClient.counters[name];
+            if (!counter)
+                continue;
+            const rect = counterContainer.getBoundingClientRect();
+            const savedPosition = this.getSavedPosition(name);
+            let newPosition = this.calculateSafePosition(savedPosition, rect.width, rect.height, viewportWidth, viewportHeight);
+            this.applyPosition(counterContainer, newPosition);
+            this.savePosition(name, newPosition);
+        }
+    }
+    calculateSafePosition(currentPosition, elementWidth, elementHeight, viewportWidth, viewportHeight) {
+        let { left, top } = currentPosition;
+        if (left + elementWidth > viewportWidth) {
+            left = viewportWidth - elementWidth;
+        }
+        if (left < 0) {
+            left = 0;
+        }
+        if (top + elementHeight > viewportHeight) {
+            top = viewportHeight - elementHeight;
+        }
+        if (top < 0) {
+            top = 0;
+        }
+        return { left, top };
+    }
+    getSavedPosition(name) {
+        const savedPosition = localStorage.getItem(`${name}CounterPosition`);
+        if (savedPosition) {
+            try {
+                return JSON.parse(savedPosition);
+            }
+            catch (_a) {
+                return this.kxsClient.defaultPositions[name];
+            }
+        }
+        return this.kxsClient.defaultPositions[name];
+    }
+    applyPosition(element, position) {
+        element.style.left = `${position.left}px`;
+        element.style.top = `${position.top}px`;
+    }
+    savePosition(name, position) {
+        localStorage.setItem(`${name}CounterPosition`, JSON.stringify(position));
+    }
+    startUpdateLoop() {
+        var _a;
+        const now = performance.now();
+        const delta = now - this.kxsClient.lastFrameTime;
+        this.frameCount++;
+        if (delta >= 1000) {
+            this.fps = Math.round((this.frameCount * 1000) / delta);
+            this.frameCount = 0;
+            this.kxsClient.lastFrameTime = now;
+            this.kills = this.kxsClient.getKills();
+            if (this.kxsClient.isFpsVisible && this.kxsClient.counters.fps) {
+                this.kxsClient.counters.fps.textContent = `FPS: ${this.fps}`;
+            }
+            if (this.kxsClient.isKillsVisible && this.kxsClient.counters.kills) {
+                this.kxsClient.counters.kills.textContent = `Kills: ${this.kills}`;
+            }
+            if (this.kxsClient.isPingVisible &&
+                this.kxsClient.counters.ping &&
+                this.pingManager) {
+                const result = this.pingManager.getPingResult();
+                this.kxsClient.counters.ping.textContent = `PING: ${result.ping} ms`;
+            }
+        }
+        if (this.kxsClient.animationFrameCallback) {
+            this.kxsClient.animationFrameCallback(() => this.startUpdateLoop());
+        }
+        this.updateUiElements();
+        this.updateBoostBars();
+        this.updateHealthBars();
+        (_a = this.kxsClient.kill_leader) === null || _a === void 0 ? void 0 : _a.update(this.kills);
+    }
+    initCounter(name, label, initialText) {
+        const counter = document.createElement("div");
+        counter.id = `${name}Counter`;
+        const counterContainer = document.createElement("div");
+        counterContainer.id = `${name}CounterContainer`;
+        Object.assign(counterContainer.style, {
+            position: "absolute",
+            left: `${this.kxsClient.defaultPositions[name].left}px`,
+            top: `${this.kxsClient.defaultPositions[name].top}px`,
+            zIndex: "10000",
+        });
+        Object.assign(counter.style, {
+            color: "white",
+            backgroundColor: "rgba(0, 0, 0, 0.2)",
+            borderRadius: "5px",
+            fontFamily: "Arial, sans-serif",
+            padding: "5px 10px",
+            pointerEvents: "none",
+            cursor: "default",
+            width: `${this.kxsClient.defaultSizes[name].width}px`,
+            height: `${this.kxsClient.defaultSizes[name].height}px`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            resize: "both",
+            overflow: "hidden",
+        });
+        counter.textContent = `${label}: ${initialText}`;
+        counterContainer.appendChild(counter);
+        const uiTopLeft = document.getElementById("ui-top-left");
+        if (uiTopLeft) {
+            uiTopLeft.appendChild(counterContainer);
+        }
+        const adjustFontSize = () => {
+            const { width, height } = counter.getBoundingClientRect();
+            const size = Math.min(width, height) * 0.4;
+            counter.style.fontSize = `${size}px`;
+        };
+        new ResizeObserver(adjustFontSize).observe(counter);
+        counter.addEventListener("mousedown", (event) => {
+            if (event.button === 1) {
+                this.resetCounter(name, label, initialText);
+                event.preventDefault();
+            }
+        });
+        this.kxsClient.makeDraggable(counterContainer, `${name}CounterPosition`);
+        this.kxsClient.counters[name] = counter;
+    }
+    resetCounter(name, label, initialText) {
+        const counter = this.kxsClient.counters[name];
+        const container = document.getElementById(`${name}CounterContainer`);
+        if (!counter || !container)
+            return;
+        // Reset only this counter's position and size
+        Object.assign(container.style, {
+            left: `${this.kxsClient.defaultPositions[name].left}px`,
+            top: `${this.kxsClient.defaultPositions[name].top}px`,
+        });
+        Object.assign(counter.style, {
+            width: `${this.kxsClient.defaultSizes[name].width}px`,
+            height: `${this.kxsClient.defaultSizes[name].height}px`,
+            fontSize: "18px",
+        });
+        counter.textContent = `${label}: ${initialText}`;
+        // Clear the saved position for this counter only
+        localStorage.removeItem(`${name}CounterPosition`);
+    }
+    updateBoostBars() {
+        const boostCounter = document.querySelector("#ui-boost-counter");
+        if (boostCounter) {
+            const boostBars = boostCounter.querySelectorAll(".ui-boost-base .ui-bar-inner");
+            let totalBoost = 0;
+            const weights = [25, 25, 40, 10];
+            boostBars.forEach((bar, index) => {
+                const width = parseFloat(bar.style.width);
+                if (!isNaN(width)) {
+                    totalBoost += width * (weights[index] / 100);
+                }
+            });
+            const averageBoost = Math.round(totalBoost);
+            let boostDisplay = boostCounter.querySelector(".boost-display");
+            if (!boostDisplay) {
+                boostDisplay = document.createElement("div");
+                boostDisplay.classList.add("boost-display");
+                Object.assign(boostDisplay.style, {
+                    position: "absolute",
+                    bottom: "75px",
+                    right: "335px",
+                    color: "#FF901A",
+                    backgroundColor: "rgba(0, 0, 0, 0.4)",
+                    padding: "5px 10px",
+                    borderRadius: "5px",
+                    fontFamily: "Arial, sans-serif",
+                    fontSize: "14px",
+                    zIndex: "10",
+                    textAlign: "center",
+                });
+                boostCounter.appendChild(boostDisplay);
+            }
+            boostDisplay.textContent = `AD: ${averageBoost}%`;
+        }
+    }
+    setupWeaponBorderHandler() {
+        const weaponContainers = Array.from(document.getElementsByClassName("ui-weapon-switch"));
+        weaponContainers.forEach((container) => {
+            if (container.id === "ui-weapon-id-4") {
+                container.style.border = "3px solid #2f4032";
+            }
+            else {
+                container.style.border = "3px solid #FFFFFF";
+            }
+        });
+        const weaponNames = Array.from(document.getElementsByClassName("ui-weapon-name"));
+        const WEAPON_COLORS = {
+            ORANGE: '#FFAE00',
+            BLUE: '#007FFF',
+            GREEN: '#0f690d',
+            RED: '#FF0000',
+            BLACK: '#000000',
+            OLIVE: '#808000',
+            ORANGE_RED: '#FF4500',
+            PURPLE: '#800080',
+            TEAL: '#008080',
+            BROWN: '#A52A2A',
+            PINK: '#FFC0CB',
+            DEFAULT: '#FFFFFF'
+        };
+        const WEAPON_COLOR_MAPPING = {
+            ORANGE: ['CZ-3A1', 'G18C', 'M9', 'M93R', 'MAC-10', 'MP5', 'P30L', 'DUAL P30L', 'UMP9', 'VECTOR', 'VSS', 'FLAMETHROWER'],
+            BLUE: ['AK-47', 'OT-38', 'OTS-38', 'M39 EMR', 'DP-28', 'MOSIN-NAGANT', 'SCAR-H', 'SV-98', 'M1 GARAND', 'PKP PECHENEG', 'AN-94', 'BAR M1918', 'BLR 81', 'SVD-63', 'M134', 'WATER GUN', 'GROZA', 'GROZA-S'],
+            GREEN: ['FAMAS', 'M416', 'M249', 'QBB-97', 'MK 12 SPR', 'M4A1-S', 'SCOUT ELITE', 'L86A2'],
+            RED: ['M870', 'MP220', 'SAIGA-12', 'SPAS-12', 'USAS-12', 'SUPER 90', 'LASR GUN', 'M1100'],
+            BLACK: ['DEAGLE 50', 'RAINBOW BLASTER'],
+            OLIVE: ['AWM-S', 'MK 20 SSR'],
+            ORANGE_RED: ['FLARE GUN'],
+            PURPLE: ['MODEL 94', 'PEACEMAKER', 'VECTOR (.45 ACP)', 'M1911', 'M1A1', 'MK45G'],
+            TEAL: ['M79'],
+            BROWN: ['POTATO CANNON', 'SPUD GUN'],
+            PINK: ['HEART CANNON'],
+            DEFAULT: []
+        };
+        weaponNames.forEach((weaponNameElement) => {
+            const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
+            const observer = new MutationObserver(() => {
+                var _a, _b, _c;
+                const weaponName = ((_b = (_a = weaponNameElement.textContent) === null || _a === void 0 ? void 0 : _a.trim()) === null || _b === void 0 ? void 0 : _b.toUpperCase()) || '';
+                let colorKey = 'DEFAULT';
+                // Do a hack for "VECTOR" gun (because can be 2 weapons: yellow or purple)
+                if (weaponName === "VECTOR") {
+                    // Get the weapon container and image element
+                    const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
+                    const weaponImage = weaponContainer === null || weaponContainer === void 0 ? void 0 : weaponContainer.querySelector(".ui-weapon-image");
+                    if (weaponImage && weaponImage.src) {
+                        // Check the image source to determine which Vector it is
+                        if (weaponImage.src.includes("-acp") || weaponImage.src.includes("45")) {
+                            colorKey = 'PURPLE';
+                        }
+                        else {
+                            colorKey = 'ORANGE';
+                        }
+                    }
+                    else {
+                        // Default to orange if we can't determine the type
+                        colorKey = 'ORANGE';
+                    }
+                }
+                else {
+                    colorKey = (((_c = Object.entries(WEAPON_COLOR_MAPPING)
+                        .find(([_, weapons]) => weapons.includes(weaponName))) === null || _c === void 0 ? void 0 : _c[0]) || 'DEFAULT');
+                }
+                if (weaponContainer && weaponContainer.id !== "ui-weapon-id-4") {
+                    weaponContainer.style.border = `3px solid ${WEAPON_COLORS[colorKey]}`;
+                }
+            });
+            observer.observe(weaponNameElement, { childList: true, characterData: true, subtree: true });
+        });
+    }
+    updateUiElements() {
+        const currentUrl = window.location.href;
+        const isSpecialUrl = /\/#\w+/.test(currentUrl);
+        const playerOptions = document.getElementById("player-options");
+        const teamMenuContents = document.getElementById("team-menu-contents");
+        const startMenuContainer = document.querySelector("#start-menu .play-button-container");
+        // Update counters draggable state based on LSHIFT menu visibility
+        this.updateCountersDraggableState();
+        if (!playerOptions)
+            return;
+        if (isSpecialUrl &&
+            teamMenuContents &&
+            playerOptions.parentNode !== teamMenuContents) {
+            teamMenuContents.appendChild(playerOptions);
+        }
+        else if (!isSpecialUrl &&
+            startMenuContainer &&
+            playerOptions.parentNode !== startMenuContainer) {
+            const firstChild = startMenuContainer.firstChild;
+            startMenuContainer.insertBefore(playerOptions, firstChild);
+        }
+        const teamMenu = document.getElementById("team-menu");
+        if (teamMenu) {
+            teamMenu.style.height = "355px";
+        }
+        const menuBlocks = document.querySelectorAll(".menu-block");
+        menuBlocks.forEach((block) => {
+            block.style.maxHeight = "355px";
+        });
+        //scalable?
+    }
+    updateMenuButtonText() {
+        const hideButton = document.getElementById("hideMenuButton");
+        hideButton.textContent = this.isMenuVisible
+            ? "Hide Menu [P]"
+            : "Show Menu [P]";
+    }
+    updateHealthBars() {
+        const healthBars = document.querySelectorAll("#ui-health-container");
+        healthBars.forEach((container) => {
+            var _a, _b;
+            const bar = container.querySelector("#ui-health-actual");
+            if (bar) {
+                const currentHealth = Math.round(parseFloat(bar.style.width));
+                let percentageText = container.querySelector(".health-text");
+                // Create or update percentage text
+                if (!percentageText) {
+                    percentageText = document.createElement("span");
+                    percentageText.classList.add("health-text");
+                    Object.assign(percentageText.style, {
+                        width: "100%",
+                        textAlign: "center",
+                        marginTop: "5px",
+                        color: "#333",
+                        fontSize: "20px",
+                        fontWeight: "bold",
+                        position: "absolute",
+                        zIndex: "10",
+                    });
+                    container.appendChild(percentageText);
+                }
+                // Check for health change
+                if (currentHealth !== this.lastHealthValue) {
+                    const healthChange = currentHealth - this.lastHealthValue;
+                    if (healthChange !== 0) {
+                        this.showHealthChangeAnimation(container, healthChange);
+                    }
+                    this.lastHealthValue = currentHealth;
+                }
+                if (this.kxsClient.isHealthWarningEnabled) {
+                    (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.update(currentHealth);
+                }
+                else {
+                    (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
+                }
+                percentageText.textContent = `${currentHealth}%`;
+                // Update animations
+                this.updateHealthAnimations();
+            }
+        });
+    }
+    showHealthChangeAnimation(container, change) {
+        const animation = document.createElement("div");
+        const isPositive = change > 0;
+        Object.assign(animation.style, {
+            position: "absolute",
+            color: isPositive ? "#2ecc71" : "#e74c3c",
+            fontSize: "24px",
+            fontWeight: "bold",
+            fontFamily: "Arial, sans-serif",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+            pointerEvents: "none",
+            zIndex: "100",
+            opacity: "1",
+            top: "50%",
+            right: "-80px", // Position à droite de la barre de vie
+            transform: "translateY(-50%)", // Centre verticalement
+            whiteSpace: "nowrap", // Empêche le retour à la ligne
+        });
+        // Check if change is a valid number before displaying it
+        if (!isNaN(change)) {
+            animation.textContent = `${isPositive ? "+" : ""}${change} HP`;
+        }
+        else {
+            // Skip showing animation if change is NaN
+            return;
+        }
+        container.appendChild(animation);
+        this.healthAnimations.push({
+            element: animation,
+            startTime: performance.now(),
+            duration: 1500, // Animation duration in milliseconds
+            value: change,
+        });
+    }
+    updateCountersDraggableState() {
+        var _a;
+        const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.getMenuVisibility()) || false;
+        const counters = ['fps', 'kills', 'ping'];
+        counters.forEach(name => {
+            const counter = document.getElementById(`${name}Counter`);
+            if (counter) {
+                // Mise à jour des propriétés de draggabilité
+                counter.style.pointerEvents = isMenuOpen ? 'auto' : 'none';
+                counter.style.cursor = isMenuOpen ? 'move' : 'default';
+                // Mise à jour de la possibilité de redimensionnement
+                counter.style.resize = isMenuOpen ? 'both' : 'none';
+            }
+        });
+    }
+    updateHealthAnimations() {
+        const currentTime = performance.now();
+        this.healthAnimations = this.healthAnimations.filter(animation => {
+            const elapsed = currentTime - animation.startTime;
+            const progress = Math.min(elapsed / animation.duration, 1);
+            if (progress < 1) {
+                // Update animation position and opacity
+                // Maintenant l'animation se déplace horizontalement vers la droite
+                const translateX = progress * 20; // Déplacement horizontal
+                Object.assign(animation.element.style, {
+                    transform: `translateY(-50%) translateX(${translateX}px)`,
+                    opacity: String(1 - progress),
+                });
+                return true;
+            }
+            else {
+                // Remove completed animation
+                animation.element.remove();
+                return false;
+            }
+        });
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -4678,6 +4460,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -4742,6 +4525,7 @@ class KxsClient {
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
         this.discordRPC.connect();
+        this.hud = new KxsClientHUD(this);
         if (this.isLegaySecondaryMenu) {
             this.secondaryMenu = new KxsLegacyClientSecondaryMenu(this);
         }
@@ -6044,8 +5828,7 @@ class LoadingScreen {
 }
 
 ;// ./src/index.ts
-
-
+// import { KxsMainClientMenu } from "./ClientMainMenu";
 
 
 
@@ -6090,8 +5873,7 @@ if (startBottomMiddle) {
     }
 }
 const kxsClient = new KxsClient();
-const kxsClientHUD = new KxsClientHUD(kxsClient);
-const mainMenu = new KxsMainClientMenu(kxsClient);
+// const mainMenu = new KxsMainClientMenu(kxsClient);
 setInterval(() => {
     loadingScreen.hide();
 }, 1400);
