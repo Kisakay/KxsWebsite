@@ -1741,6 +1741,28 @@ class KxsClientHUD {
             addCustomStyles();
             addKxsHeader();
             disableUnwantedButtons();
+            // Désactiver uniquement le slider Music Volume
+            const sliders = document.querySelectorAll('.slider-container.ui-slider-container');
+            sliders.forEach(slider => {
+                const label = slider.querySelector('p.slider-text[data-l10n="index-music-volume"]');
+                if (label) {
+                    slider.style.display = 'none';
+                }
+            });
+            // Ajout du bouton Toggle Right Shift Menu
+            const menuContainer = document.querySelector('#ui-game-menu');
+            if (menuContainer) {
+                const toggleRightShiftBtn = document.createElement('button');
+                toggleRightShiftBtn.textContent = 'Toggle Right Shift Menu';
+                toggleRightShiftBtn.className = 'btn-game-menu';
+                toggleRightShiftBtn.style.marginTop = '10px';
+                toggleRightShiftBtn.onclick = () => {
+                    if (this.kxsClient.secondaryMenu && typeof this.kxsClient.secondaryMenu.toggleMenuVisibility === 'function') {
+                        this.kxsClient.secondaryMenu.toggleMenuVisibility();
+                    }
+                };
+                menuContainer.appendChild(toggleRightShiftBtn);
+            }
         }
     }
     handleMessage(element) {
@@ -2451,7 +2473,7 @@ class HealthWarning {
         this.warningElement.style.display = 'block';
         const span = this.warningElement.querySelector("span");
         if (span) {
-            span.textContent = 'LOW HP: Mode placement';
+            span.textContent = 'LOW HP: Placement Mode';
         }
     }
     disableDragging() {
@@ -3376,12 +3398,12 @@ class KxsLegacyClientSecondaryMenu {
         this.initMenu();
         this.addShiftListener();
         this.addDragListeners();
+        this.loadOption();
     }
     handleShiftPress(event) {
         if (event.key === "Shift" && event.location == 2) {
             this.clearMenu();
             this.toggleMenuVisibility();
-            this.loadOption();
         }
     }
     handleMouseDown(e) {
@@ -3883,7 +3905,6 @@ class KxsClientSecondaryMenu {
             if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
                 this.toggleMenuVisibility();
-                this.loadOption();
                 // Ensure options are displayed after loading
                 this.filterOptions();
             }
@@ -3913,6 +3934,7 @@ class KxsClientSecondaryMenu {
         this.initMenu();
         this.addShiftListener();
         this.addDragListeners();
+        this.loadOption();
     }
     initMenu() {
         this.menu.id = "kxsMenuIG";
@@ -4539,7 +4561,6 @@ class KxsClientSecondaryMenu {
             if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
                 this.toggleMenuVisibility();
-                this.loadOption();
                 // Ensure options are displayed after loading
                 this.filterOptions();
             }
