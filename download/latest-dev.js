@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.22
+// @version      1.2.23
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.22","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.23","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -2215,6 +2215,16 @@ class KxsLegacyClientSecondaryMenu {
                 this.kxsClient.hud.toggleKillFeed();
             },
         });
+        this.addOption(HUD, {
+            label: "Custom Crosshair",
+            value: this.kxsClient.customCrosshair || "",
+            type: "input",
+            onChange: (value) => {
+                this.kxsClient.customCrosshair = value;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.hud.loadCustomCrosshair();
+            },
+        });
         let musicSection = this.addSection("Music");
         this.addOption(musicSection, {
             label: "Death sound",
@@ -2812,6 +2822,7 @@ class KxsClientSecondaryMenu {
             category: "SOUND",
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 6V18M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
             type: "input",
+            placeholder: "URL of a sound",
             onChange: (value) => {
                 this.kxsClient.soundLibrary.win_sound_url = value;
                 this.kxsClient.updateLocalStorage();
@@ -2823,6 +2834,7 @@ class KxsClientSecondaryMenu {
             category: "SOUND",
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 12V18M15 6V8M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
             type: "input",
+            placeholder: "URL of a sound",
             onChange: (value) => {
                 this.kxsClient.soundLibrary.death_sound_url = value;
                 this.kxsClient.updateLocalStorage();
@@ -2936,6 +2948,19 @@ class KxsClientSecondaryMenu {
             },
         });
         this.addOption(MECHANIC, {
+            label: "Custom Crosshair",
+            value: this.kxsClient.customCrosshair || "",
+            type: "input",
+            category: "MECHANIC",
+            icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>crosshair</title> <path d="M30 14.75h-2.824c-0.608-5.219-4.707-9.318-9.874-9.921l-0.053-0.005v-2.824c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25v0 2.824c-5.219 0.608-9.318 4.707-9.921 9.874l-0.005 0.053h-2.824c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0h2.824c0.608 5.219 4.707 9.318 9.874 9.921l0.053 0.005v2.824c0 0.69 0.56 1.25 1.25 1.25s1.25-0.56 1.25-1.25v0-2.824c5.219-0.608 9.318-4.707 9.921-9.874l0.005-0.053h2.824c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0zM17.25 24.624v-2.624c0-0.69-0.56-1.25-1.25-1.25s-1.25 0.56-1.25 1.25v0 2.624c-3.821-0.57-6.803-3.553-7.368-7.326l-0.006-0.048h2.624c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0h-2.624c0.57-3.821 3.553-6.804 7.326-7.368l0.048-0.006v2.624c0 0.69 0.56 1.25 1.25 1.25s1.25-0.56 1.25-1.25v0-2.624c3.821 0.57 6.803 3.553 7.368 7.326l0.006 0.048h-2.624c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0h2.624c-0.571 3.821-3.553 6.803-7.326 7.368l-0.048 0.006z"></path> </g></svg>',
+            placeholder: "URL of png,gif,svg",
+            onChange: (value) => {
+                this.kxsClient.customCrosshair = value;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.hud.loadCustomCrosshair();
+            },
+        });
+        this.addOption(MECHANIC, {
             label: "Heal Warning",
             value: this.kxsClient.isHealthWarningEnabled,
             type: "toggle",
@@ -3034,6 +3059,7 @@ class KxsClientSecondaryMenu {
             category: "MECHANIC",
             value: this.kxsClient.all_friends,
             type: "input",
+            placeholder: "kisakay,iletal...",
             onChange: (value) => {
                 this.kxsClient.all_friends = value;
                 this.kxsClient.updateLocalStorage();
@@ -3280,6 +3306,9 @@ class KxsClientSecondaryMenu {
         const input = document.createElement("input");
         input.type = "text";
         input.value = String(option.value);
+        if (option.placeholder) {
+            input.placeholder = option.placeholder;
+        }
         Object.assign(input.style, {
             width: "100%",
             padding: "8px",
@@ -3566,6 +3595,9 @@ class KxsClientHUD {
                 this.initKillFeed();
             }
         }
+        if (this.kxsClient.customCrosshair !== null) {
+            this.loadCustomCrosshair();
+        }
     }
     initFriendDetector() {
         // Initialize friends list
@@ -3694,6 +3726,106 @@ class KxsClientHUD {
                 div.style.opacity = '0';
             });
         }
+    }
+    loadCustomCrosshair() {
+        const url = this.kxsClient.customCrosshair;
+        // Supprime l'ancienne règle si elle existe
+        const styleId = 'kxs-custom-cursor-style';
+        const oldStyle = document.getElementById(styleId);
+        if (oldStyle)
+            oldStyle.remove();
+        // Débranche l'ancien observer s'il existe
+        if (this.customCursorObserver) {
+            this.customCursorObserver.disconnect();
+            this.customCursorObserver = undefined;
+        }
+        // Réinitialise le curseur si pas d'URL
+        if (!url) {
+            document.body.style.cursor = '';
+            return;
+        }
+        // Curseur animé JS : gestion d'un GIF
+        const isGif = url.split('?')[0].toLowerCase().endsWith('.gif');
+        // Nettoyage si on repasse sur un non-GIF
+        if (this.animatedCursorImg) {
+            this.animatedCursorImg.remove();
+            this.animatedCursorImg = undefined;
+        }
+        if (this._mousemoveHandler) {
+            document.removeEventListener('mousemove', this._mousemoveHandler);
+            this._mousemoveHandler = undefined;
+        }
+        if (isGif) {
+            // Ajoute une règle CSS globale pour cacher le curseur natif partout
+            let hideCursorStyle = document.getElementById('kxs-hide-cursor-style');
+            if (!hideCursorStyle) {
+                hideCursorStyle = document.createElement('style');
+                hideCursorStyle.id = 'kxs-hide-cursor-style';
+                hideCursorStyle.innerHTML = `#game-touch-area, #game-touch-area *, body, canvas { cursor: none !important; }`;
+                document.head.appendChild(hideCursorStyle);
+            }
+            const animatedImg = document.createElement('img');
+            animatedImg.src = url;
+            animatedImg.style.position = 'fixed';
+            animatedImg.style.pointerEvents = 'none';
+            animatedImg.style.zIndex = '99999';
+            animatedImg.style.width = '38px';
+            animatedImg.style.height = '38px';
+            animatedImg.style.left = '0px';
+            animatedImg.style.top = '0px';
+            this.animatedCursorImg = animatedImg;
+            document.body.appendChild(animatedImg);
+            this._mousemoveHandler = (e) => {
+                if (this.animatedCursorImg) {
+                    this.animatedCursorImg.style.left = `${e.clientX}px`;
+                    this.animatedCursorImg.style.top = `${e.clientY}px`;
+                }
+            };
+            document.addEventListener('mousemove', this._mousemoveHandler);
+            return;
+        }
+        // Nettoie la règle cursor:none si on repasse sur un curseur natif
+        const hideCursorStyle = document.getElementById('kxs-hide-cursor-style');
+        if (hideCursorStyle)
+            hideCursorStyle.remove();
+        // Sinon, méthode classique : précharge l'image, puis applique le curseur natif
+        const img = new window.Image();
+        img.onload = () => {
+            const style = document.createElement('style');
+            style.id = styleId;
+            style.innerHTML = `#game-touch-area, #game-touch-area * { cursor: url('${url}'), auto !important; }`;
+            document.head.appendChild(style);
+        };
+        img.onerror = () => {
+            document.body.style.cursor = '';
+            console.warn('Impossible de charger le curseur personnalisé:', url);
+        };
+        img.src = url;
+        // --- MutationObserver pour forcer le curseur même si le jeu le réécrit ---
+        this.customCursorObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const node = mutation.target;
+                    if (node.style && node.style.cursor && !node.style.cursor.includes(url)) {
+                        node.style.cursor = `url('${url}'), auto`;
+                    }
+                }
+            }
+        });
+        // Observe tous les changements de style sur tout le body et sur #game-touch-area
+        const gameTouchArea = document.getElementById('game-touch-area');
+        if (gameTouchArea) {
+            this.customCursorObserver.observe(gameTouchArea, {
+                attributes: true,
+                attributeFilter: ['style'],
+                subtree: true
+            });
+        }
+        this.customCursorObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['style'],
+            subtree: true
+        });
     }
     escapeMenu() {
         const customStylesMobile = `
@@ -4573,6 +4705,7 @@ class KxsClient {
         this.all_friends = '';
         this.isMainMenuCleaned = false;
         this.isNotifyingForToggleMenu = true;
+        this.customCrosshair = null;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -4670,7 +4803,8 @@ class KxsClient {
             isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled,
             isMainMenuCleaned: this.isMainMenuCleaned,
             isNotifyingForToggleMenu: this.isNotifyingForToggleMenu,
-            soundLibrary: this.soundLibrary
+            soundLibrary: this.soundLibrary,
+            customCrosshair: this.customCrosshair
         }));
     }
     ;
@@ -5034,7 +5168,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -5055,6 +5189,7 @@ class KxsClient {
             this.isSpotifyPlayerEnabled = (_p = savedSettings.isSpotifyPlayerEnabled) !== null && _p !== void 0 ? _p : this.isSpotifyPlayerEnabled;
             this.isMainMenuCleaned = (_q = savedSettings.isMainMenuCleaned) !== null && _q !== void 0 ? _q : this.isMainMenuCleaned;
             this.isNotifyingForToggleMenu = (_r = savedSettings.isNotifyingForToggleMenu) !== null && _r !== void 0 ? _r : this.isNotifyingForToggleMenu;
+            this.customCrosshair = (_s = savedSettings.customCrosshair) !== null && _s !== void 0 ? _s : this.customCrosshair;
             if (savedSettings.soundLibrary) {
                 // Check if the sound value exists
                 if (savedSettings.soundLibrary.win_sound_url) {
