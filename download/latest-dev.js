@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.20
+// @version      1.2.21
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.20","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.21","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -2067,6 +2067,7 @@ class NotificationManager {
 
 ;// ./src/ClientSecondaryMenu.ts
 
+const ClientSecondaryMenu_packageInfo = __webpack_require__(330);
 class KxsLegacyClientSecondaryMenu {
     constructor(kxsClient) {
         this.kxsClient = kxsClient;
@@ -2087,7 +2088,7 @@ class KxsLegacyClientSecondaryMenu {
     }
     handleShiftPress(event) {
         if (event.key === "Shift" && event.location == 2) {
-            this.clearMenu();
+            // this.clearMenu();
             this.toggleMenuVisibility();
         }
     }
@@ -2397,23 +2398,14 @@ class KxsLegacyClientSecondaryMenu {
     }
     createHeader() {
         const title = document.createElement("h2");
-        title.textContent = "KxsClient alpha";
+        title.textContent = "KxsClient v" + ClientSecondaryMenu_packageInfo.version;
         Object.assign(title.style, {
             margin: "0 0 10px",
             textAlign: "center",
             fontSize: "18px",
             color: "#FFAE00",
         });
-        const subtitle = document.createElement("p");
-        subtitle.textContent = "reset with tab";
-        Object.assign(subtitle.style, {
-            margin: "0 0 10px",
-            textAlign: "center",
-            fontSize: "12px",
-            color: "#ccc",
-        });
         this.menu.appendChild(title);
-        this.menu.appendChild(subtitle);
     }
     addSection(title) {
         const section = {
