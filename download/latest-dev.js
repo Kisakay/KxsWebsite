@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.21
+// @version      1.2.22
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.21","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.22","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -2622,7 +2622,8 @@ class KxsClientSecondaryMenu {
         document.body.appendChild(this.menu);
     }
     applyMenuStyles() {
-        Object.assign(this.menu.style, {
+        // Styles par défaut (desktop/tablette)
+        const defaultStyles = {
             backgroundColor: "rgba(17, 24, 39, 0.95)",
             padding: "20px",
             borderRadius: "12px",
@@ -2640,26 +2641,49 @@ class KxsClientSecondaryMenu {
             transform: "translateX(-50%)",
             display: "none",
             boxSizing: "border-box", // Include padding in width calculation
-        });
+        };
+        // Styles réduits pour mobile
+        const mobileStyles = {
+            padding: "6px",
+            borderRadius: "7px",
+            width: "78vw",
+            maxWidth: "84vw",
+            fontSize: "10px",
+            maxHeight: "60vh",
+            top: "4%",
+            left: "50%",
+        };
+        Object.assign(this.menu.style, defaultStyles);
+        if (this.kxsClient.isMobile && this.kxsClient.isMobile()) {
+            Object.assign(this.menu.style, mobileStyles);
+        }
     }
     createHeader() {
         const header = document.createElement("div");
-        header.style.marginBottom = "20px";
+        // Détection mobile pour styles réduits
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        const logoSize = isMobile ? 16 : 24;
+        const titleFontSize = isMobile ? 12 : 20;
+        const headerGap = isMobile ? 4 : 10;
+        const headerMarginBottom = isMobile ? 8 : 20;
+        const closeBtnPadding = isMobile ? 2 : 6;
+        const closeBtnFontSize = isMobile ? 12 : 18;
+        header.style.marginBottom = `${headerMarginBottom}px`;
         header.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isMobile ? 7 : 15}px; width: 100%; box-sizing: border-box;">
+            <div style="display: flex; align-items: center; gap: ${headerGap}px;">
                 <img src="${kxs_logo}" 
-                    alt="Logo" style="width: 24px; height: 24px;">
-                <span style="font-size: 20px; font-weight: bold;">KXS CLIENT</span>
+                    alt="Logo" style="width: ${logoSize}px; height: ${logoSize}px;">
+                <span style="font-size: ${titleFontSize}px; font-weight: bold;">KXS CLIENT</span>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: ${headerGap}px;">
               <button style="
-                padding: 6px;
+                padding: ${closeBtnPadding}px;
                 background: none;
                 border: none;
                 color: white;
                 cursor: pointer;
-                font-size: 18px;
+                font-size: ${closeBtnFontSize}px;
               ">×</button>
             </div>
           </div>
@@ -2667,13 +2691,13 @@ class KxsClientSecondaryMenu {
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px;">
               ${["ALL", "HUD", "SERVER", "MECHANIC", "SOUND"].map(cat => `
                 <button class="category-btn" data-category="${cat}" style="
-                  padding: 6px 16px;
+                  padding: ${isMobile ? '2px 6px' : '6px 16px'};
                   background: ${this.activeCategory === cat ? '#3B82F6' : 'rgba(55, 65, 81, 0.8)'};
                   border: none;
-                  border-radius: 6px;
+                  border-radius: ${isMobile ? '3px' : '6px'};
                   color: white;
                   cursor: pointer;
-                  font-size: 14px;
+                  font-size: ${isMobile ? '9px' : '14px'};
                   transition: background 0.2s;
                 ">${cat}</button>
               `).join('')}
@@ -2682,22 +2706,22 @@ class KxsClientSecondaryMenu {
               <div style="position: relative; width: 100%; box-sizing: border-box;">
                 <input type="text" id="kxsSearchInput" placeholder="Search options..." style="
                   width: 100%;
-                  padding: 8px 12px 8px 32px;
+                  padding: ${isMobile ? '3px 5px 3px 20px' : '8px 12px 8px 32px'};
                   background: rgba(55, 65, 81, 0.8);
                   border: none;
-                  border-radius: 6px;
+                  border-radius: ${isMobile ? '3px' : '6px'};
                   color: white;
-                  font-size: 14px;
+                  font-size: ${isMobile ? '9px' : '14px'};
                   outline: none;
                   box-sizing: border-box;
                 ">
                 <div style="
                   position: absolute;
-                  left: 10px;
+                  left: ${isMobile ? '4px' : '10px'};
                   top: 50%;
                   transform: translateY(-50%);
-                  width: 14px;
-                  height: 14px;
+                  width: ${isMobile ? '9px' : '14px'};
+                  height: ${isMobile ? '9px' : '14px'};
                 ">
                   <svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -3155,15 +3179,16 @@ class KxsClientSecondaryMenu {
     }
     createGridContainer() {
         const gridContainer = document.createElement("div");
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
         Object.assign(gridContainer.style, {
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "16px",
-            padding: "16px",
-            gridAutoRows: "minmax(150px, auto)",
+            gridTemplateColumns: isMobile ? "repeat(4, 1fr)" : "repeat(3, 1fr)",
+            gap: isMobile ? "5px" : "16px",
+            padding: isMobile ? "2px" : "16px",
+            gridAutoRows: isMobile ? "minmax(38px, auto)" : "minmax(150px, auto)",
             overflowY: "auto",
             overflowX: "hidden", // Prevent horizontal scrolling
-            maxHeight: "calc(3 * 150px + 2 * 16px)",
+            maxHeight: isMobile ? "28vh" : "calc(3 * 150px + 2 * 16px)",
             width: "100%",
             boxSizing: "border-box" // Include padding in width calculation
         });
@@ -3191,17 +3216,21 @@ class KxsClientSecondaryMenu {
     }
     createToggleButton(option) {
         const btn = document.createElement("button");
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
         Object.assign(btn.style, {
             width: "100%",
-            padding: "8px",
+            padding: isMobile ? "2px 0px" : "8px",
+            height: isMobile ? "24px" : "auto",
             background: option.value ? "#059669" : "#DC2626",
             border: "none",
-            borderRadius: "6px",
+            borderRadius: isMobile ? "3px" : "6px",
             color: "white",
             cursor: "pointer",
             transition: "background 0.2s",
-            fontSize: "14px",
-            fontWeight: "bold"
+            fontSize: isMobile ? "9px" : "14px",
+            fontWeight: "bold",
+            minHeight: isMobile ? "20px" : "unset",
+            letterSpacing: isMobile ? "0.5px" : "1px"
         });
         btn.textContent = option.value ? "ENABLED" : "DISABLED";
         btn.addEventListener("click", () => {
@@ -3216,9 +3245,11 @@ class KxsClientSecondaryMenu {
     }
     createClickButton(option) {
         const btn = document.createElement("button");
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
         Object.assign(btn.style, {
             width: "100%",
-            padding: "8px",
+            padding: isMobile ? "2px 0px" : "8px",
+            height: isMobile ? "24px" : "auto",
             background: "#3B82F6",
             border: "none",
             borderRadius: "6px",
@@ -3665,176 +3696,227 @@ class KxsClientHUD {
         }
     }
     escapeMenu() {
-        const customStyles = `
+        const customStylesMobile = `
     .ui-game-menu-desktop {
         background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-        padding: 20px !important;
-        backdrop-filter: blur(10px) !important;
-        max-width: 350px !important;
-        /* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
-        margin: auto !important;
+        border-radius: 4px !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+        padding: 2px 2px !important;
+        max-width: 45vw !important;
+        width: 45vw !important;
+        max-height: 28vh !important;
+        min-width: unset !important;
+        min-height: unset !important;
+        font-size: 9px !important;
+        margin: 0 auto !important;
         box-sizing: border-box !important;
-        overflow-y: auto !important; /* Allow vertical scrolling if necessary */
+        overflow-y: auto !important;
     }
-    
+    .ui-game-menu-desktop button, .ui-game-menu-desktop .btn, .ui-game-menu-desktop input, .ui-game-menu-desktop select {
+        font-size: 9px !important;
+        padding: 2px 3px !important;
+        margin: 1px 0 !important;
+        border-radius: 3px !important;
+    }
+    .ui-game-menu-desktop .kxs-header, .ui-game-menu-desktop h1, .ui-game-menu-desktop h2, .ui-game-menu-desktop h3, .ui-game-menu-desktop label, .ui-game-menu-desktop span {
+        font-size: 9px !important;
+    }
+    .ui-game-menu-desktop img, .ui-game-menu-desktop svg {
+        width: 10px !important;
+        height: 10px !important;
+    }
+    .ui-game-menu-desktop .mode-btn {
+        min-height: 12px !important;
+        font-size: 8px !important;
+        padding: 2px 3px !important;
+    }
     /* Style pour les boutons de mode de jeu qui ont une image de fond */
     .btn-mode-cobalt,
     [style*="background: url("] {
         background-repeat: no-repeat !important;
         background-position: right center !important;
-        background-size: auto 80% !important;
+        background-size: auto 70% !important;
         position: relative !important;
-        padding-right: 40px !important;
+        padding-right: 8px !important;
     }
-    
-    /* Ne pas appliquer ce style aux boutons standards comme Play Solo */
     #btn-start-mode-0 {
         background-repeat: initial !important;
         background-position: initial !important;
         background-size: initial !important;
         padding-right: initial !important;
     }
+`;
+        const customStylesDesktop = `
+.ui-game-menu-desktop {
+	background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+	border-radius: 12px !important;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+	padding: 20px !important;
+	backdrop-filter: blur(10px) !important;
+	max-width: 350px !important;
+	/* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
+	margin: auto !important;
+	box-sizing: border-box !important;
+	overflow-y: auto !important; /* Allow vertical scrolling if necessary */
+}
 
-    .ui-game-menu-desktop::-webkit-scrollbar {
-        width: 8px !important;
-    }
-    .ui-game-menu-desktop::-webkit-scrollbar-track {
-        background: rgba(25, 25, 35, 0.5) !important;
-        border-radius: 10px !important;
-    }
-    .ui-game-menu-desktop::-webkit-scrollbar-thumb {
-        background-color: #4287f5 !important;
-        border-radius: 10px !important;
-        border: 2px solid rgba(25, 25, 35, 0.5) !important;
-    }
-    .ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
-        background-color: #5a9eff !important;
-    }
+/* Style pour les boutons de mode de jeu qui ont une image de fond */
+.btn-mode-cobalt,
+[style*="background: url("] {
+	background-repeat: no-repeat !important;
+	background-position: right center !important;
+	background-size: auto 80% !important;
+	position: relative !important;
+	padding-right: 40px !important;
+}
 
-    .ui-game-menu-desktop {
-        scrollbar-width: thin !important;
-        scrollbar-color: #4287f5 rgba(25, 25, 35, 0.5) !important;
-    }
+/* Ne pas appliquer ce style aux boutons standards comme Play Solo */
+#btn-start-mode-0 {
+	background-repeat: initial !important;
+	background-position: initial !important;
+	background-size: initial !important;
+	padding-right: initial !important;
+}
 
-    .kxs-header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        margin-bottom: 20px;
-        padding: 10px;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    }
+.ui-game-menu-desktop::-webkit-scrollbar {
+	width: 8px !important;
+}
+.ui-game-menu-desktop::-webkit-scrollbar-track {
+	background: rgba(25, 25, 35, 0.5) !important;
+	border-radius: 10px !important;
+}
+.ui-game-menu-desktop::-webkit-scrollbar-thumb {
+	background-color: #4287f5 !important;
+	border-radius: 10px !important;
+	border: 2px solid rgba(25, 25, 35, 0.5) !important;
+}
+.ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
+	background-color: #5a9eff !important;
+}
 
-    .kxs-logo {
-        width: 30px;
-        height: 30px;
-        margin-right: 10px;
-        border-radius: 6px;
-    }
+.ui-game-menu-desktop {
+	scrollbar-width: thin !important;
+	scrollbar-color: #4287f5 rgba(25, 25, 35, 0.5) !important;
+}
 
-    .kxs-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #ffffff;
-        text-transform: uppercase;
-        text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
-        font-family: 'Arial', sans-serif;
-        letter-spacing: 2px;
-    }
+.kxs-header {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	margin-bottom: 20px;
+	padding: 10px;
+	border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
 
-    .kxs-title span {
-        color: #4287f5;
-    }
-        
-    
-    .btn-game-menu {
-        background: linear-gradient(135deg, rgba(66, 135, 245, 0.1) 0%, rgba(66, 135, 245, 0.2) 100%) !important;
-        border: 1px solid rgba(66, 135, 245, 0.3) !important;
-        border-radius: 8px !important;
-        color: #ffffff !important;
-        transition: all 0.3s ease !important;
-        margin: 5px 0 !important;
-        padding: 12px !important;
-        font-weight: 600 !important;
-        width: 100% !important;
-        text-align: center !important;
-        display: block !important;
-        box-sizing: border-box !important;
-		line-height: 15px !important;
-    }
+.kxs-logo {
+	width: 30px;
+	height: 30px;
+	margin-right: 10px;
+	border-radius: 6px;
+}
 
-    .btn-game-menu:hover {
-        background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, rgba(66, 135, 245, 0.3) 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(66, 135, 245, 0.2) !important;
-    }
+.kxs-title {
+	font-size: 20px;
+	font-weight: 700;
+	color: #ffffff;
+	text-transform: uppercase;
+	text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+	font-family: 'Arial', sans-serif;
+	letter-spacing: 2px;
+}
 
-    .slider-container {
-        background: rgba(66, 135, 245, 0.1) !important;
-        border-radius: 8px !important;
-        padding: 10px 15px !important;
-        margin: 10px 0 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
+.kxs-title span {
+	color: #4287f5;
+}
+	
 
-    .slider-text {
-        color: #ffffff !important;
-        font-size: 14px !important;
-        margin-bottom: 8px !important;
-        text-align: center !important;
-    }
+.btn-game-menu {
+	background: linear-gradient(135deg, rgba(66, 135, 245, 0.1) 0%, rgba(66, 135, 245, 0.2) 100%) !important;
+	border: 1px solid rgba(66, 135, 245, 0.3) !important;
+	border-radius: 8px !important;
+	color: #ffffff !important;
+	transition: all 0.3s ease !important;
+	margin: 5px 0 !important;
+	padding: 12px !important;
+	font-weight: 600 !important;
+	width: 100% !important;
+	text-align: center !important;
+	display: block !important;
+	box-sizing: border-box !important;
+	line-height: 15px !important;
+}
 
-    .slider {
-        -webkit-appearance: none !important;
-        width: 100% !important;
-        height: 6px !important;
-        border-radius: 3px !important;
-        background: rgba(66, 135, 245, 0.3) !important;
-        outline: none !important;
-        margin: 10px 0 !important;
-    }
+.btn-game-menu:hover {
+	background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, rgba(66, 135, 245, 0.3) 100%) !important;
+	transform: translateY(-2px) !important;
+	box-shadow: 0 4px 12px rgba(66, 135, 245, 0.2) !important;
+}
 
-    .slider::-webkit-slider-thumb {
-        -webkit-appearance: none !important;
-        width: 16px !important;
-        height: 16px !important;
-        border-radius: 50% !important;
-        background: #4287f5 !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-    }
+.slider-container {
+	background: rgba(66, 135, 245, 0.1) !important;
+	border-radius: 8px !important;
+	padding: 10px 15px !important;
+	margin: 10px 0 !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
 
-    .slider::-webkit-slider-thumb:hover {
-        transform: scale(1.2) !important;
-        box-shadow: 0 0 10px rgba(66, 135, 245, 0.5) !important;
-    }
+.slider-text {
+	color: #ffffff !important;
+	font-size: 14px !important;
+	margin-bottom: 8px !important;
+	text-align: center !important;
+}
 
-    .btns-game-double-row {
-        display: flex !important;
-        justify-content: center !important;
-        gap: 10px !important;
-        margin-bottom: 10px !important;
-        width: 100% !important;
-    }
+.slider {
+	-webkit-appearance: none !important;
+	width: 100% !important;
+	height: 6px !important;
+	border-radius: 3px !important;
+	background: rgba(66, 135, 245, 0.3) !important;
+	outline: none !important;
+	margin: 10px 0 !important;
+}
 
-    .btn-game-container {
-        flex: 1 !important;
-    }
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none !important;
+	width: 16px !important;
+	height: 16px !important;
+	border-radius: 50% !important;
+	background: #4287f5 !important;
+	cursor: pointer !important;
+	transition: all 0.3s ease !important;
+}
 
-	#btn-touch-styles,
-	#btn-game-aim-line {
-    	display: none !important;
-    	pointer-events: none !important;
-    	visibility: hidden !important;
-	}
-    `;
+.slider::-webkit-slider-thumb:hover {
+	transform: scale(1.2) !important;
+	box-shadow: 0 0 10px rgba(66, 135, 245, 0.5) !important;
+}
+
+.btns-game-double-row {
+	display: flex !important;
+	justify-content: center !important;
+	gap: 10px !important;
+	margin-bottom: 10px !important;
+	width: 100% !important;
+}
+
+.btn-game-container {
+	flex: 1 !important;
+}
+
+#btn-touch-styles,
+#btn-game-aim-line {
+	display: none !important;
+	pointer-events: none !important;
+	visibility: hidden !important;
+}
+`;
         const addCustomStyles = () => {
             const styleElement = document.createElement('style');
-            styleElement.textContent = customStyles;
+            styleElement.textContent = this.kxsClient.isMobile() ? customStylesMobile : customStylesDesktop;
             document.head.appendChild(styleElement);
         };
         const addKxsHeader = () => {
@@ -3866,7 +3948,9 @@ class KxsClientHUD {
         if (document.querySelector('#ui-game-menu')) {
             addCustomStyles();
             addKxsHeader();
-            disableUnwantedButtons();
+            if (!this.kxsClient.isMobile()) {
+                disableUnwantedButtons();
+            }
             // Désactiver uniquement le slider Music Volume
             const sliders = document.querySelectorAll('.slider-container.ui-slider-container');
             sliders.forEach(slider => {
@@ -4549,6 +4633,22 @@ class KxsClient {
             startRowHeader.style.backgroundImage =
                 `url("${full_logo}")`;
         }
+    }
+    detectDeviceType() {
+        const ua = navigator.userAgent;
+        if (/Mobi|Android/i.test(ua)) {
+            if (/Tablet|iPad/i.test(ua)) {
+                return "tablet";
+            }
+            return "mobile";
+        }
+        if (/iPad|Tablet/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+            return "tablet";
+        }
+        return "desktop";
+    }
+    isMobile() {
+        return this.detectDeviceType() !== "desktop";
     }
     updateLocalStorage() {
         localStorage.setItem("userSettings", JSON.stringify({
