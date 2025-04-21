@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.24
+// @version      1.2.25
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.24","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.25","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -2933,6 +2933,15 @@ class KxsClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
+            label: "Focus Mode",
+            value: "Hold Left CTRL for 1 seconds to toggle Focus Mode.\nWhen enabled, the HUD will dim and notifications will appear.",
+            category: "HUD",
+            type: "info",
+            icon: '<svg version="1.1" id="Uploaded to svgrepo.com" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .stone_een{fill:#0B1719;} </style> <path class="stone_een" d="M30.146,28.561l-1.586,1.586c-0.292,0.292-0.676,0.438-1.061,0.438s-0.768-0.146-1.061-0.438 l-4.293-4.293l-2.232,2.232c-0.391,0.391-0.902,0.586-1.414,0.586s-1.024-0.195-1.414-0.586l-0.172-0.172 c-0.781-0.781-0.781-2.047,0-2.828l8.172-8.172c0.391-0.391,0.902-0.586,1.414-0.586s1.024,0.195,1.414,0.586l0.172,0.172 c0.781,0.781,0.781,2.047,0,2.828l-2.232,2.232l4.293,4.293C30.731,27.024,30.731,27.976,30.146,28.561z M22.341,18.244 l-4.097,4.097L3.479,13.656C2.567,13.12,2,12.128,2,11.07V3c0-0.551,0.449-1,1-1h8.07c1.058,0,2.049,0.567,2.586,1.479 L22.341,18.244z M19.354,19.354c0.195-0.195,0.195-0.512,0-0.707l-15.5-15.5c-0.195-0.195-0.512-0.195-0.707,0s-0.195,0.512,0,0.707 l15.5,15.5C18.744,19.451,18.872,19.5,19,19.5S19.256,19.451,19.354,19.354z"></path> </g></svg>',
+            onChange: () => {
+            }
+        });
+        this.addOption(HUD, {
             label: "Use Legacy Menu",
             value: this.kxsClient.isLegaySecondaryMenu,
             type: "toggle",
@@ -3190,6 +3199,9 @@ class KxsClientSecondaryMenu {
         title.style.textAlign = "center";
         let control = null;
         switch (option.type) {
+            case "info":
+                control = this.createInfoElement(option);
+                break;
             case "input":
                 control = this.createInputElement(option);
                 break;
@@ -3371,6 +3383,21 @@ class KxsClientSecondaryMenu {
         });
         return input;
     }
+    createInfoElement(option) {
+        const info = document.createElement("div");
+        info.textContent = String(option.value);
+        Object.assign(info.style, {
+            color: "#b0b0b0",
+            fontSize: "12px",
+            fontStyle: "italic",
+            marginTop: "2px",
+            marginLeft: "6px",
+            marginBottom: "2px",
+            flex: "1 1 100%",
+            whiteSpace: "pre-line"
+        });
+        return info;
+    }
     addDragListeners() {
         this.menu.addEventListener('mousedown', (e) => {
             if (e.target instanceof HTMLElement &&
@@ -3465,15 +3492,26 @@ class PingTest {
         this.url = "";
         this.region = "";
         this.hasPing = false;
+        this.reconnectTimer = null;
+        this.keepAliveTimer = null;
+        this.connectionCheckTimer = null;
         this.ptcDataBuf = new ArrayBuffer(1);
         this.waitForServerSelectElements();
         this.startKeepAlive();
     }
     startKeepAlive() {
-        setInterval(() => {
-            var _a;
+        // Annuler l'ancien timer si existant
+        if (this.keepAliveTimer) {
+            clearInterval(this.keepAliveTimer);
+        }
+        this.keepAliveTimer = setInterval(() => {
+            var _a, _b, _c;
             if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
                 this.ws.send(this.ptcDataBuf);
+            }
+            else if (((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSED || ((_c = this.ws) === null || _c === void 0 ? void 0 : _c.readyState) === WebSocket.CLOSING) {
+                // Redémarrer la connexion si elle est fermée
+                this.restart();
             }
         }, 5000); // envoie toutes les 5s
     }
@@ -3486,7 +3524,6 @@ class PingTest {
                 clearInterval(checkInterval);
                 this.setServerFromDOM();
                 this.attachRegionChangeListener();
-                this.start(); // ← Démarrage auto ici
             }
         }, 100); // Vérifie toutes les 100ms
     }
@@ -3532,6 +3569,22 @@ class PingTest {
             return;
         this.isConnecting = true;
         this.startWebSocketPing();
+        // Vérifier régulièrement l'état de la connexion
+        this.startConnectionCheck();
+    }
+    startConnectionCheck() {
+        // Annuler l'ancien timer si existant
+        if (this.connectionCheckTimer) {
+            clearInterval(this.connectionCheckTimer);
+        }
+        // Vérifier l'état de la connexion toutes les 10 secondes
+        this.connectionCheckTimer = setInterval(() => {
+            // Si on n'a pas de ping valide ou que la connexion est fermée, on tente de reconnecter
+            if (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                console.log("Vérification de connexion: reconnexion nécessaire");
+                this.restart();
+            }
+        }, 10000);
     }
     startWebSocketPing() {
         if (this.ws || !this.url)
@@ -3539,6 +3592,7 @@ class PingTest {
         const ws = new WebSocket(this.url);
         ws.binaryType = "arraybuffer";
         ws.onopen = () => {
+            console.log("WebSocket connectée au serveur:", this.region);
             this.ws = ws;
             this.retryCount = 0;
             this.isConnecting = false;
@@ -3557,31 +3611,64 @@ class PingTest {
             this.ping = Math.round(elapsed * 1000);
             setTimeout(() => this.sendPing(), 1000);
         };
-        ws.onerror = () => {
-            var _a;
+        ws.onerror = (error) => {
+            console.error("Erreur WebSocket:", error);
             this.ping = 0;
+            this.hasPing = false;
             this.retryCount++;
-            if (this.retryCount < 3) {
-                setTimeout(() => this.startWebSocketPing(), 1000);
+            // Tentative immédiate mais avec backoff exponentiel
+            const retryDelay = Math.min(1000 * Math.pow(2, this.retryCount - 1), 10000);
+            // Annuler tout timer de reconnexion existant
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
             }
-            else {
-                (_a = this.ws) === null || _a === void 0 ? void 0 : _a.close();
-                this.ws = null;
-                this.isConnecting = false;
-            }
+            this.reconnectTimer = setTimeout(() => {
+                console.log(`Tentative de reconnexion #${this.retryCount} après ${retryDelay}ms`);
+                this.ws = null; // S'assurer que l'ancienne connexion est effacée
+                this.startWebSocketPing();
+            }, retryDelay);
         };
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+            this.hasPing = false;
+            console.log(`WebSocket fermée. Code: ${event.code}, Raison: ${event.reason}`);
             this.ws = null;
             this.isConnecting = false;
+            // Tentative de reconnexion après une fermeture
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+            }
+            this.reconnectTimer = setTimeout(() => {
+                console.log("Tentative de reconnexion après fermeture de WebSocket");
+                this.start();
+            }, 2000); // Attendre 2 secondes avant de reconnecter
         };
     }
     sendPing() {
+        var _a, _b;
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.sendTime = Date.now();
             this.ws.send(this.ptcDataBuf);
         }
+        else if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED || ((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSING) {
+            // Si la WebSocket est fermée au moment d'envoyer le ping, on tente de reconnecter
+            console.log("Impossible d'envoyer le ping - WebSocket fermée, tentative de reconnexion");
+            this.restart();
+        }
     }
     stop() {
+        // Annuler tous les timers
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        if (this.keepAliveTimer) {
+            clearInterval(this.keepAliveTimer);
+            this.keepAliveTimer = null;
+        }
+        if (this.connectionCheckTimer) {
+            clearInterval(this.connectionCheckTimer);
+            this.connectionCheckTimer = null;
+        }
         if (this.ws) {
             this.ws.onclose = null;
             this.ws.onerror = null;
@@ -3596,13 +3683,33 @@ class PingTest {
     }
     restart() {
         this.stop();
-        this.setServerFromDOM();
+        setTimeout(() => {
+            this.setServerFromDOM();
+        }, 500); // Petit délai pour éviter les problèmes de rebond
     }
+    /**
+     * Retourne le ping actuel. Ne touche jamais à la websocket ici !
+     * Si le ping n'est pas dispo, retourne -1 (jamais null).
+     * La reconnexion doit être gérée ailleurs (timer, event, etc).
+     */
     getPingResult() {
-        return {
-            region: this.region,
-            ping: this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing ? this.ping : null,
-        };
+        if (this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing) {
+            return {
+                region: this.region,
+                ping: this.ping,
+            };
+        }
+        else {
+            // Si on détecte un problème ici, planifier une reconnexion
+            if (!this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
+                console.log("Détection d'un ping invalide, planification d'une reconnexion");
+                this.reconnectTimer = setTimeout(() => this.restart(), 1000);
+            }
+            return {
+                region: this.region,
+                ping: -1, // -1 indique que le ping n'est pas dispo, mais jamais null
+            };
+        }
     }
 }
 
@@ -3613,6 +3720,8 @@ class KxsClientHUD {
     constructor(kxsClient) {
         this.healthAnimations = [];
         this.lastHealthValue = 100;
+        this.hudOpacityObservers = [];
+        this.ctrlFocusTimer = null;
         this.killFeedObserver = null;
         this.kxsClient = kxsClient;
         this.frameCount = 0;
@@ -3620,6 +3729,38 @@ class KxsClientHUD {
         this.kills = 0;
         this.isMenuVisible = true;
         this.pingManager = new PingTest();
+        this.allDivToHide = [
+            '#ui-medical-interactive > div',
+            '#ui-ammo-interactive > div',
+            '#ui-weapon-container .ui-weapon-switch',
+            '#ui-killfeed',
+            '#ui-killfeed-contents',
+            '.killfeed-div',
+            '.killfeed-text',
+            '#ui-kill-leader-container',
+            '#ui-kill-leader-wrapper',
+            '#ui-kill-leader-name',
+            '#ui-kill-leader-icon',
+            '#ui-kill-leader-count',
+            '#ui-leaderboard-wrapper',
+            '#ui-leaderboard',
+            '#ui-leaderboard-alive',
+            '#ui-leaderboard-alive-faction',
+            '.ui-leaderboard-header',
+            '#ui-kill-counter-wrapper',
+            '#ui-kill-counter',
+            '.ui-player-kills',
+            '.ui-kill-counter-header',
+            '#ui-bottom-center-right',
+            '#ui-armor-helmet',
+            '#ui-armor-chest',
+            '#ui-armor-backpack',
+            '.ui-armor-counter',
+            '.ui-armor-counter-inner',
+            '.ui-armor-level',
+            '.ui-armor-image',
+            '.ui-loot-image',
+        ];
         if (this.kxsClient.isPingVisible) {
             this.initCounter("ping", "Ping", "45ms");
         }
@@ -3646,6 +3787,24 @@ class KxsClientHUD {
         if (this.kxsClient.customCrosshair !== null) {
             this.loadCustomCrosshair();
         }
+        this.setupCtrlFocusModeListener();
+    }
+    setupCtrlFocusModeListener() {
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ControlLeft' && !this.ctrlFocusTimer) {
+                this.ctrlFocusTimer = window.setTimeout(() => {
+                    this.kxsClient.isFocusModeEnabled = !this.kxsClient.isFocusModeEnabled;
+                    this.kxsClient.hud.toggleFocusMode();
+                    this.kxsClient.nm.showNotification("Focus mode toggled", "info", 1200);
+                }, 1000);
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'ControlLeft' && this.ctrlFocusTimer) {
+                clearTimeout(this.ctrlFocusTimer);
+                this.ctrlFocusTimer = null;
+            }
+        });
     }
     initFriendDetector() {
         // Initialize friends list
@@ -3760,6 +3919,79 @@ class KxsClientHUD {
             }
         });
     }
+    observeHudOpacity(opacity) {
+        // Nettoie d'abord les observers existants
+        this.hudOpacityObservers.forEach(obs => obs.disconnect());
+        this.hudOpacityObservers = [];
+        this.allDivToHide.forEach(sel => {
+            const elements = document.querySelectorAll(sel);
+            elements.forEach(el => {
+                el.style.opacity = String(opacity);
+                // Applique aussi l'opacité à tous les descendants
+                const descendants = el.querySelectorAll('*');
+                descendants.forEach(child => {
+                    child.style.opacity = String(opacity);
+                });
+                // Observer pour le parent
+                const observer = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        if (mutation.type === "attributes" &&
+                            mutation.attributeName === "style") {
+                            const currentOpacity = el.style.opacity;
+                            if (currentOpacity !== String(opacity)) {
+                                el.style.opacity = String(opacity);
+                            }
+                            // Vérifie aussi les enfants
+                            const descendants = el.querySelectorAll('*');
+                            descendants.forEach(child => {
+                                if (child.style.opacity !== String(opacity)) {
+                                    child.style.opacity = String(opacity);
+                                }
+                            });
+                        }
+                    });
+                });
+                observer.observe(el, { attributes: true, attributeFilter: ["style"] });
+                this.hudOpacityObservers.push(observer);
+                // Observer pour chaque enfant (optionnel mais robuste)
+                descendants.forEach(child => {
+                    const childObserver = new MutationObserver(mutations => {
+                        mutations.forEach(mutation => {
+                            if (mutation.type === "attributes" &&
+                                mutation.attributeName === "style") {
+                                if (child.style.opacity !== String(opacity)) {
+                                    child.style.opacity = String(opacity);
+                                }
+                            }
+                        });
+                    });
+                    childObserver.observe(child, { attributes: true, attributeFilter: ["style"] });
+                    this.hudOpacityObservers.push(childObserver);
+                });
+            });
+        });
+    }
+    toggleFocusMode() {
+        if (this.kxsClient.isFocusModeEnabled) {
+            this.observeHudOpacity(0.05);
+        }
+        else {
+            // 1. Stoppe tous les observers
+            this.hudOpacityObservers.forEach(obs => obs.disconnect());
+            this.hudOpacityObservers = [];
+            this.allDivToHide.forEach(sel => {
+                const elements = document.querySelectorAll(sel);
+                elements.forEach(el => {
+                    el.style.removeProperty('opacity');
+                    // Supprime aussi sur tous les enfants
+                    const descendants = el.querySelectorAll('*');
+                    descendants.forEach(child => {
+                        child.style.removeProperty('opacity');
+                    });
+                });
+            });
+        }
+    }
     resetKillFeed() {
         // Supprime les styles custom KillFeed
         this.resetKillFeedStyles();
@@ -3789,6 +4021,24 @@ class KxsClientHUD {
         }
         // Réinitialise le curseur si pas d'URL
         if (!url) {
+            // Supprime l'image animée si présente
+            if (this.animatedCursorImg) {
+                this.animatedCursorImg.remove();
+                this.animatedCursorImg = undefined;
+            }
+            // Supprime le style CSS qui cache le curseur natif
+            const hideCursorStyle = document.getElementById('kxs-hide-cursor-style');
+            if (hideCursorStyle)
+                hideCursorStyle.remove();
+            // Supprime le style CSS du curseur personnalisé
+            const customCursorStyle = document.getElementById('kxs-custom-cursor-style');
+            if (customCursorStyle)
+                customCursorStyle.remove();
+            // Retire l'eventListener mousemove si défini
+            if (this._mousemoveHandler) {
+                document.removeEventListener('mousemove', this._mousemoveHandler);
+                this._mousemoveHandler = undefined;
+            }
             document.body.style.cursor = '';
             return;
         }
@@ -4851,6 +5101,7 @@ class KxsClient {
         this.isGunOverlayColored = true;
         this.customCrosshair = null;
         this.isGunBorderChromatic = false;
+        this.isFocusModeEnabled = false;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
