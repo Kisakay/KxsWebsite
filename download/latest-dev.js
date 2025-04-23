@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.25
+// @version      1.2.26
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.25","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.26","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -893,7 +893,7 @@ class HealthWarning {
             catch (error) {
                 // En cas d'erreur, utiliser la position par défaut
                 position = this.kxsClient.defaultPositions[this.POSITION_KEY];
-                console.error('Erreur lors du chargement de la position LOW HP:', error);
+                this.kxsClient.logger.error('Erreur lors du chargement de la position LOW HP:', error);
             }
         }
         else {
@@ -934,8 +934,7 @@ class HealthWarning {
         if (!this.warningElement)
             return;
         // Ne pas masquer si en mode placement
-        if (this.isDraggable)
-            return;
+        // if (this.isDraggable) return;
         this.warningElement.style.display = "none";
     }
     update(health) {
@@ -1043,7 +1042,7 @@ class HealthWarning {
             // Vérifier si le menu secondaire est ouvert
             const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.isOpen) || false;
             // Si le menu est ouvert et que nous ne sommes pas en mode placement, activer le mode placement
-            if (isMenuOpen && !this.isDraggable) {
+            if (isMenuOpen && this.kxsClient.isHealthWarningEnabled && !this.isDraggable) {
                 this.enableDragging();
             }
             // Si le menu est fermé et que nous sommes en mode placement, désactiver le mode placement
@@ -1153,7 +1152,7 @@ class KillLeaderTracker {
         if (!this.encouragementElement)
             return;
         let message;
-        if (isDethrone) {
+        if (isDethrone && killsToLeader !== 0) {
             message = "Oh no! You've been dethroned!";
             this.encouragementElement.style.borderColor = "#ff0000";
             this.encouragementElement.style.color = "#ff0000";
@@ -1379,6 +1378,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 const stuff_emojis = {
     main_weapon: "🔫",
     secondary_weapon: "🔫",
@@ -1414,7 +1414,6 @@ class WebhookValidator {
                 return response.status === 200;
             }
             catch (error) {
-                console.error("Error validating webhook:", error);
                 return false;
             }
         });
@@ -1483,7 +1482,7 @@ class DiscordTracking {
                 }
             }
             catch (error) {
-                console.error("Error sending Discord message:", error);
+                this.kxsClient.logger.error("Error sending Discord message:", error);
             }
         });
     }
@@ -1547,7 +1546,8 @@ class DiscordTracking {
                 }
             }
             const message = {
-                username: result.username,
+                username: "KxsClient",
+                avatar_url: kxs_logo,
                 content: result.isWin ? "🎉 New Victory!" : "Match Ended",
                 embeds: [embed],
             };
@@ -1830,7 +1830,7 @@ class DiscordWebSocket {
         }
         this.ws = new WebSocket('wss://gateway.discord.gg/?v=9&encoding=json');
         this.ws.onopen = () => {
-            console.log('[RichPresence] WebSocket connection established');
+            this.kxsClient.logger.log('[RichPresence] WebSocket connection established');
         };
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -1881,7 +1881,7 @@ class DiscordWebSocket {
                 this.kxsClient.nm.showNotification('Started Discord RPC', 'success', 3000);
                 break;
             case 11: // Heartbeat ACK
-                console.log('[RichPresence] Heartbeat acknowledged');
+                this.kxsClient.logger.log('[RichPresence] Heartbeat acknowledged');
                 break;
             case 0: // Dispatch
                 this.sequence = data.s;
@@ -2065,9 +2065,9 @@ class NotificationManager {
 }
 
 
-;// ./src/ClientSecondaryMenu.ts
+;// ./src/LegacyClientSecondaryMenu.ts
 
-const ClientSecondaryMenu_packageInfo = __webpack_require__(330);
+const LegacyClientSecondaryMenu_packageInfo = __webpack_require__(330);
 class KxsLegacyClientSecondaryMenu {
     constructor(kxsClient) {
         this.kxsClient = kxsClient;
@@ -2078,6 +2078,7 @@ class KxsLegacyClientSecondaryMenu {
         this.menu = document.createElement("div");
         this.isOpen = false;
         this.boundShiftListener = this.handleShiftPress.bind(this);
+        this.boundEscapeListener = this.handleEscapePress.bind(this);
         this.boundMouseDownListener = this.handleMouseDown.bind(this);
         this.boundMouseMoveListener = this.handleMouseMove.bind(this);
         this.boundMouseUpListener = this.handleMouseUp.bind(this);
@@ -2092,7 +2093,22 @@ class KxsLegacyClientSecondaryMenu {
             this.toggleMenuVisibility();
         }
     }
+    handleEscapePress(event) {
+        if (event.key === "Escape" && this.isClientMenuVisible) {
+            // Fermer le menu si la touche Échap est pressée et que le menu est visible
+            this.toggleMenuVisibility();
+            // Empêcher la propagation ET l'action par défaut
+            event.stopPropagation();
+            event.preventDefault();
+            // Arrêter complètement la propagation de l'événement
+            return false;
+        }
+    }
     handleMouseDown(e) {
+        // Empêcher la propagation de l'événement mousedown vers la page web
+        // pour TOUS les éléments du menu, y compris les éléments interactifs
+        e.stopPropagation();
+        // Activer le drag & drop seulement si on clique sur une zone non interactive
         if (e.target instanceof HTMLElement && !e.target.matches("input, select, button")) {
             this.isDragging = true;
             const rect = this.menu.getBoundingClientRect();
@@ -2114,15 +2130,31 @@ class KxsLegacyClientSecondaryMenu {
         this.menu.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
         this.menu.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
     }
-    handleMouseUp() {
+    handleMouseUp(e) {
+        // Arrêter le drag & drop
+        const wasDragging = this.isDragging;
         this.isDragging = false;
         this.menu.style.cursor = "move";
+        // Empêcher la propagation de l'événement mouseup vers la page web
+        // pour tous les éléments du menu, y compris les éléments interactifs
+        if (this.menu.contains(e.target)) {
+            e.stopPropagation();
+        }
     }
     initMenu() {
         this.menu.id = "kxsMenuIG";
         this.applyMenuStyles();
         this.createHeader();
         document.body.appendChild(this.menu);
+        // Empêcher la propagation des événements souris (clics et molette) vers la page web
+        // Utiliser la phase de bouillonnement (bubbling) au lieu de la phase de capture
+        // pour permettre aux éléments enfants de recevoir les événements d'abord
+        this.menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        this.menu.addEventListener('wheel', (e) => {
+            e.stopPropagation();
+        });
     }
     loadOption() {
         let HUD = this.addSection("HUD");
@@ -2233,6 +2265,9 @@ class KxsLegacyClientSecondaryMenu {
                 this.kxsClient.isGunBorderChromatic = !this.kxsClient.isGunBorderChromatic;
                 this.kxsClient.updateLocalStorage();
                 this.kxsClient.hud.toggleChromaticWeaponBorder();
+                if (this.kxsClient.isGunOverlayColored) {
+                    this.kxsClient.hud.toggleWeaponBorderHandler();
+                }
             },
         });
         this.addOption(HUD, {
@@ -2281,7 +2316,15 @@ class KxsLegacyClientSecondaryMenu {
             value: this.kxsClient.isHealthWarningEnabled,
             type: "toggle",
             onChange: (value) => {
+                var _a, _b;
                 this.kxsClient.isHealthWarningEnabled = !this.kxsClient.isHealthWarningEnabled;
+                if (this.kxsClient.isHealthWarningEnabled) {
+                    // Always enter placement mode when enabling from RSHIFT menu
+                    (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.enableDragging();
+                }
+                else {
+                    (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
+                }
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -2309,7 +2352,8 @@ class KxsLegacyClientSecondaryMenu {
             value: this.kxsClient.isFpsUncapped,
             type: "toggle",
             onChange: () => {
-                this.kxsClient.toggleFpsUncap();
+                this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
+                this.kxsClient.setAnimationFrameCallback();
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -2428,7 +2472,7 @@ class KxsLegacyClientSecondaryMenu {
     }
     createHeader() {
         const title = document.createElement("h2");
-        title.textContent = "KxsClient v" + ClientSecondaryMenu_packageInfo.version;
+        title.textContent = "KxsClient v" + LegacyClientSecondaryMenu_packageInfo.version;
         Object.assign(title.style, {
             margin: "0 0 10px",
             textAlign: "center",
@@ -2541,10 +2585,32 @@ class KxsLegacyClientSecondaryMenu {
             option.value = input.value;
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, input.value);
         });
+        // Empêcher la propagation des touches de texte vers la page web
+        // mais permettre l'interaction avec l'input
+        input.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+        });
+        input.addEventListener("keyup", (e) => {
+            e.stopPropagation();
+        });
+        input.addEventListener("keypress", (e) => {
+            e.stopPropagation();
+        });
+        // Empêcher la propagation des événements de souris
+        input.addEventListener("mousedown", (e) => {
+            e.stopPropagation();
+        });
+        input.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
         return input;
     }
     addShiftListener() {
+        // Gestionnaire pour la touche Shift (ouverture du menu)
         window.addEventListener("keydown", this.boundShiftListener);
+        // Utiliser la phase de capture pour intercepter l'événement Escape
+        // avant qu'il n'atteigne le jeu
+        document.addEventListener("keydown", this.boundEscapeListener, true);
     }
     addDragListeners() {
         this.menu.addEventListener("mousedown", this.boundMouseDownListener);
@@ -2563,6 +2629,7 @@ class KxsLegacyClientSecondaryMenu {
     destroy() {
         // Remove event listeners
         window.removeEventListener("keydown", this.boundShiftListener);
+        document.removeEventListener("keydown", this.boundEscapeListener, true);
         this.menu.removeEventListener("mousedown", this.boundMouseDownListener);
         window.removeEventListener("mousemove", this.boundMouseMoveListener);
         window.removeEventListener("mouseup", this.boundMouseUpListener);
@@ -2645,11 +2712,22 @@ class KxsClientSecondaryMenu {
         this.loadOption();
     }
     initMenu() {
-        this.menu.id = "kxsMenuIG";
+        this.menu.id = "kxsClientMenu";
         this.applyMenuStyles();
         this.createHeader();
         this.createGridContainer();
         document.body.appendChild(this.menu);
+        this.menu.style.display = "none";
+        // Empêcher la propagation des événements souris (clics et molette) vers la page web
+        // Utiliser la phase de bouillonnement (bubbling) au lieu de la phase de capture
+        // pour permettre aux éléments enfants de recevoir les événements d'abord
+        this.menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        this.menu.addEventListener('wheel', (e) => {
+            e.stopPropagation();
+        });
+        // Nous ne gérons pas mousedown et mouseup ici car ils sont gérés dans addDragListeners()
     }
     applyMenuStyles() {
         // Styles par défaut (desktop/tablette)
@@ -2930,6 +3008,9 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.isGunBorderChromatic = !this.kxsClient.isGunBorderChromatic;
                 this.kxsClient.updateLocalStorage();
                 this.kxsClient.hud.toggleChromaticWeaponBorder();
+                if (this.kxsClient.isGunOverlayColored) {
+                    this.kxsClient.hud.toggleWeaponBorderHandler();
+                }
             },
         });
         this.addOption(HUD, {
@@ -3021,7 +3102,15 @@ class KxsClientSecondaryMenu {
             category: "MECHANIC",
             icon: '<svg viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>health</title> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="add" fill="#000000" transform="translate(42.666667, 64.000000)"> <path d="M365.491733,234.665926 C339.947827,276.368766 302.121072,321.347032 252.011468,369.600724 L237.061717,383.7547 C234.512147,386.129148 231.933605,388.511322 229.32609,390.901222 L213.333333,405.333333 C205.163121,398.070922 197.253659,390.878044 189.604949,383.7547 L174.655198,369.600724 C124.545595,321.347032 86.7188401,276.368766 61.174934,234.665926 L112.222458,234.666026 C134.857516,266.728129 165.548935,301.609704 204.481843,339.08546 L213.333333,347.498667 L214.816772,346.115558 C257.264819,305.964102 290.400085,268.724113 314.444476,234.665648 L365.491733,234.665926 Z M149.333333,58.9638831 L213.333333,186.944 L245.333333,122.963883 L269.184,170.666667 L426.666667,170.666667 L426.666667,213.333333 L247.850667,213.333333 L213.333333,282.36945 L149.333333,154.368 L119.851392,213.333333 L3.55271368e-14,213.333333 L3.55271368e-14,170.666667 L93.4613333,170.666667 L149.333333,58.9638831 Z M290.133333,0 C353.756537,0 405.333333,51.5775732 405.333333,115.2 C405.333333,126.248908 404.101625,137.626272 401.63821,149.33209 L357.793994,149.332408 C360.62486,138.880112 362.217829,128.905378 362.584434,119.422244 L362.666667,115.2 C362.666667,75.1414099 330.192075,42.6666667 290.133333,42.6666667 C273.651922,42.6666667 258.124715,48.1376509 245.521279,58.0219169 L241.829932,61.1185374 L213.366947,86.6338354 L184.888885,61.1353673 C171.661383,49.2918281 154.669113,42.6666667 136.533333,42.6666667 C96.4742795,42.6666667 64,75.1409461 64,115.2 C64,125.932203 65.6184007,137.316846 68.8727259,149.332605 L25.028457,149.33209 C22.5650412,137.626272 21.3333333,126.248908 21.3333333,115.2 C21.3333333,51.5767968 72.9101302,0 136.533333,0 C166.046194,0 192.966972,11.098031 213.350016,29.348444 C233.716605,11.091061 260.629741,0 290.133333,0 Z" id="Combined-Shape"> </path> </g> </g> </g></svg>',
             onChange: (value) => {
+                var _a, _b;
                 this.kxsClient.isHealthWarningEnabled = !this.kxsClient.isHealthWarningEnabled;
+                if (this.kxsClient.isHealthWarningEnabled) {
+                    // Always enter placement mode when enabling from RSHIFT menu
+                    (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.enableDragging();
+                }
+                else {
+                    (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
+                }
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -3043,7 +3132,8 @@ class KxsClientSecondaryMenu {
             icon: '<svg viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools --> <title>ic_fluent_fps_960_24_filled</title> <desc>Created with Sketch.</desc> <g id="🔍-Product-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="ic_fluent_fps_960_24_filled" fill="#000000" fill-rule="nonzero"> <path d="M11.75,15 C12.9926407,15 14,16.0073593 14,17.25 C14,18.440864 13.0748384,19.4156449 11.9040488,19.4948092 L11.75,19.5 L11,19.5 L11,21.25 C11,21.6296958 10.7178461,21.943491 10.3517706,21.9931534 L10.25,22 C9.87030423,22 9.55650904,21.7178461 9.50684662,21.3517706 L9.5,21.25 L9.5,15.75 C9.5,15.3703042 9.78215388,15.056509 10.1482294,15.0068466 L10.25,15 L11.75,15 Z M18,15 C19.1045695,15 20,15.8954305 20,17 C20,17.4142136 19.6642136,17.75 19.25,17.75 C18.8703042,17.75 18.556509,17.4678461 18.5068466,17.1017706 L18.5,17 C18.5,16.7545401 18.3231248,16.5503916 18.0898756,16.5080557 L18,16.5 L17.375,16.5 C17.029822,16.5 16.75,16.779822 16.75,17.125 C16.75,17.4387982 16.9812579,17.6985831 17.2826421,17.7432234 L17.375,17.75 L17.875,17.75 C19.0486051,17.75 20,18.7013949 20,19.875 C20,20.9975788 19.1295366,21.91685 18.0267588,21.9946645 L17.875,22 L17.25,22 C16.1454305,22 15.25,21.1045695 15.25,20 C15.25,19.5857864 15.5857864,19.25 16,19.25 C16.3796958,19.25 16.693491,19.5321539 16.7431534,19.8982294 L16.75,20 C16.75,20.2454599 16.9268752,20.4496084 17.1601244,20.4919443 L17.25,20.5 L17.875,20.5 C18.220178,20.5 18.5,20.220178 18.5,19.875 C18.5,19.5612018 18.2687421,19.3014169 17.9673579,19.2567766 L17.875,19.25 L17.375,19.25 C16.2013949,19.25 15.25,18.2986051 15.25,17.125 C15.25,16.0024212 16.1204634,15.08315 17.2232412,15.0053355 L17.375,15 L18,15 Z M7.75,15 C8.16421356,15 8.5,15.3357864 8.5,15.75 C8.5,16.1296958 8.21784612,16.443491 7.85177056,16.4931534 L7.75,16.5 L5.5,16.4990964 L5.5,18.0020964 L7.25,18.002809 C7.66421356,18.002809 8,18.3385954 8,18.752809 C8,19.1325047 7.71784612,19.4462999 7.35177056,19.4959623 L7.25,19.502809 L5.5,19.5020964 L5.5,21.2312276 C5.5,21.6109234 5.21784612,21.9247186 4.85177056,21.974381 L4.75,21.9812276 C4.37030423,21.9812276 4.05650904,21.6990738 4.00684662,21.3329982 L4,21.2312276 L4,15.75 C4,15.3703042 4.28215388,15.056509 4.64822944,15.0068466 L4.75,15 L7.75,15 Z M11.75,16.5 L11,16.5 L11,18 L11.75,18 C12.1642136,18 12.5,17.6642136 12.5,17.25 C12.5,16.8703042 12.2178461,16.556509 11.8517706,16.5068466 L11.75,16.5 Z M5,3 C6.65685425,3 8,4.34314575 8,6 L7.99820112,6.1048763 L8,6.15469026 L8,10 C8,11.5976809 6.75108004,12.9036609 5.17627279,12.9949073 L5,13 L4.7513884,13 C3.23183855,13 2,11.7681615 2,10.2486116 C2,9.69632685 2.44771525,9.2486116 3,9.2486116 C3.51283584,9.2486116 3.93550716,9.63465179 3.99327227,10.1319905 L4,10.2486116 C4,10.6290103 4.28267621,10.9433864 4.64942945,10.9931407 L4.7513884,11 L5,11 C5.51283584,11 5.93550716,10.6139598 5.99327227,10.1166211 L6,10 L5.99991107,8.82932572 C5.68715728,8.93985718 5.35060219,9 5,9 C3.34314575,9 2,7.65685425 2,6 C2,4.34314575 3.34314575,3 5,3 Z M12.2512044,3 C13.7707542,3 15.0025928,4.23183855 15.0025928,5.7513884 C15.0025928,6.30367315 14.5548775,6.7513884 14.0025928,6.7513884 C13.489757,6.7513884 13.0670856,6.36534821 13.0093205,5.86800953 L13.0025928,5.7513884 C13.0025928,5.37098974 12.7199166,5.05661365 12.3531633,5.00685929 L12.2512044,5 L12.0025928,5 C11.489757,5 11.0670856,5.38604019 11.0093205,5.88337887 L11.0025928,6 L11.0026817,7.17067428 C11.3154355,7.06014282 11.6519906,7 12.0025928,7 C13.659447,7 15.0025928,8.34314575 15.0025928,10 C15.0025928,11.6568542 13.659447,13 12.0025928,13 C10.3457385,13 9.0025928,11.6568542 9.0025928,10 L9.00441213,9.89453033 L9.0025928,9.84530974 L9.0025928,6 C9.0025928,4.40231912 10.2515128,3.09633912 11.82632,3.00509269 L12.0025928,3 L12.2512044,3 Z M19,3 C20.5976809,3 21.9036609,4.24891996 21.9949073,5.82372721 L22,6 L22,10 C22,11.6568542 20.6568542,13 19,13 C17.4023191,13 16.0963391,11.75108 16.0050927,10.1762728 L16,10 L16,6 C16,4.34314575 17.3431458,3 19,3 Z M12.0025928,9 C11.450308,9 11.0025928,9.44771525 11.0025928,10 C11.0025928,10.5522847 11.450308,11 12.0025928,11 C12.5548775,11 13.0025928,10.5522847 13.0025928,10 C13.0025928,9.44771525 12.5548775,9 12.0025928,9 Z M19,5 C18.4871642,5 18.0644928,5.38604019 18.0067277,5.88337887 L18,6 L18,10 C18,10.5522847 18.4477153,11 19,11 C19.5128358,11 19.9355072,10.6139598 19.9932723,10.1166211 L20,10 L20,6 C20,5.44771525 19.5522847,5 19,5 Z M5,5 C4.44771525,5 4,5.44771525 4,6 C4,6.55228475 4.44771525,7 5,7 C5.55228475,7 6,6.55228475 6,6 C6,5.44771525 5.55228475,5 5,5 Z" id="🎨Color"> </path> </g> </g> </g></svg>',
             category: 'MECHANIC',
             onChange: () => {
-                this.kxsClient.toggleFpsUncap();
+                this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
+                this.kxsClient.setAnimationFrameCallback();
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -3351,6 +3441,7 @@ class KxsClientSecondaryMenu {
         return btn;
     }
     addShiftListener() {
+        // Gestionnaire pour la touche Shift (ouverture du menu)
         window.addEventListener("keydown", (event) => {
             if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
@@ -3359,6 +3450,19 @@ class KxsClientSecondaryMenu {
                 this.filterOptions();
             }
         });
+        // Gestionnaire séparé pour la touche Échap avec capture en phase de capture
+        // pour intercepter l'événement avant qu'il n'atteigne le jeu
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && this.isClientMenuVisible) {
+                // Fermer le menu si la touche Échap est pressée et que le menu est visible
+                this.toggleMenuVisibility();
+                // Empêcher la propagation ET l'action par défaut
+                event.stopPropagation();
+                event.preventDefault();
+                // Arrêter la propagation de l'événement
+                return false;
+            }
+        }, true); // true = phase de capture
     }
     createInputElement(option) {
         const input = document.createElement("input");
@@ -3381,6 +3485,19 @@ class KxsClientSecondaryMenu {
             option.value = input.value;
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, input.value);
         });
+        // Empêcher la propagation des touches de texte vers la page web
+        // mais permettre l'interaction avec l'input
+        input.addEventListener("keydown", (e) => {
+            // Ne pas arrêter la propagation des touches de navigation (flèches, tab, etc.)
+            // qui sont nécessaires pour naviguer dans le champ de texte
+            e.stopPropagation();
+        });
+        input.addEventListener("keyup", (e) => {
+            e.stopPropagation();
+        });
+        input.addEventListener("keypress", (e) => {
+            e.stopPropagation();
+        });
         return input;
     }
     createInfoElement(option) {
@@ -3400,6 +3517,15 @@ class KxsClientSecondaryMenu {
     }
     addDragListeners() {
         this.menu.addEventListener('mousedown', (e) => {
+            // Ne pas arrêter la propagation si l'événement vient d'un élément interactif
+            if (e.target instanceof HTMLElement &&
+                e.target.matches("input, select, button, svg, path")) {
+                // Laisser l'événement se propager aux éléments interactifs
+                return;
+            }
+            // Empêcher la propagation de l'événement mousedown vers la page web
+            e.stopPropagation();
+            // Activer le drag & drop seulement si on clique sur une zone non interactive
             if (e.target instanceof HTMLElement &&
                 !e.target.matches("input, select, button, svg, path")) {
                 this.isDragging = true;
@@ -3420,9 +3546,18 @@ class KxsClientSecondaryMenu {
                 this.menu.style.top = `${y}px`;
             }
         });
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', (e) => {
+            // Arrêter le drag & drop
+            const wasDragging = this.isDragging;
             this.isDragging = false;
             this.menu.style.cursor = "grab";
+            // Empêcher la propagation de l'événement mouseup vers la page web
+            // seulement si l'événement vient du menu et n'est pas un élément interactif
+            if (this.menu.contains(e.target)) {
+                if (wasDragging || !(e.target instanceof HTMLElement && e.target.matches("input, select, button, svg, path"))) {
+                    e.stopPropagation();
+                }
+            }
         });
     }
     toggleMenuVisibility() {
@@ -3443,6 +3578,9 @@ class KxsClientSecondaryMenu {
         window.removeEventListener("keydown", this.shiftListener);
         document.removeEventListener('mousemove', this.mouseMoveListener);
         document.removeEventListener('mouseup', this.mouseUpListener);
+        // Supprimer tous les écouteurs d'événements keydown du document
+        // Nous ne pouvons pas supprimer directement l'écouteur anonyme, mais ce n'est pas grave
+        // car la vérification isClientMenuVisible empêchera toute action une fois le menu détruit
         // Remove all event listeners from menu elements
         const removeAllListeners = (element) => {
             var _a;
@@ -3581,7 +3719,6 @@ class PingTest {
         this.connectionCheckTimer = setInterval(() => {
             // Si on n'a pas de ping valide ou que la connexion est fermée, on tente de reconnecter
             if (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                console.log("Vérification de connexion: reconnexion nécessaire");
                 this.restart();
             }
         }, 10000);
@@ -3592,7 +3729,6 @@ class PingTest {
         const ws = new WebSocket(this.url);
         ws.binaryType = "arraybuffer";
         ws.onopen = () => {
-            console.log("WebSocket connectée au serveur:", this.region);
             this.ws = ws;
             this.retryCount = 0;
             this.isConnecting = false;
@@ -3600,7 +3736,6 @@ class PingTest {
             setTimeout(() => {
                 var _a;
                 if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
-                    console.warn("WebSocket bloquée, tentative de reconnexion");
                     this.restart();
                 }
             }, 3000); // 3s pour sécuriser
@@ -3612,7 +3747,6 @@ class PingTest {
             setTimeout(() => this.sendPing(), 1000);
         };
         ws.onerror = (error) => {
-            console.error("Erreur WebSocket:", error);
             this.ping = 0;
             this.hasPing = false;
             this.retryCount++;
@@ -3623,14 +3757,12 @@ class PingTest {
                 clearTimeout(this.reconnectTimer);
             }
             this.reconnectTimer = setTimeout(() => {
-                console.log(`Tentative de reconnexion #${this.retryCount} après ${retryDelay}ms`);
                 this.ws = null; // S'assurer que l'ancienne connexion est effacée
                 this.startWebSocketPing();
             }, retryDelay);
         };
         ws.onclose = (event) => {
             this.hasPing = false;
-            console.log(`WebSocket fermée. Code: ${event.code}, Raison: ${event.reason}`);
             this.ws = null;
             this.isConnecting = false;
             // Tentative de reconnexion après une fermeture
@@ -3638,7 +3770,6 @@ class PingTest {
                 clearTimeout(this.reconnectTimer);
             }
             this.reconnectTimer = setTimeout(() => {
-                console.log("Tentative de reconnexion après fermeture de WebSocket");
                 this.start();
             }, 2000); // Attendre 2 secondes avant de reconnecter
         };
@@ -3651,7 +3782,6 @@ class PingTest {
         }
         else if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED || ((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSING) {
             // Si la WebSocket est fermée au moment d'envoyer le ping, on tente de reconnecter
-            console.log("Impossible d'envoyer le ping - WebSocket fermée, tentative de reconnexion");
             this.restart();
         }
     }
@@ -3702,7 +3832,6 @@ class PingTest {
         else {
             // Si on détecte un problème ici, planifier une reconnexion
             if (!this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
-                console.log("Détection d'un ping invalide, planification d'une reconnexion");
                 this.reconnectTimer = setTimeout(() => this.restart(), 1000);
             }
             return {
@@ -3887,7 +4016,7 @@ class KxsClientHUD {
                 checkAllKillfeeds();
             }
             else {
-                console.warn("Killfeed-contents element not found");
+                this.kxsClient.logger.error("Killfeed-contents element not found");
             }
         }
     }
@@ -4124,7 +4253,7 @@ class KxsClientHUD {
         };
         img.onerror = () => {
             document.body.style.cursor = '';
-            console.warn('Impossible de charger le curseur personnalisé:', url);
+            this.kxsClient.logger.warn('Impossible de charger le curseur personnalisé:', url);
         };
         img.src = url;
         // --- MutationObserver pour forcer le curseur même si le jeu le réécrit ---
@@ -5051,6 +5180,30 @@ class KxsClientHUD {
 }
 
 
+;// ./src/Logger.ts
+const 展示 = (...args) => {
+    console.log(...args);
+};
+class Logger {
+    getHeader(method) {
+        return "[" + "KxsClient" + " - " + method + "]";
+    }
+    log(...args) {
+        // Convert args to string and join them
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        展示(this.getHeader("LOG"), message);
+    }
+    warn(...args) {
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        展示(this.getHeader("WARN"), message);
+    }
+    error(...args) {
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        展示(this.getHeader("ERROR"), message);
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -5073,10 +5226,12 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
 class KxsClient {
     constructor() {
         this.deathObserver = null;
         this.adBlockObserver = null;
+        this.logger = new Logger();
         this.config = __webpack_require__(891);
         this.menu = document.createElement("div");
         this.lastFrameTime = performance.now();
@@ -5118,6 +5273,7 @@ class KxsClient {
             death_sound_url: death_sound,
             background_sound_url: background_song,
         };
+        this.gridSystem = new GridSystem();
         // Before all, load local storage
         this.loadLocalStorage();
         this.changeSurvevLogo();
@@ -5255,7 +5411,7 @@ class KxsClient {
                 }
             }
             catch (error) {
-                console.error("Reading error:", error);
+                this.logger.error("Reading error:", error);
             }
             const stats = this.getPlayerStats(false);
             yield this.discordTracker.trackGameEnd({
@@ -5361,7 +5517,7 @@ class KxsClient {
         }, 100);
         if (this.isWinSoundEnabled) {
             const audio = new Audio(this.soundLibrary.win_sound_url);
-            audio.play().catch((err) => console.error("Erreur lecture:", err));
+            audio.play().catch((err) => this.logger.error("Erreur lecture:", err));
         }
         setTimeout(() => {
             clearInterval(confettiInterval);
@@ -5463,14 +5619,13 @@ class KxsClient {
         }
     }
     makeDraggable(element, storageKey) {
-        const gridSystem = new GridSystem();
         let isDragging = false;
         let dragOffset = { x: 0, y: 0 };
         element.addEventListener("mousedown", (event) => {
             if (event.button === 0) {
                 // Left click only
                 isDragging = true;
-                gridSystem.toggleGrid(); // Afficher la grille quand on commence à déplacer
+                this.gridSystem.toggleGrid(); // Afficher la grille quand on commence à déplacer
                 dragOffset = {
                     x: event.clientX - element.offsetLeft,
                     y: event.clientY - element.offsetTop,
@@ -5483,14 +5638,14 @@ class KxsClient {
                 const rawX = event.clientX - dragOffset.x;
                 const rawY = event.clientY - dragOffset.y;
                 // Get snapped coordinates from grid system
-                const snapped = gridSystem.snapToGrid(element, rawX, rawY);
+                const snapped = this.gridSystem.snapToGrid(element, rawX, rawY);
                 // Prevent moving off screen
                 const maxX = window.innerWidth - element.offsetWidth;
                 const maxY = window.innerHeight - element.offsetHeight;
                 element.style.left = `${Math.max(0, Math.min(snapped.x, maxX))}px`;
                 element.style.top = `${Math.max(0, Math.min(snapped.y, maxY))}px`;
                 // Highlight nearest grid lines while dragging
-                gridSystem.highlightNearestGridLine(rawX, rawY);
+                this.gridSystem.highlightNearestGridLine(rawX, rawY);
                 // Save position
                 localStorage.setItem(storageKey, JSON.stringify({
                     x: parseInt(element.style.left),
@@ -5501,7 +5656,7 @@ class KxsClient {
         window.addEventListener("mouseup", () => {
             if (isDragging) {
                 isDragging = false;
-                gridSystem.toggleGrid(); // Masquer la grille quand on arrête de déplacer
+                this.gridSystem.toggleGrid(); // Masquer la grille quand on arrête de déplacer
                 element.style.cursor = "move";
             }
         });
@@ -5509,7 +5664,7 @@ class KxsClient {
         const savedPosition = localStorage.getItem(storageKey);
         if (savedPosition) {
             const { x, y } = JSON.parse(savedPosition);
-            const snapped = gridSystem.snapToGrid(element, x, y);
+            const snapped = this.gridSystem.snapToGrid(element, x, y);
             element.style.left = `${snapped.x}px`;
             element.style.top = `${snapped.y}px`;
         }
@@ -5529,11 +5684,6 @@ class KxsClient {
             return configObject.region;
         }
         return null;
-    }
-    saveFpsUncappedToLocalStorage() {
-        let config = JSON.parse(localStorage.getItem("userSettings")) || {};
-        config.isFpsUncapped = this.isFpsUncapped;
-        localStorage.setItem("userSettings", JSON.stringify(config));
     }
     saveBackgroundToLocalStorage(image) {
         if (typeof image === "string") {
@@ -5629,11 +5779,6 @@ class KxsClient {
                 ? "rgba(0, 0, 0, 0.2)"
                 : "transparent";
         }
-    }
-    toggleFpsUncap() {
-        this.isFpsUncapped = !this.isFpsUncapped;
-        this.setAnimationFrameCallback();
-        this.saveFpsUncappedToLocalStorage();
     }
     createSimpleSpotifyPlayer() {
         // Ajouter une règle CSS globale pour supprimer toutes les bordures et améliorer le redimensionnement
@@ -6244,7 +6389,7 @@ class KxsClient {
                 });
                 // If the site tries to redisplay an advertising element, we prevent it
                 if (needsUpdate) {
-                    console.log('[KxsClient] Detection of attempt to redisplay ads - Forced hiding');
+                    this.logger.log('Detection of attempt to redisplay ads - Forced hiding');
                 }
             });
             // Observe style changes on elements
