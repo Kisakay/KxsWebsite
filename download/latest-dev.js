@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.26
+// @version      1.2.27
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -79,7 +79,7 @@ module.exports = debug
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.26","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.27","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -2673,6 +2673,7 @@ class KxsLegacyClientSecondaryMenu {
 ;// ./src/ClientSecondaryMenuRework.ts
 
 
+const category = ["ALL", "HUD", "SERVER", "MECHANIC", "SOUND", "MISC"];
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
         this.searchTerm = '';
@@ -2766,6 +2767,16 @@ class KxsClientSecondaryMenu {
             Object.assign(this.menu.style, mobileStyles);
         }
     }
+    blockMousePropagation(element, preventDefault = true) {
+        ['click', 'mousedown', 'mouseup', 'dblclick', 'contextmenu', 'wheel'].forEach(eventType => {
+            element.addEventListener(eventType, (e) => {
+                e.stopPropagation();
+                if (preventDefault && (eventType === 'contextmenu' || eventType === 'wheel' || element.tagName !== 'INPUT')) {
+                    e.preventDefault();
+                }
+            }, false);
+        });
+    }
     createHeader() {
         const header = document.createElement("div");
         // Détection mobile pour styles réduits
@@ -2797,7 +2808,7 @@ class KxsClientSecondaryMenu {
           </div>
           <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box;">
             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px;">
-              ${["ALL", "HUD", "SERVER", "MECHANIC", "SOUND"].map(cat => `
+              ${category.map(cat => `
                 <button class="category-btn" data-category="${cat}" style="
                   padding: ${isMobile ? '2px 6px' : '6px 16px'};
                   background: ${this.activeCategory === cat ? '#3B82F6' : 'rgba(55, 65, 81, 0.8)'};
@@ -2840,6 +2851,7 @@ class KxsClientSecondaryMenu {
           </div>
         `;
         header.querySelectorAll('.category-btn').forEach(btn => {
+            this.blockMousePropagation(btn);
             btn.addEventListener('click', (e) => {
                 const category = e.target.dataset.category;
                 if (category) {
@@ -2853,6 +2865,7 @@ class KxsClientSecondaryMenu {
         });
         const searchInput = header.querySelector('#kxsSearchInput');
         if (searchInput) {
+            this.blockMousePropagation(searchInput, false);
             // Gestionnaire pour mettre à jour la recherche
             searchInput.addEventListener('input', (e) => {
                 this.searchTerm = e.target.value.toLowerCase();
@@ -3008,9 +3021,6 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.isGunBorderChromatic = !this.kxsClient.isGunBorderChromatic;
                 this.kxsClient.updateLocalStorage();
                 this.kxsClient.hud.toggleChromaticWeaponBorder();
-                if (this.kxsClient.isGunOverlayColored) {
-                    this.kxsClient.hud.toggleWeaponBorderHandler();
-                }
             },
         });
         this.addOption(HUD, {
@@ -3415,6 +3425,7 @@ class KxsClientSecondaryMenu {
             btn.style.background = newValue ? "#059669" : "#DC2626";
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, newValue);
         });
+        this.blockMousePropagation(btn);
         return btn;
     }
     createClickButton(option) {
@@ -3438,6 +3449,7 @@ class KxsClientSecondaryMenu {
             var _a;
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, true);
         });
+        this.blockMousePropagation(btn);
         return btn;
     }
     addShiftListener() {
@@ -3498,6 +3510,7 @@ class KxsClientSecondaryMenu {
         input.addEventListener("keypress", (e) => {
             e.stopPropagation();
         });
+        this.blockMousePropagation(input);
         return input;
     }
     createInfoElement(option) {
@@ -3513,6 +3526,7 @@ class KxsClientSecondaryMenu {
             flex: "1 1 100%",
             whiteSpace: "pre-line"
         });
+        this.blockMousePropagation(info);
         return info;
     }
     addDragListeners() {
@@ -3850,6 +3864,7 @@ class KxsClientHUD {
         this.healthAnimations = [];
         this.lastHealthValue = 100;
         this.hudOpacityObservers = [];
+        this.weaponBorderObservers = [];
         this.ctrlFocusTimer = null;
         this.killFeedObserver = null;
         this.kxsClient = kxsClient;
@@ -4884,8 +4899,14 @@ class KxsClientHUD {
         }
     }
     toggleWeaponBorderHandler() {
-        if (this.kxsClient.isGunOverlayColored && !this.kxsClient.isGunBorderChromatic) {
-            const weaponContainers = Array.from(document.getElementsByClassName("ui-weapon-switch"));
+        // Get all weapon containers
+        const weaponContainers = Array.from(document.getElementsByClassName("ui-weapon-switch"));
+        // Get all weapon names
+        const weaponNames = Array.from(document.getElementsByClassName("ui-weapon-name"));
+        // Clear any existing observers
+        this.clearWeaponBorderObservers();
+        if (this.kxsClient.isGunOverlayColored) {
+            // Apply initial border colors
             weaponContainers.forEach((container) => {
                 if (container.id === "ui-weapon-id-4") {
                     container.style.border = "3px solid #2f4032";
@@ -4894,7 +4915,6 @@ class KxsClientHUD {
                     container.style.border = "3px solid #FFFFFF";
                 }
             });
-            const weaponNames = Array.from(document.getElementsByClassName("ui-weapon-name"));
             const WEAPON_COLORS = {
                 ORANGE: '#FFAE00',
                 BLUE: '#007FFF',
@@ -4923,6 +4943,7 @@ class KxsClientHUD {
                 PINK: ['HEART CANNON'],
                 DEFAULT: []
             };
+            // Set up observers for dynamic color changes
             weaponNames.forEach((weaponNameElement) => {
                 const weaponContainer = weaponNameElement.closest(".ui-weapon-switch");
                 const observer = new MutationObserver(() => {
@@ -4957,7 +4978,26 @@ class KxsClientHUD {
                     }
                 });
                 observer.observe(weaponNameElement, { childList: true, characterData: true, subtree: true });
+                // Store the observer for later cleanup
+                this.weaponBorderObservers = this.weaponBorderObservers || [];
+                this.weaponBorderObservers.push(observer);
             });
+        }
+        else {
+            // If the feature is disabled, reset all weapon borders to default
+            weaponContainers.forEach((container) => {
+                // Reset to game's default border style
+                container.style.border = "";
+            });
+        }
+    }
+    // Helper method to clear weapon border observers
+    clearWeaponBorderObservers() {
+        if (this.weaponBorderObservers && this.weaponBorderObservers.length > 0) {
+            this.weaponBorderObservers.forEach(observer => {
+                observer.disconnect();
+            });
+            this.weaponBorderObservers = [];
         }
     }
     toggleChromaticWeaponBorder() {
@@ -5019,6 +5059,10 @@ class KxsClientHUD {
             const style = document.getElementById(styleId);
             if (style)
                 style.remove();
+            // Reapply regular colored borders if that feature is enabled
+            if (this.kxsClient.isGunOverlayColored) {
+                this.toggleWeaponBorderHandler();
+            }
         }
     }
     updateUiElements() {
