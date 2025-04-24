@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.2.27
+// @version      1.3.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -72,14 +72,6 @@ const debug = (
 
 module.exports = debug
 
-
-/***/ }),
-
-/***/ 330:
-/***/ ((module) => {
-
-"use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"1.2.27","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.1","typescript":"^5.7.2","webpack":"^5.97.1","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.1","ws":"^8.18.1"}}');
 
 /***/ }),
 
@@ -353,6 +345,250 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
 
 /***/ }),
 
+/***/ 814:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+var __webpack_unused_export__;
+
+__webpack_unused_export__ = ({ value: true });
+exports.w = void 0;
+;
+class SteganoDB {
+    data;
+    currentTable;
+    options;
+    database;
+    constructor(options) {
+        this.currentTable = options?.tableName || "json";
+        this.database = options.database || "stegano.db";
+        this.data = {
+            [this.currentTable]: []
+        };
+        this.fetchDataFromFile();
+    }
+    read() { return localStorage.getItem(this.database) || this.data; }
+    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
+    setNestedProperty = (object, key, value) => {
+        const properties = key.split('.');
+        let currentObject = object;
+        for (let i = 0; i < properties.length - 1; i++) {
+            const property = properties[i];
+            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
+                currentObject[property] = {};
+            }
+            currentObject = currentObject[property];
+        }
+        currentObject[properties[properties.length - 1]] = value;
+    };
+    getNestedProperty = (object, key) => {
+        const properties = key.split('.');
+        let index = 0;
+        for (; index < properties.length; ++index) {
+            object = object && object[properties[index]];
+        }
+        return object;
+    };
+    fetchDataFromFile() {
+        try {
+            const content = this.read();
+            this.data = JSON.parse(content);
+        }
+        catch (error) {
+            this.data = { [this.currentTable]: [] };
+        }
+    }
+    updateNestedProperty(key, operation, value) {
+        const [id, ...rest] = key.split('.');
+        const nestedPath = rest.join('.');
+        let currentValue = this.data[this.currentTable].find((entry) => entry.id === id);
+        if (!currentValue && operation !== 'get') {
+            currentValue = { id, value: {} };
+            this.data[this.currentTable].push(currentValue);
+        }
+        if (!currentValue && operation === 'get') {
+            return undefined;
+        }
+        switch (operation) {
+            case 'get':
+                return nestedPath ? this.getNestedProperty(currentValue.value, nestedPath) : currentValue.value;
+            case 'set':
+                if (nestedPath) {
+                    this.setNestedProperty(currentValue.value, nestedPath, value);
+                }
+                else {
+                    currentValue.value = value;
+                }
+                this.write();
+                break;
+            case 'add':
+                if (!nestedPath) {
+                    currentValue.value = (typeof currentValue.value === 'number' ? currentValue.value : 0) + value;
+                }
+                else {
+                    const existingValue = this.getNestedProperty(currentValue.value, nestedPath);
+                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
+                        throw new TypeError('The existing value is not a number.');
+                    }
+                    this.setNestedProperty(currentValue.value, nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
+                }
+                this.write();
+                break;
+            case 'sub':
+                if (!nestedPath) {
+                    currentValue.value = (typeof currentValue.value === 'number' ? currentValue.value : 0) - value;
+                }
+                else {
+                    const existingValue = this.getNestedProperty(currentValue.value, nestedPath);
+                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
+                        throw new TypeError('The existing value is not a number.');
+                    }
+                    this.setNestedProperty(currentValue.value, nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
+                }
+                this.write();
+                break;
+            case 'delete':
+                if (nestedPath) {
+                    const properties = nestedPath.split('.');
+                    let currentObject = currentValue.value;
+                    for (let i = 0; i < properties.length - 1; i++) {
+                        const property = properties[i];
+                        if (!currentObject[property]) {
+                            return;
+                        }
+                        currentObject = currentObject[property];
+                    }
+                    delete currentObject[properties[properties.length - 1]];
+                }
+                else {
+                    const index = this.data[this.currentTable].findIndex((entry) => entry.id === id);
+                    if (index !== -1) {
+                        this.data[this.currentTable].splice(index, 1);
+                    }
+                }
+                this.write();
+                break;
+            case 'pull':
+                const existingArray = nestedPath ? this.getNestedProperty(currentValue.value, nestedPath) : currentValue.value;
+                if (!Array.isArray(existingArray)) {
+                    throw new Error('The stored value is not an array');
+                }
+                const newArray = existingArray.filter((item) => item !== value);
+                if (nestedPath) {
+                    this.setNestedProperty(currentValue.value, nestedPath, newArray);
+                }
+                else {
+                    currentValue.value = newArray;
+                }
+                this.write();
+                break;
+        }
+    }
+    table(tableName) {
+        if (tableName.includes(" ") || !tableName || tableName === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (!this.data[tableName]) {
+            this.data[tableName] = [];
+        }
+        return new SteganoDB(this.options);
+    }
+    get(key) {
+        return this.updateNestedProperty(key, 'get');
+    }
+    set(key, value) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        this.updateNestedProperty(key, 'set', value);
+    }
+    pull(key, value) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        this.updateNestedProperty(key, 'pull', value);
+    }
+    add(key, count) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (isNaN(count)) {
+            throw new SyntaxError("The value is NaN.");
+        }
+        this.updateNestedProperty(key, 'add', count);
+    }
+    sub(key, count) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (isNaN(count)) {
+            throw new SyntaxError("The value is NaN.");
+        }
+        this.updateNestedProperty(key, 'sub', count);
+    }
+    delete(key) {
+        this.updateNestedProperty(key, 'delete');
+    }
+    cache(key, value, time) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null ou contain a space.");
+        }
+        if (!time || isNaN(time)) {
+            throw new SyntaxError("The time needs to be a number. (ms)");
+        }
+        this.updateNestedProperty(key, 'set', value);
+        setTimeout(() => {
+            this.updateNestedProperty(key, 'delete');
+        }, time);
+    }
+    push(key, element) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        const [id, ...rest] = key.split('.');
+        const nestedPath = rest.join('.');
+        let currentValue = this.data[this.currentTable].find((entry) => entry.id === id);
+        if (!currentValue) {
+            currentValue = { id, value: nestedPath ? {} : [] };
+            this.data[this.currentTable].push(currentValue);
+        }
+        if (nestedPath) {
+            const existingArray = this.getNestedProperty(currentValue.value, nestedPath);
+            if (!existingArray) {
+                this.setNestedProperty(currentValue.value, nestedPath, [element]);
+            }
+            else if (!Array.isArray(existingArray)) {
+                throw new Error('The stored value is not an array');
+            }
+            else {
+                existingArray.push(element);
+                this.setNestedProperty(currentValue.value, nestedPath, existingArray);
+            }
+        }
+        else {
+            if (!Array.isArray(currentValue.value)) {
+                currentValue.value = [];
+            }
+            currentValue.value.push(element);
+        }
+        this.write();
+    }
+    has(key) {
+        return Boolean(this.get(key));
+    }
+    deleteAll() {
+        this.data[this.currentTable] = [];
+        this.write();
+    }
+    all() {
+        return this.data[this.currentTable];
+    }
+}
+exports.w = SteganoDB;
+
+
+/***/ }),
+
 /***/ 874:
 /***/ ((module) => {
 
@@ -392,14 +628,6 @@ module.exports = {
   FLAG_LOOSE: 0b010,
 }
 
-
-/***/ }),
-
-/***/ 891:
-/***/ ((module) => {
-
-"use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 
 /***/ }),
 
@@ -800,7 +1028,7 @@ __webpack_require__.d(__webpack_exports__, {
   zB: () => (/* binding */ win_sound)
 });
 
-;// ./src/intercept.ts
+;// ./src/MECHANIC/intercept.ts
 function intercept(link, targetUrl) {
     const open = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function (method, url) {
@@ -819,7 +1047,7 @@ function intercept(link, targetUrl) {
 }
 
 
-;// ./src/HealthWarning.ts
+;// ./src/HUD/MOD/HealthWarning.ts
 class HealthWarning {
     constructor(kxsClient) {
         this.isDraggable = false;
@@ -837,7 +1065,7 @@ class HealthWarning {
     createWarningElement() {
         const warning = document.createElement("div");
         const uiTopLeft = document.getElementById("ui-top-left");
-        warning.style.cssText = `
+        warning.style.cssText = `š
             position: fixed;
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid #ff0000;
@@ -1054,7 +1282,7 @@ class HealthWarning {
 }
 
 
-;// ./src/KillLeaderTracking.ts
+;// ./src/MECHANIC/KillLeaderTracking.ts
 class KillLeaderTracker {
     constructor(kxsClient) {
         this.offsetX = 20;
@@ -1220,7 +1448,7 @@ class KillLeaderTracker {
 }
 
 
-;// ./src/GridSystem.ts
+;// ./src/HUD/GridSystem.ts
 class GridSystem {
     constructor() {
         this.gridSize = 20; // Size of each grid cell
@@ -1368,7 +1596,7 @@ class GridSystem {
 }
 
 
-;// ./src/DiscordTracking.ts
+;// ./src/SERVER/DiscordTracking.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1557,7 +1785,7 @@ class DiscordTracking {
 }
 
 
-;// ./src/StatsParser.ts
+;// ./src/FUNC/StatsParser.ts
 class StatsParser {
     static cleanNumber(str) {
         return parseInt(str.replace(/[^\d.-]/g, "")) || 0;
@@ -1638,7 +1866,11 @@ class StatsParser {
 // EXTERNAL MODULE: ./node_modules/semver/functions/gt.js
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
-;// ./src/UpdateChecker.ts
+;// ./package.json
+const package_namespaceObject = {"rE":"1.3.1"};
+;// ./config.json
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -1649,11 +1881,11 @@ var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (this
     });
 };
 
-const packageInfo = __webpack_require__(330);
-const config = __webpack_require__(891);
+
+
 class UpdateChecker {
     constructor(kxsClient) {
-        this.remoteScriptUrl = config.base_url + "/download/latest-dev.js";
+        this.remoteScriptUrl = config_namespaceObject.base_url + "/download/latest-dev.js";
         this.kxsClient = kxsClient;
         if (this.kxsClient.isAutoUpdateEnabled) {
             this.checkForUpdate();
@@ -1807,13 +2039,13 @@ class UpdateChecker {
         document.body.appendChild(modal);
     }
     getCurrentScriptVersion() {
-        return packageInfo.version;
+        return package_namespaceObject.rE;
     }
 }
 
 
-;// ./src/DiscordRichPresence.ts
-const DiscordRichPresence_packageInfo = __webpack_require__(330);
+;// ./src/SERVER/DiscordRichPresence.ts
+
 class DiscordWebSocket {
     constructor(kxsClient, token) {
         this.ws = null;
@@ -1862,7 +2094,7 @@ class DiscordWebSocket {
                             application_id: "1321193265533550602",
                             assets: {
                                 large_image: "mp:app-icons/1321193265533550602/bccd2479ec56ed7d4e69fa2fdfb47197.png?size=512",
-                                large_text: "KxsClient v" + DiscordRichPresence_packageInfo.version,
+                                large_text: "KxsClient v" + package_namespaceObject.rE,
                             }
                         }],
                     status: 'online',
@@ -1915,7 +2147,7 @@ class DiscordWebSocket {
 }
 
 
-;// ./src/NotificationManager.ts
+;// ./src/HUD/MOD/NotificationManager.ts
 class NotificationManager {
     constructor() {
         this.notifications = [];
@@ -2065,9 +2297,9 @@ class NotificationManager {
 }
 
 
-;// ./src/LegacyClientSecondaryMenu.ts
+;// ./src/HUD/LegacyClientSecondaryMenu.ts
 
-const LegacyClientSecondaryMenu_packageInfo = __webpack_require__(330);
+
 class KxsLegacyClientSecondaryMenu {
     constructor(kxsClient) {
         this.kxsClient = kxsClient;
@@ -2280,6 +2512,15 @@ class KxsLegacyClientSecondaryMenu {
                 this.kxsClient.hud.loadCustomCrosshair();
             },
         });
+        let miscSection = this.addSection("Misc");
+        this.addOption(miscSection, {
+            label: "Gameplay History",
+            value: true,
+            type: "click",
+            onChange: (value) => {
+                this.kxsClient.historyManager.show();
+            },
+        });
         let musicSection = this.addSection("Music");
         this.addOption(musicSection, {
             label: "Death sound",
@@ -2472,7 +2713,7 @@ class KxsLegacyClientSecondaryMenu {
     }
     createHeader() {
         const title = document.createElement("h2");
-        title.textContent = "KxsClient v" + LegacyClientSecondaryMenu_packageInfo.version;
+        title.textContent = "KxsClient v" + package_namespaceObject.rE;
         Object.assign(title.style, {
             margin: "0 0 10px",
             textAlign: "center",
@@ -2670,7 +2911,7 @@ class KxsLegacyClientSecondaryMenu {
 }
 
 
-;// ./src/ClientSecondaryMenuRework.ts
+;// ./src/HUD/ClientSecondaryMenuRework.ts
 
 
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "SOUND", "MISC"];
@@ -2927,6 +3168,17 @@ class KxsClientSecondaryMenu {
         let MECHANIC = this.addSection("MECHANIC", 'MECHANIC');
         let SERVER = this.addSection("SERVER", 'SERVER');
         let SOUND = this.addSection("SOUND", 'SOUND');
+        let MISC = this.addSection("MISC", 'MISC');
+        this.addOption(MISC, {
+            label: "Game History",
+            value: true,
+            category: "MISC",
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.52786 16.7023C6.6602 18.2608 8.3169 19.3584 10.1936 19.7934C12.0703 20.2284 14.0409 19.9716 15.7434 19.0701C17.446 18.1687 18.766 16.6832 19.4611 14.8865C20.1562 13.0898 20.1796 11.1027 19.527 9.29011C18.8745 7.47756 17.5898 5.96135 15.909 5.02005C14.2282 4.07875 12.2641 3.77558 10.3777 4.16623C8.49129 4.55689 6.80919 5.61514 5.64045 7.14656C4.47171 8.67797 3.89482 10.5797 4.01579 12.5023M4.01579 12.5023L2.51579 11.0023M4.01579 12.5023L5.51579 11.0023" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 8V12L15 15" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+            type: "click",
+            onChange: () => {
+                this.kxsClient.historyManager.show();
+            }
+        });
         this.addOption(SOUND, {
             label: "Win sound",
             value: this.kxsClient.soundLibrary.win_sound_url,
@@ -3632,7 +3884,7 @@ class KxsClientSecondaryMenu {
 }
 
 
-;// ./src/Ping.ts
+;// ./src/SERVER/Ping.ts
 class PingTest {
     constructor() {
         this.ping = 0;
@@ -3857,7 +4109,7 @@ class PingTest {
 }
 
 
-;// ./src/ClientHUD.ts
+;// ./src/HUD/ClientHUD.ts
 
 class KxsClientHUD {
     constructor(kxsClient) {
@@ -5224,7 +5476,7 @@ class KxsClientHUD {
 }
 
 
-;// ./src/Logger.ts
+;// ./src/FUNC/Logger.ts
 const 展示 = (...args) => {
     console.log(...args);
 };
@@ -5244,6 +5496,347 @@ class Logger {
     error(...args) {
         const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
         展示(this.getHeader("ERROR"), message);
+    }
+}
+
+
+// EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser.js
+var browser = __webpack_require__(814);
+;// ./src/HUD/HistoryManager.ts
+var HistoryManager_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+class GameHistoryMenu {
+    constructor(kxsClient) {
+        this.kxsClient = kxsClient;
+        this.container = document.createElement('div');
+        this.closeBtn = document.createElement('button');
+        // Initialize container style
+        this.initContainer();
+        // Add close button
+        this.addCloseButton();
+        // Add header with title
+        this.addHeader();
+        // Load and display game history
+        this.renderContent();
+    }
+    initContainer() {
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        // Position the menu in the center of the screen
+        Object.assign(this.container.style, {
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: isMobile ? '78vw' : '700px',
+            maxWidth: isMobile ? '84vw' : '90vw',
+            maxHeight: isMobile ? '60vh' : '80vh',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            backgroundColor: 'rgba(17, 24, 39, 0.95)',
+            color: '#fff',
+            borderRadius: isMobile ? '7px' : '12px',
+            border: '1px solid rgba(60, 80, 120, 0.3)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.8)',
+            zIndex: '10001',
+            padding: isMobile ? '6px' : '20px',
+            boxSizing: 'border-box',
+            fontFamily: "'Segoe UI', Arial, sans-serif",
+        });
+    }
+    addCloseButton() {
+        this.closeBtn.textContent = '✖';
+        Object.assign(this.closeBtn.style, {
+            position: 'absolute',
+            top: '10px',
+            right: '15px',
+            background: 'transparent',
+            color: '#fff',
+            border: 'none',
+            fontSize: '22px',
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease, color 0.2s ease',
+            zIndex: '10',
+        });
+        this.closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.hide();
+        };
+        this.closeBtn.onmouseenter = () => {
+            this.closeBtn.style.color = '#3B82F6';
+            this.closeBtn.style.transform = 'scale(1.1)';
+        };
+        this.closeBtn.onmouseleave = () => {
+            this.closeBtn.style.color = '#fff';
+            this.closeBtn.style.transform = 'scale(1)';
+        };
+        this.container.appendChild(this.closeBtn);
+    }
+    addHeader() {
+        // Create a title area at the top of the menu (header)
+        const header = document.createElement('div');
+        header.style.position = 'absolute';
+        header.style.top = '0';
+        header.style.left = '0';
+        header.style.right = '0';
+        header.style.height = '40px';
+        // No border at the bottom
+        // Add a centered title
+        const title = document.createElement('div');
+        title.textContent = 'Game History';
+        title.style.position = 'absolute';
+        title.style.left = '50%';
+        title.style.top = '50%';
+        title.style.transform = 'translate(-50%, -50%)';
+        title.style.fontWeight = 'bold';
+        title.style.fontSize = '14px';
+        title.style.color = '#fff';
+        header.appendChild(title);
+        this.container.insertBefore(header, this.container.firstChild);
+    }
+    renderContent() {
+        return HistoryManager_awaiter(this, void 0, void 0, function* () {
+            // Header
+            const header = document.createElement('div');
+            header.textContent = 'Game History';
+            const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+            Object.assign(header.style, {
+                fontWeight: 'bold',
+                fontSize: isMobile ? '1.1em' : '1.3em',
+                letterSpacing: '1px',
+                margin: isMobile ? '10px 0 12px 0' : '10px 0 20px 0',
+                textAlign: 'center',
+                color: '#3B82F6',
+            });
+            this.container.appendChild(header);
+            // Liste de l'historique
+            let historyList = document.createElement('div');
+            Object.assign(historyList.style, {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: isMobile ? '6px' : '8px',
+                padding: isMobile ? '0 8px' : '0 15px',
+                width: '100%',
+            });
+            // Récupération de l'historique via SteganoDB
+            let result = this.kxsClient.db.all();
+            let entries = [];
+            // Traitement de la structure JSON gameplay_history
+            if (result && typeof result === 'object') {
+                // Vérifier si c'est la structure gameplay_history
+                if ('gameplay_history' in result && Array.isArray(result.gameplay_history)) {
+                    entries = result.gameplay_history;
+                    // Tri par date décroissante
+                    entries.sort((a, b) => {
+                        if (a.id && b.id)
+                            return b.id.localeCompare(a.id);
+                        return 0;
+                    });
+                }
+                else {
+                    // Fallback pour l'ancienne structure
+                    entries = Array.isArray(result) ? result : [];
+                }
+            }
+            // Affichage ligne par ligne
+            if (!entries || entries.length === 0) {
+                const empty = document.createElement('div');
+                empty.textContent = 'No games recorded.';
+                empty.style.textAlign = 'center';
+                empty.style.color = '#aaa';
+                historyList.appendChild(empty);
+            }
+            else {
+                let i = 1;
+                for (const entry of entries) {
+                    let key, value;
+                    // Structure gameplay_history
+                    if (typeof entry === 'object' && entry.id && entry.value) {
+                        key = entry.id;
+                        value = entry.value;
+                        // Traitement des games dans value
+                        if (typeof value === 'object') {
+                            for (const gameId in value) {
+                                const gameStats = value[gameId];
+                                this.createGameHistoryLine(historyList, gameStats, key, i, isMobile);
+                                i++;
+                            }
+                            continue; // Passer à l'entrée suivante après avoir traité tous les jeux
+                        }
+                    }
+                    // Ancienne structure
+                    else if (Array.isArray(entry) && entry.length === 2) {
+                        key = entry[0];
+                        value = entry[1];
+                    }
+                    else if (typeof entry === 'object' && entry.key && entry.value) {
+                        key = entry.key;
+                        value = entry.value;
+                    }
+                    else {
+                        continue;
+                    }
+                    // Pour l'ancienne structure, créer une ligne
+                    this.createGameHistoryLine(historyList, value, key, i, isMobile);
+                    i++;
+                }
+            }
+            this.container.appendChild(historyList);
+        });
+    }
+    createGameHistoryLine(historyList, stats, dateKey, index, isMobile) {
+        const line = document.createElement('div');
+        Object.assign(line.style, {
+            background: index % 2 ? 'rgba(31, 41, 55, 0.7)' : 'rgba(17, 24, 39, 0.8)',
+            borderRadius: isMobile ? '5px' : '8px',
+            padding: isMobile ? '6px 8px' : '10px 15px',
+            fontFamily: "'Segoe UI', Arial, sans-serif",
+            fontSize: isMobile ? '0.8em' : '0.95em',
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            gap: isMobile ? '4px' : '12px',
+            transition: 'background 0.2s, transform 0.1s',
+            cursor: 'pointer',
+            border: '1px solid transparent',
+        });
+        // Effet hover
+        line.onmouseenter = () => {
+            line.style.background = 'rgba(59, 130, 246, 0.3)';
+            line.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+            line.style.transform = 'translateY(-1px)';
+        };
+        line.onmouseleave = () => {
+            line.style.background = index % 2 ? 'rgba(31, 41, 55, 0.7)' : 'rgba(17, 24, 39, 0.8)';
+            line.style.borderColor = 'transparent';
+            line.style.transform = 'translateY(0)';
+        };
+        // Date formatée
+        const dateStr = dateKey ? new Date(dateKey).toLocaleString() : '';
+        const dateEl = document.createElement('div');
+        dateEl.textContent = dateStr;
+        Object.assign(dateEl.style, {
+            color: '#93c5fd',
+            fontWeight: 'bold',
+            whiteSpace: 'nowrap',
+            marginRight: isMobile ? '0' : '10px',
+        });
+        // Stats du jeu
+        const statsContainer = document.createElement('div');
+        Object.assign(statsContainer.style, {
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            flexWrap: 'wrap',
+            gap: isMobile ? '3px 8px' : '0 15px',
+            flex: '1',
+        });
+        // Création des éléments de stats
+        const createStatElement = (label, value, color = '#fff') => {
+            const statEl = document.createElement('div');
+            statEl.style.display = 'inline-flex';
+            statEl.style.alignItems = 'center';
+            statEl.style.marginRight = isMobile ? '5px' : '12px';
+            const labelEl = document.createElement('span');
+            labelEl.textContent = `${label}: `;
+            labelEl.style.color = '#9ca3af';
+            const valueEl = document.createElement('span');
+            valueEl.textContent = value !== undefined && value !== null ? String(value) : '-';
+            valueEl.style.color = color;
+            valueEl.style.fontWeight = 'bold';
+            statEl.appendChild(labelEl);
+            statEl.appendChild(valueEl);
+            return statEl;
+        };
+        // Ajout des stats avec couleurs
+        if (typeof stats === 'object') {
+            const isWin = stats.isWin === true;
+            statsContainer.appendChild(createStatElement('Player', stats.username, '#fff'));
+            statsContainer.appendChild(createStatElement('Kills', stats.kills, '#ef4444'));
+            statsContainer.appendChild(createStatElement('DMG', stats.damageDealt, '#f59e0b'));
+            statsContainer.appendChild(createStatElement('Taken', stats.damageTaken, '#a855f7'));
+            statsContainer.appendChild(createStatElement('Duration', stats.duration, '#fff'));
+            // Position avec couleur selon le rang
+            let posColor = '#fff';
+            if (stats.position) {
+                const pos = parseInt(stats.position.replace('#', ''));
+                if (pos <= 10)
+                    posColor = '#fbbf24'; // Or
+                else if (pos <= 25)
+                    posColor = '#94a3b8'; // Argent
+                else if (pos <= 50)
+                    posColor = '#b45309'; // Bronze
+            }
+            statsContainer.appendChild(createStatElement('Pos', stats.position, posColor));
+            // Indicateur de victoire
+            if (isWin) {
+                const winEl = document.createElement('div');
+                winEl.textContent = '🏆 WIN';
+                winEl.style.color = '#fbbf24';
+                winEl.style.fontWeight = 'bold';
+                winEl.style.marginLeft = 'auto';
+                statsContainer.appendChild(winEl);
+            }
+        }
+        else {
+            // Fallback si stats n'est pas un objet
+            const fallbackEl = document.createElement('div');
+            fallbackEl.textContent = typeof stats === 'string' ? stats : JSON.stringify(stats);
+            statsContainer.appendChild(fallbackEl);
+        }
+        line.appendChild(dateEl);
+        line.appendChild(statsContainer);
+        historyList.appendChild(line);
+    }
+    show() {
+        // Close RSHIFT menu if it's open
+        if (this.kxsClient.secondaryMenu && typeof this.kxsClient.secondaryMenu.getMenuVisibility === 'function') {
+            if (this.kxsClient.secondaryMenu.getMenuVisibility()) {
+                this.kxsClient.secondaryMenu.toggleMenuVisibility();
+            }
+        }
+        // Prevent mouse event propagation
+        this.container.addEventListener('click', (e) => e.stopPropagation());
+        this.container.addEventListener('wheel', (e) => e.stopPropagation());
+        this.container.addEventListener('mousedown', (e) => e.stopPropagation());
+        this.container.addEventListener('mouseup', (e) => e.stopPropagation());
+        this.container.addEventListener('contextmenu', (e) => e.stopPropagation());
+        this.container.addEventListener('dblclick', (e) => e.stopPropagation());
+        // Center the menu on screen
+        this.container.style.top = '50%';
+        this.container.style.left = '50%';
+        this.container.style.transform = 'translate(-50%, -50%)';
+        // Add fade-in animation
+        this.container.style.opacity = '0';
+        this.container.style.transition = 'opacity 0.2s ease-in-out';
+        setTimeout(() => {
+            this.container.style.opacity = '1';
+        }, 10);
+        document.body.appendChild(this.container);
+    }
+    hide() {
+        // Clean up listeners before removing the menu
+        if (this.container) {
+            // Supprimer tous les gestionnaires d'événements
+            const allElements = this.container.querySelectorAll('*');
+            allElements.forEach(element => {
+                const el = element;
+                el.replaceWith(el.cloneNode(true));
+            });
+            // Remove the container
+            this.container.remove();
+        }
+        // Reset document cursor in case it was changed
+        document.body.style.cursor = '';
+    }
+    // Méthode alias pour compatibilité avec le code existant
+    close() {
+        this.hide();
     }
 }
 
@@ -5271,12 +5864,15 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
+
+
 class KxsClient {
     constructor() {
         this.deathObserver = null;
         this.adBlockObserver = null;
         this.logger = new Logger();
-        this.config = __webpack_require__(891);
+        this.config = config_namespaceObject;
         this.menu = document.createElement("div");
         this.lastFrameTime = performance.now();
         this.isFpsUncapped = false;
@@ -5318,6 +5914,7 @@ class KxsClient {
             background_sound_url: background_song,
         };
         this.gridSystem = new GridSystem();
+        this.db = new browser/* SteganoDB */.w({ database: "KxsClient", tableName: "gameplay_history" });
         // Before all, load local storage
         this.loadLocalStorage();
         this.changeSurvevLogo();
@@ -5326,6 +5923,7 @@ class KxsClient {
         this.updater = new UpdateChecker(this);
         this.kill_leader = new KillLeaderTracker(this);
         this.healWarning = new HealthWarning(this);
+        this.historyManager = new GameHistoryMenu(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
@@ -5458,7 +6056,7 @@ class KxsClient {
                 this.logger.error("Reading error:", error);
             }
             const stats = this.getPlayerStats(false);
-            yield this.discordTracker.trackGameEnd({
+            const body = {
                 username: stats.username,
                 kills: stats.kills,
                 damageDealt: stats.damageDealt,
@@ -5466,7 +6064,9 @@ class KxsClient {
                 duration: stats.duration,
                 position: stats.position,
                 isWin: false,
-            });
+            };
+            yield this.discordTracker.trackGameEnd(body);
+            this.db.set(new Date().toISOString(), body);
         });
     }
     handlePlayerWin() {
@@ -5476,7 +6076,7 @@ class KxsClient {
                 this.felicitation();
             }
             const stats = this.getPlayerStats(true);
-            yield this.discordTracker.trackGameEnd({
+            const body = {
                 username: stats.username,
                 kills: stats.kills,
                 damageDealt: stats.damageDealt,
@@ -5497,7 +6097,9 @@ class KxsClient {
                     chest: (_k = document.querySelector("#ui-armor-chest .ui-armor-level")) === null || _k === void 0 ? void 0 : _k.textContent,
                     helmet: (_l = document.querySelector("#ui-armor-helmet .ui-armor-level")) === null || _l === void 0 ? void 0 : _l.textContent,
                 }
-            });
+            };
+            yield this.discordTracker.trackGameEnd(body);
+            this.db.set(new Date().toISOString(), body);
         });
     }
     felicitation() {
@@ -6484,7 +7086,7 @@ class KxsClient {
     }
 }
 
-;// ./src/LoadingScreen.ts
+;// ./src/HUD/MOD/LoadingScreen.ts
 /**
  * LoadingScreen.ts
  *
@@ -6648,14 +7250,14 @@ class LoadingScreen {
 
 
 
-const src_packageInfo = __webpack_require__(330);
-const src_config = __webpack_require__(891);
-const background_song = src_config.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
-const kxs_logo = src_config.base_url + "/assets/KysClientLogo.png";
-const full_logo = src_config.base_url + "/assets/KysClient.gif";
-const background_image = src_config.base_url + "/assets/background.jpg";
-const win_sound = src_config.base_url + "/assets/win.m4a";
-const death_sound = src_config.base_url + "/assets/dead.m4a";
+
+
+const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
+const kxs_logo = config_namespaceObject.base_url + "/assets/KysClientLogo.png";
+const full_logo = config_namespaceObject.base_url + "/assets/KysClient.gif";
+const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
+const win_sound = config_namespaceObject.base_url + "/assets/win.m4a";
+const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
 const loadingScreen = new LoadingScreen(kxs_logo);
 loadingScreen.show();
 const backgroundElement = document.getElementById("background");
@@ -6673,7 +7275,7 @@ const uiStatsLogo = document.querySelector('#ui-stats-logo');
 if (uiStatsLogo) {
     uiStatsLogo.style.backgroundImage = `url('${full_logo}')`;
 }
-const newChangelogUrl = src_config.base_url;
+const newChangelogUrl = config_namespaceObject.base_url;
 const startBottomMiddle = document.getElementById("start-bottom-middle");
 if (startBottomMiddle) {
     const links = startBottomMiddle.getElementsByTagName("a");
@@ -6681,7 +7283,7 @@ if (startBottomMiddle) {
         const link = links[i];
         if (link.href.includes("changelogRec.html") || link.href.includes("changelog.html")) {
             link.href = newChangelogUrl;
-            link.textContent = src_packageInfo.version;
+            link.textContent = package_namespaceObject.rE;
         }
         if (i === 1) {
             link.remove();
