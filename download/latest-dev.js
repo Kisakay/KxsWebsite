@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.3.1
+// @version      1.3.2
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1065,7 +1065,7 @@ class HealthWarning {
     createWarningElement() {
         const warning = document.createElement("div");
         const uiTopLeft = document.getElementById("ui-top-left");
-        warning.style.cssText = `š
+        warning.style.cssText = `
             position: fixed;
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid #ff0000;
@@ -1867,7 +1867,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"1.3.1"};
+const package_namespaceObject = {"rE":"1.3.2"};
 ;// ./config.json
 const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
 ;// ./src/FUNC/UpdateChecker.ts
