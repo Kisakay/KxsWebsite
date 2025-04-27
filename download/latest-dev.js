@@ -20,11 +20,6 @@
 // @match        *://50v50.online/*
 // @match        *://eu-comp.net/*
 // @match        *://survev.leia-is.gay/*
-// @grant        GM_xmlhttpRequest
-// @grant        GM_info
-// @grant        GM.getValue
-// @grant        GM.setValue
-// @grant        GM.runAt
 // @grant        none
 // ==/UserScript==
 ;
@@ -1057,7 +1052,7 @@ var __webpack_exports__ = {};
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*","*://survev.leia-is.gay/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue","GM.runAt","none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*","*://survev.leia-is.gay/*"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
 
 const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
@@ -1922,7 +1917,7 @@ var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (this
 
 class UpdateChecker {
     constructor(kxsClient) {
-        this.remoteScriptUrl = config_namespaceObject.base_url + "/download/latest-dev.js";
+        this.remoteScriptUrl = config_namespaceObject.api_url + "/getLatestVersion";
         this.kxsClient = kxsClient;
         if (this.kxsClient.isAutoUpdateEnabled) {
             this.checkForUpdate();
@@ -1930,73 +1925,59 @@ class UpdateChecker {
     }
     downloadScript() {
         return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                GM.xmlHttpRequest({
+            try {
+                const response = yield fetch(this.remoteScriptUrl, {
                     method: "GET",
-                    url: this.remoteScriptUrl,
                     headers: {
-                        "Cache-Control": "no-cache, no-store, must-revalidate",
-                        "Pragma": "no-cache",
-                        "Expires": "0"
-                    },
-                    nocache: true,
-                    responseType: "blob",
-                    onload: (response) => {
-                        if (response.status === 200) {
-                            const blob = new Blob([response.response], { type: 'application/javascript' });
-                            const downloadUrl = window.URL.createObjectURL(blob);
-                            const downloadLink = document.createElement('a');
-                            downloadLink.href = downloadUrl;
-                            downloadLink.download = 'KxsClient.user.js';
-                            document.body.appendChild(downloadLink);
-                            downloadLink.click();
-                            document.body.removeChild(downloadLink);
-                            window.URL.revokeObjectURL(downloadUrl);
-                            resolve();
-                        }
-                        else {
-                            reject(new Error("Error downloading script: " + response.statusText));
-                        }
-                    },
-                    onerror: (error) => {
-                        reject(new Error("Error during script download: " + error));
+                        "cache-control": "no-cache, no-store, must-revalidate",
+                        "pragma": "no-cache",
+                        "expires": "0"
                     }
                 });
-            });
+                if (!response.ok) {
+                    throw new Error("Error downloading script: " + response.statusText);
+                }
+                const blob = yield response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.download = 'KxsClient.user.js';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                window.URL.revokeObjectURL(downloadUrl);
+            }
+            catch (error) {
+                throw new Error("Error during script download: " + error);
+            }
         });
     }
     getNewScriptVersion() {
         return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                GM.xmlHttpRequest({
+            try {
+                const response = yield fetch(this.remoteScriptUrl, {
                     method: "GET",
-                    url: this.remoteScriptUrl,
                     headers: {
-                        "Cache-Control": "no-cache, no-store, must-revalidate",
-                        "Pragma": "no-cache",
-                        "Expires": "0"
-                    },
-                    nocache: true,
-                    onload: (response) => {
-                        if (response.status === 200) {
-                            const scriptContent = response.responseText;
-                            const versionMatch = scriptContent.match(/\/\/\s*@version\s+([\d.]+)/);
-                            if (versionMatch && versionMatch[1]) {
-                                resolve(versionMatch[1]);
-                            }
-                            else {
-                                reject(new Error("Script version was not found in the file."));
-                            }
-                        }
-                        else {
-                            reject(new Error("Error retrieving remote script: " + response.statusText));
-                        }
-                    },
-                    onerror: (error) => {
-                        reject(new Error("Error during remote script request: " + error));
+                        "cache-control": "no-cache, no-store, must-revalidate",
+                        "pragma": "no-cache",
+                        "expires": "0"
                     }
                 });
-            });
+                if (!response.ok) {
+                    throw new Error("Error retrieving remote script: " + response.statusText);
+                }
+                const scriptContent = yield response.text();
+                const versionMatch = scriptContent.match(/\/\/\s*@version\s+([\d.]+)/);
+                if (versionMatch && versionMatch[1]) {
+                    return versionMatch[1];
+                }
+                else {
+                    throw new Error("Script version was not found in the file.");
+                }
+            }
+            catch (error) {
+                throw new Error("Error retrieving remote script: " + error);
+            }
         });
     }
     checkForUpdate() {
