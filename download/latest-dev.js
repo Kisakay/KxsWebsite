@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.5
+// @version      2.0.6
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1901,7 +1901,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.5"};
+const package_namespaceObject = {"rE":"2.0.6"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -6104,10 +6104,41 @@ class KxsChat {
         chatBox.style.flexDirection = 'column';
         chatBox.style.gap = '3px';
         chatBox.style.opacity = '0.5';
+        // Charger la position sauvegardée dès l'initialisation
+        const savedPosition = localStorage.getItem('kxs-chat-box-position');
+        if (savedPosition) {
+            try {
+                const { x, y } = JSON.parse(savedPosition);
+                chatBox.style.left = `${x}px`;
+                chatBox.style.top = `${y}px`;
+                chatBox.style.position = 'absolute';
+            }
+            catch (e) { }
+        }
         area.appendChild(chatBox);
         this.chatBox = chatBox;
-        // Rendre la chatbox draggable
-        this.kxsClient.makeDraggable(chatBox, 'kxs-chat-box-position');
+        // Rendre la chatbox draggable UNIQUEMENT si le menu secondaire est ouvert
+        const updateChatDraggable = () => {
+            const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
+            if (isMenuOpen) {
+                chatBox.style.pointerEvents = 'auto';
+                chatBox.style.cursor = 'move';
+                this.kxsClient.makeDraggable(chatBox, 'kxs-chat-box-position');
+            }
+            else {
+                chatBox.style.pointerEvents = 'none';
+                chatBox.style.cursor = 'default';
+            }
+        };
+        // Initial state
+        updateChatDraggable();
+        // Observe menu changes
+        const observer = new MutationObserver(updateChatDraggable);
+        if (this.kxsClient.secondaryMenu && this.kxsClient.secondaryMenu.menu) {
+            observer.observe(this.kxsClient.secondaryMenu.menu, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+        // Optionnel : timer pour fallback (si le menu est modifié autrement)
+        setInterval(updateChatDraggable, 500);
         // Input
         const input = document.createElement('input');
         input.type = 'text';
@@ -6295,7 +6326,6 @@ class KxsClient {
         this.healWarning = new HealthWarning(this);
         this.historyManager = new GameHistoryMenu(this);
         this.kxsNetwork = new KxsNetwork(this);
-        this.chat = new KxsChat(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
@@ -6308,6 +6338,7 @@ class KxsClient {
             this.secondaryMenu = new KxsClientSecondaryMenu(this);
         }
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
+        this.chat = new KxsChat(this);
         if (this.isSpotifyPlayerEnabled) {
             this.createSimpleSpotifyPlayer();
         }
@@ -7701,6 +7732,7 @@ class LoadingScreen {
 
 intercept("audio/ambient/menu_music_01.mp3", background_song);
 intercept('img/survev_logo_full.png', full_logo);
+const kxsClient = new KxsClient();
 const loadingScreen = new LoadingScreen(kxs_logo);
 loadingScreen.show();
 const backgroundElement = document.getElementById("background");
@@ -7733,7 +7765,6 @@ if (startBottomMiddle) {
 }
 setTimeout(() => {
     loadingScreen.hide();
-    const kxsClient = new KxsClient();
 }, 1400);
 
 })();
