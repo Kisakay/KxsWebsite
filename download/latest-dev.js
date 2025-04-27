@@ -1,29 +1,31 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      1.3.2
+// @version      2.0.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
 // @run-at       document-end
 // @downloadURL  https://kxs.rip/download/latest-dev.js
 // @icon         https://kxs.rip/assets/KysClientLogo.png
-// @match        ://survev.io/
-// @match        *://66.179.254.36/
-// @match        ://zurviv.io/
-// @match        ://expandedwater.online/
-// @match        ://localhost:3000/
-// @match        ://surviv.wf/
-// @match        ://resurviv.biz/
-// @match        ://82.67.125.203/
-// @match        ://leia-uwu.github.io/survev/
-// @match        ://50v50.online/
-// @match        ://eu-comp.net/
-// @match        ://survev.leia-is.gay/
+// @match        *://survev.io/*
+// @match        *://66.179.254.36/*
+// @match        *://zurviv.io/*
+// @match        *://expandedwater.online/*
+// @match        *://localhost:3000/*
+// @match        *://surviv.wf/*
+// @match        *://resurviv.biz/*
+// @match        *://82.67.125.203/*
+// @match        *://leia-uwu.github.io/survev/*
+// @match        *://50v50.online/*
+// @match        *://eu-comp.net/*
+// @match        *://survev.leia-is.gay/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM.getValue
 // @grant        GM.setValue
+// @grant        GM.runAt
+// @grant        none
 // ==/UserScript==
 ;
 /******/ (() => { // webpackBootstrap
@@ -341,6 +343,40 @@ createToken('STAR', '(<|>)?=?\\s*\\*')
 // >=0.0.0 is like a star
 createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
 createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
+
+
+/***/ }),
+
+/***/ 746:
+/***/ (() => {
+
+"use strict";
+
+// --- HOOK GLOBAL WEBSOCKET POUR INTERCEPTION gameId & PTC monitoring ---
+(function () {
+    const OriginalWebSocket = window.WebSocket;
+    function HookedWebSocket(url, protocols) {
+        const ws = protocols !== undefined
+            ? new OriginalWebSocket(url, protocols)
+            : new OriginalWebSocket(url);
+        if (typeof url === "string" && url.includes("gameId=")) {
+            const gameId = url.split("gameId=")[1];
+            globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
+        }
+        return ws;
+    }
+    // Copie le prototype
+    HookedWebSocket.prototype = OriginalWebSocket.prototype;
+    // Copie les propriétés statiques (CONNECTING, OPEN, etc.)
+    Object.defineProperties(HookedWebSocket, {
+        CONNECTING: { value: OriginalWebSocket.CONNECTING, writable: false },
+        OPEN: { value: OriginalWebSocket.OPEN, writable: false },
+        CLOSING: { value: OriginalWebSocket.CLOSING, writable: false },
+        CLOSED: { value: OriginalWebSocket.CLOSED, writable: false },
+    });
+    // Remplace le constructeur global
+    window.WebSocket = HookedWebSocket;
+})();
 
 
 /***/ }),
@@ -1018,15 +1054,18 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, {
-  h3: () => (/* binding */ background_image),
-  hD: () => (/* binding */ background_song),
-  LF: () => (/* binding */ death_sound),
-  SD: () => (/* binding */ full_logo),
-  fW: () => (/* binding */ kxs_logo),
-  zB: () => (/* binding */ win_sound)
-});
+// EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
+var websocket_hook = __webpack_require__(746);
+;// ./config.json
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://expandedwater.online/*","*://localhost:3000/*","*://surviv.wf/*","*://resurviv.biz/*","*://82.67.125.203/*","*://leia-uwu.github.io/survev/*","*://50v50.online/*","*://eu-comp.net/*","*://survev.leia-is.gay/*"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue","GM.runAt","none"]}');
+;// ./src/UTILS/vars.ts
+
+const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
+const kxs_logo = config_namespaceObject.base_url + "/assets/KysClientLogo.png";
+const full_logo = config_namespaceObject.base_url + "/assets/KysClient.gif";
+const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
+const win_sound = config_namespaceObject.base_url + "/assets/win.m4a";
+const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
 
 ;// ./src/MECHANIC/intercept.ts
 function intercept(link, targetUrl) {
@@ -1867,9 +1906,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"1.3.2"};
-;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","fileName":"KxsClient.user.js","match":["://survev.io/","*://66.179.254.36/","://zurviv.io/","://expandedwater.online/","://localhost:3000/","://surviv.wf/","://resurviv.biz/","://82.67.125.203/","://leia-uwu.github.io/survev/","://50v50.online/","://eu-comp.net/","://survev.leia-is.gay/"],"grant":["GM_xmlhttpRequest","GM_info","GM.getValue","GM.setValue"]}');
+const package_namespaceObject = {"rE":"2.0.1"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -5477,25 +5514,26 @@ class KxsClientHUD {
 
 
 ;// ./src/FUNC/Logger.ts
-const 展示 = (...args) => {
-    console.log(...args);
-};
 class Logger {
     getHeader(method) {
         return "[" + "KxsClient" + " - " + method + "]";
     }
+    展示(...args) {
+        console.log(...args);
+    }
+    ;
     log(...args) {
         // Convert args to string and join them
         const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        展示(this.getHeader("LOG"), message);
+        this.展示(this.getHeader("LOG"), message);
     }
     warn(...args) {
         const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        展示(this.getHeader("WARN"), message);
+        this.展示(this.getHeader("WARN"), message);
     }
     error(...args) {
         const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        展示(this.getHeader("ERROR"), message);
+        this.展示(this.getHeader("ERROR"), message);
     }
 }
 
@@ -5517,14 +5555,6 @@ class GameHistoryMenu {
         this.kxsClient = kxsClient;
         this.container = document.createElement('div');
         this.closeBtn = document.createElement('button');
-        // Initialize container style
-        this.initContainer();
-        // Add close button
-        this.addCloseButton();
-        // Add header with title
-        this.addHeader();
-        // Load and display game history
-        this.renderContent();
     }
     initContainer() {
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
@@ -5794,6 +5824,17 @@ class GameHistoryMenu {
         historyList.appendChild(line);
     }
     show() {
+        // Recréer le conteneur pour un contenu frais
+        this.container = document.createElement('div');
+        this.closeBtn = document.createElement('button');
+        // Réinitialiser le conteneur
+        this.initContainer();
+        // Ajouter le bouton de fermeture
+        this.addCloseButton();
+        // Ajouter l'en-tête avec le titre
+        this.addHeader();
+        // Charger et afficher l'historique des jeux actualisé
+        this.renderContent();
         // Close RSHIFT menu if it's open
         if (this.kxsClient.secondaryMenu && typeof this.kxsClient.secondaryMenu.getMenuVisibility === 'function') {
             if (this.kxsClient.secondaryMenu.getMenuVisibility()) {
@@ -5841,6 +5882,202 @@ class GameHistoryMenu {
 }
 
 
+;// ./src/NETWORK/KxsNetwork.ts
+var KxsNetwork_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+class KxsNetwork {
+    sendGlobalChatMessage(text) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
+            return;
+        const payload = {
+            op: 7,
+            d: {
+                user: this.getUsername(),
+                text
+            }
+        };
+        this.send(payload);
+    }
+    constructor(kxsClient) {
+        this.currentGamePlayers = [];
+        this.ws = null;
+        this.heartbeatInterval = 0;
+        this.isAuthenticated = false;
+        this.HOST = config_namespaceObject.api_url;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 3;
+        this.reconnectTimeout = 0;
+        this.reconnectDelay = 15000; // Initial reconnect delay of 1 second
+        this.kxsClient = kxsClient;
+    }
+    connect() {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.kxsClient.logger.log('[KxsNetwork] WebSocket already connected');
+            return;
+        }
+        this.ws = new WebSocket(this.getWebSocketURL());
+        this.ws.onopen = () => {
+            this.kxsClient.logger.log('[KxsNetwork] WebSocket connection established');
+            // Reset reconnect attempts on successful connection
+            this.reconnectAttempts = 0;
+            this.reconnectDelay = 1000;
+        };
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleMessage(data);
+        };
+        this.ws.onerror = (error) => {
+            this.kxsClient.nm.showNotification('WebSocket error: ' + error.type, 'error', 900);
+        };
+        this.ws.onclose = () => {
+            this.kxsClient.nm.showNotification('Disconnected from KxsNetwork', 'info', 1100);
+            clearInterval(this.heartbeatInterval);
+            this.isAuthenticated = false;
+            // Try to reconnect
+            this.attemptReconnect();
+        };
+    }
+    attemptReconnect() {
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            // Use exponential backoff for reconnection attempts
+            const delay = this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1);
+            this.kxsClient.logger.log(`[KxsNetwork] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`);
+            // Clear any existing timeout
+            if (this.reconnectTimeout) {
+                clearTimeout(this.reconnectTimeout);
+            }
+            // Set timeout for reconnection
+            this.reconnectTimeout = setTimeout(() => {
+                this.connect();
+            }, delay);
+        }
+        else {
+            this.kxsClient.logger.log('[KxsNetwork] Maximum reconnection attempts reached');
+            this.kxsClient.nm.showNotification('Failed to reconnect after multiple attempts', 'error', 2000);
+        }
+    }
+    getUsername() {
+        return JSON.parse(localStorage.getItem("surviv_config") || "{}").playerName;
+    }
+    identify() {
+        const payload = {
+            op: 2,
+            d: {
+                username: this.getUsername(),
+            }
+        };
+        this.send(payload);
+    }
+    handleMessage(data) {
+        var _a;
+        switch (data.op) {
+            case 3: // Kxs user join game
+                if (data.d && Array.isArray(data.d.players)) {
+                    const myName = this.getUsername();
+                    const previousPlayers = this.currentGamePlayers;
+                    const currentPlayers = data.d.players.filter((name) => name !== myName);
+                    // Détecter les nouveaux joueurs (hors soi-même)
+                    const newPlayers = currentPlayers.filter((name) => !previousPlayers.includes(name));
+                    for (const newPlayer of newPlayers) {
+                        this.kxsClient.nm.showNotification(`🎉 ${newPlayer} is a Kxs player!`, 'info', 1500);
+                    }
+                    this.currentGamePlayers = currentPlayers;
+                }
+                break;
+            case 7: // Global chat message
+                if (data.d && data.d.user && data.d.text) {
+                    this.kxsClient.addChatMessage(data.d.user, data.d.text);
+                }
+                break;
+            case 10: // Hello
+                const { heartbeat_interval } = data.d;
+                this.startHeartbeat(heartbeat_interval);
+                this.identify();
+                break;
+            case 2: // Dispatch
+                if ((_a = data === null || data === void 0 ? void 0 : data.d) === null || _a === void 0 ? void 0 : _a.uuid) {
+                    this.isAuthenticated = true;
+                }
+                break;
+        }
+    }
+    startHeartbeat(interval) {
+        // Clear existing interval if it exists
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+        }
+        this.heartbeatInterval = setInterval(() => {
+            this.send({
+                op: 1,
+                d: {}
+            });
+        }, interval);
+    }
+    send(data) {
+        var _a;
+        if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(data));
+        }
+    }
+    disconnect() {
+        if (this.ws) {
+            // Clear all timers
+            clearInterval(this.heartbeatInterval);
+            clearTimeout(this.reconnectTimeout);
+            // Reset reconnection state
+            this.reconnectAttempts = 0;
+            // Close the connection
+            this.ws.close();
+        }
+    }
+    reconnect() {
+        this.disconnect();
+        this.connect();
+    }
+    sendGameInfoToWebSocket(gameId) {
+        if (!this.isAuthenticated || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            return;
+        }
+        try {
+            const payload = {
+                op: 3, // Custom operation code for game info
+                d: {
+                    type: 'find_game_response',
+                    gameId
+                }
+            };
+            this.send(payload);
+        }
+        catch (error) {
+        }
+    }
+    getWebSocketURL() {
+        let isSecured = this.HOST.startsWith("https://");
+        let protocols = isSecured ? "wss://" : "ws://";
+        return protocols + this.HOST.split("/")[2];
+    }
+    getHTTPURL() {
+        return this.HOST;
+    }
+    getOnlineCount() {
+        return KxsNetwork_awaiter(this, void 0, void 0, function* () {
+            return yield (yield fetch(this.getHTTPURL() + "/online-count", {
+                method: "GET"
+            })).json();
+        });
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -5867,10 +6104,18 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
 class KxsClient {
     constructor() {
+        this.chatInput = null;
+        this.chatBox = null;
+        this.chatMessages = [];
+        this.chatOpen = false;
+        this.onlineMenuElement = null;
+        this.onlineMenuInterval = null;
         this.deathObserver = null;
         this.adBlockObserver = null;
+        globalThis.kxsClient = this;
         this.logger = new Logger();
         this.config = config_namespaceObject;
         this.menu = document.createElement("div");
@@ -5924,6 +6169,7 @@ class KxsClient {
         this.kill_leader = new KillLeaderTracker(this);
         this.healWarning = new HealthWarning(this);
         this.historyManager = new GameHistoryMenu(this);
+        this.kxsNetwork = new KxsNetwork(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
@@ -5940,6 +6186,9 @@ class KxsClient {
             this.createSimpleSpotifyPlayer();
         }
         this.MainMenuCleaning();
+        this.kxsNetwork.connect();
+        this.createOnlineMenu();
+        this.initGlobalChat();
     }
     parseToken(token) {
         if (token) {
@@ -5959,6 +6208,180 @@ class KxsClient {
         if (startRowHeader) {
             startRowHeader.style.backgroundImage =
                 `url("${full_logo}")`;
+        }
+    }
+    createOnlineMenu() {
+        // Cherche le div #start-overlay
+        const overlay = document.getElementById('start-overlay');
+        if (!overlay)
+            return;
+        // Crée le menu
+        const menu = document.createElement('div');
+        menu.id = 'kxs-online-menu';
+        menu.style.position = 'absolute';
+        menu.style.top = '18px';
+        menu.style.right = '18px';
+        menu.style.background = 'rgba(30,30,40,0.92)';
+        menu.style.color = '#fff';
+        menu.style.padding = '8px 18px';
+        menu.style.borderRadius = '12px';
+        menu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18)';
+        menu.style.fontSize = '15px';
+        menu.style.zIndex = '999';
+        menu.style.userSelect = 'none';
+        menu.style.pointerEvents = 'auto';
+        menu.style.fontFamily = 'inherit';
+        menu.style.display = 'flex';
+        menu.style.alignItems = 'center';
+        menu.innerHTML = `
+			<span id="kxs-online-dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#3fae2a;margin-right:10px;box-shadow:0 0 8px #3fae2a;animation:kxs-pulse 1s infinite alternate;"></span>
+			<b></b> <span id="kxs-online-count">...</span>
+		`;
+        // Ajoute l'animation CSS
+        if (!document.getElementById('kxs-online-style')) {
+            const style = document.createElement('style');
+            style.id = 'kxs-online-style';
+            style.innerHTML = `
+			@keyframes kxs-pulse {
+				0% { box-shadow:0 0 8px #3fae2a; opacity: 1; }
+				100% { box-shadow:0 0 16px #3fae2a; opacity: 0.6; }
+			}
+			`;
+            document.head.appendChild(style);
+        }
+        overlay.appendChild(menu);
+        this.onlineMenuElement = menu;
+        this.updateOnlineMenu();
+        this.onlineMenuInterval = window.setInterval(() => this.updateOnlineMenu(), 2000);
+    }
+    updateOnlineMenu() {
+        return KxsClient_awaiter(this, void 0, void 0, function* () {
+            if (!this.onlineMenuElement)
+                return;
+            const countEl = this.onlineMenuElement.querySelector('#kxs-online-count');
+            const dot = this.onlineMenuElement.querySelector('#kxs-online-dot');
+            try {
+                const res = yield this.kxsNetwork.getOnlineCount();
+                const count = typeof res.count === 'number' ? res.count : '?';
+                if (countEl)
+                    countEl.textContent = `${count} Kxs users`;
+                if (dot) {
+                    dot.style.background = '#3fae2a';
+                    dot.style.boxShadow = '0 0 8px #3fae2a';
+                    dot.style.animation = 'kxs-pulse 1s infinite alternate';
+                }
+            }
+            catch (e) {
+                if (countEl)
+                    countEl.textContent = 'API offline';
+                if (dot) {
+                    dot.style.background = '#888';
+                    dot.style.boxShadow = 'none';
+                    dot.style.animation = '';
+                }
+            }
+        });
+    }
+    initGlobalChat() {
+        const area = document.getElementById('game-touch-area');
+        if (!area)
+            return;
+        // Chat box
+        const chatBox = document.createElement('div');
+        chatBox.id = 'kxs-chat-box';
+        chatBox.style.position = 'absolute';
+        chatBox.style.left = '50%';
+        chatBox.style.bottom = '38px';
+        chatBox.style.transform = 'translateX(-50%)';
+        chatBox.style.minWidth = '260px';
+        chatBox.style.maxWidth = '480px';
+        chatBox.style.background = 'rgba(30,30,40,0.80)';
+        chatBox.style.color = '#fff';
+        chatBox.style.borderRadius = '10px';
+        chatBox.style.padding = '7px 14px 4px 14px';
+        chatBox.style.fontSize = '15px';
+        chatBox.style.fontFamily = 'inherit';
+        chatBox.style.zIndex = '1002';
+        chatBox.style.pointerEvents = 'none';
+        chatBox.style.display = 'flex';
+        chatBox.style.flexDirection = 'column';
+        chatBox.style.gap = '3px';
+        area.appendChild(chatBox);
+        this.chatBox = chatBox;
+        // Input
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Press T to write...';
+        input.id = 'kxs-chat-input';
+        input.style.position = 'absolute';
+        input.style.left = '50%';
+        input.style.bottom = '8px';
+        input.style.transform = 'translateX(-50%)';
+        input.style.width = '320px';
+        input.style.padding = '8px 12px';
+        input.style.borderRadius = '8px';
+        input.style.border = 'none';
+        input.style.background = 'rgba(40,40,50,0.95)';
+        input.style.color = '#fff';
+        input.style.fontSize = '15px';
+        input.style.fontFamily = 'inherit';
+        input.style.zIndex = '1003';
+        input.style.outline = 'none';
+        input.style.display = 'none';
+        area.appendChild(input);
+        this.chatInput = input;
+        ['keydown', 'keypress', 'keyup'].forEach(eventType => {
+            input.addEventListener(eventType, (e) => {
+                const ke = e;
+                if (eventType === 'keydown') {
+                    if (ke.key === 'Enter') {
+                        const txt = input.value.trim();
+                        if (txt)
+                            this.kxsNetwork.sendGlobalChatMessage(txt);
+                        input.value = '';
+                        this.closeChatInput();
+                    }
+                    else if (ke.key === 'Escape') {
+                        this.closeChatInput();
+                    }
+                }
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+            }, true);
+        });
+        // Gestion clavier
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 't' && !this.chatOpen && document.activeElement !== input) {
+                e.preventDefault();
+                this.openChatInput();
+            }
+            else if (e.key === 'Escape' && this.chatOpen) {
+                this.closeChatInput();
+            }
+        });
+    }
+    openChatInput() {
+        if (!this.chatInput)
+            return;
+        this.chatInput.style.display = '';
+        this.chatInput.focus();
+        this.chatOpen = true;
+    }
+    closeChatInput() {
+        if (!this.chatInput)
+            return;
+        this.chatInput.style.display = 'none';
+        this.chatInput.blur();
+        this.chatOpen = false;
+    }
+    addChatMessage(user, text) {
+        if (!this.chatBox)
+            return;
+        this.chatMessages.push({ user, text });
+        if (this.chatMessages.length > 5)
+            this.chatMessages.shift();
+        if (this.chatBox) {
+            this.chatBox.innerHTML = this.chatMessages.map(m => `<span><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</span>`).join('');
         }
     }
     detectDeviceType() {
@@ -7246,18 +7669,15 @@ class LoadingScreen {
 }
 
 ;// ./src/index.ts
-// import { KxsMainClientMenu } from "./ClientMainMenu";
 
 
 
 
 
-const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
-const kxs_logo = config_namespaceObject.base_url + "/assets/KysClientLogo.png";
-const full_logo = config_namespaceObject.base_url + "/assets/KysClient.gif";
-const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
-const win_sound = config_namespaceObject.base_url + "/assets/win.m4a";
-const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
+
+
+intercept("audio/ambient/menu_music_01.mp3", background_song);
+intercept('img/survev_logo_full.png', full_logo);
 const loadingScreen = new LoadingScreen(kxs_logo);
 loadingScreen.show();
 const backgroundElement = document.getElementById("background");
@@ -7269,8 +7689,6 @@ favicon.type = 'image/png';
 favicon.href = kxs_logo;
 document.head.appendChild(favicon);
 document.title = "KxsClient";
-intercept("audio/ambient/menu_music_01.mp3", background_song);
-intercept('img/survev_logo_full.png', full_logo);
 const uiStatsLogo = document.querySelector('#ui-stats-logo');
 if (uiStatsLogo) {
     uiStatsLogo.style.backgroundImage = `url('${full_logo}')`;
@@ -7290,10 +7708,9 @@ if (startBottomMiddle) {
         }
     }
 }
-const kxsClient = new KxsClient();
-// const mainMenu = new KxsMainClientMenu(kxsClient);
-setInterval(() => {
+setTimeout(() => {
     loadingScreen.hide();
+    const kxsClient = new KxsClient();
 }, 1400);
 
 })();
