@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.2
+// @version      2.0.4
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1906,7 +1906,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.2"};
+const package_namespaceObject = {"rE":"2.0.4"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -6302,16 +6302,20 @@ class KxsClient {
         chatBox.style.fontSize = '15px';
         chatBox.style.fontFamily = 'inherit';
         chatBox.style.zIndex = '1002';
-        chatBox.style.pointerEvents = 'none';
+        chatBox.style.pointerEvents = 'auto';
+        chatBox.style.cursor = 'move'; // Indique que c'est déplaçable
         chatBox.style.display = 'flex';
         chatBox.style.flexDirection = 'column';
         chatBox.style.gap = '3px';
+        chatBox.style.opacity = '0.5';
         area.appendChild(chatBox);
         this.chatBox = chatBox;
+        // Rendre la chatbox draggable
+        this.makeDraggable(chatBox, 'kxs-chat-box-position');
         // Input
         const input = document.createElement('input');
         input.type = 'text';
-        input.placeholder = 'Press T to write...';
+        input.placeholder = 'Press Enter to write...';
         input.id = 'kxs-chat-input';
         input.style.position = 'absolute';
         input.style.left = '50%';
@@ -6328,6 +6332,7 @@ class KxsClient {
         input.style.zIndex = '1003';
         input.style.outline = 'none';
         input.style.display = 'none';
+        input.style.opacity = '0.5';
         area.appendChild(input);
         this.chatInput = input;
         ['keydown', 'keypress', 'keyup'].forEach(eventType => {
@@ -6351,7 +6356,7 @@ class KxsClient {
         });
         // Gestion clavier
         window.addEventListener('keydown', (e) => {
-            if (e.key === 't' && !this.chatOpen && document.activeElement !== input) {
+            if (e.key === 'Enter' && !this.chatOpen && document.activeElement !== input) {
                 e.preventDefault();
                 this.openChatInput();
             }
