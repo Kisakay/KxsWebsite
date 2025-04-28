@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.8
+// @version      2.0.9
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1901,7 +1901,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.8"};
+const package_namespaceObject = {"rE":"2.0.9"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -5973,45 +5973,56 @@ class KxsNetwork {
         };
         this.send(payload);
     }
-    handleMessage(data) {
-        var _a, _b;
-        switch (data.op) {
+    handleMessage(_data) {
+        const { op, d } = _data;
+        switch (op) {
             case 1: //Heart
                 {
-                    if ((_a = data === null || data === void 0 ? void 0 : data.d) === null || _a === void 0 ? void 0 : _a.count) {
-                        this.kxsUsers = data.d.count;
+                    if (d === null || d === void 0 ? void 0 : d.count) {
+                        this.kxsUsers = d.count;
                     }
                 }
                 break;
             case 3: // Kxs user join game
-                if (data.d && Array.isArray(data.d.players)) {
-                    const myName = this.getUsername();
-                    const previousPlayers = this.currentGamePlayers;
-                    const currentPlayers = data.d.players.filter((name) => name !== myName);
-                    // Détecter les nouveaux joueurs (hors soi-même)
-                    const newPlayers = currentPlayers.filter((name) => !previousPlayers.includes(name));
-                    for (const newPlayer of newPlayers) {
-                        this.kxsClient.nm.showNotification(`🎉 ${newPlayer} is a Kxs player!`, 'info', 1500);
+                {
+                    if (d && Array.isArray(d.players)) {
+                        const myName = this.getUsername();
+                        const previousPlayers = this.currentGamePlayers;
+                        const currentPlayers = d.players.filter((name) => name !== myName);
+                        // Détecter les nouveaux joueurs (hors soi-même)
+                        const newPlayers = currentPlayers.filter((name) => !previousPlayers.includes(name));
+                        for (const newPlayer of newPlayers) {
+                            this.kxsClient.nm.showNotification(`🎉 ${newPlayer} is a Kxs player!`, 'info', 3500);
+                        }
+                        this.currentGamePlayers = currentPlayers;
                     }
-                    this.currentGamePlayers = currentPlayers;
                 }
                 break;
             case 7: // Global chat message
-                if (data.d && data.d.user && data.d.text) {
-                    this.kxsClient.chat.addChatMessage(data.d.user, data.d.text);
+                {
+                    if (d && d.user && d.text) {
+                        this.kxsClient.chat.addChatMessage(d.user, d.text);
+                    }
                 }
                 break;
             case 10: // Hello
                 {
-                    const { heartbeat_interval } = data.d;
+                    const { heartbeat_interval } = d;
                     this.startHeartbeat(heartbeat_interval);
                     this.identify();
                 }
                 break;
             case 2: // Dispatch
                 {
-                    if ((_b = data === null || data === void 0 ? void 0 : data.d) === null || _b === void 0 ? void 0 : _b.uuid) {
+                    if (d === null || d === void 0 ? void 0 : d.uuid) {
                         this.isAuthenticated = true;
+                    }
+                }
+                break;
+            case 98: // VOICE CHAT UPDATE
+                {
+                    if (d && !d.isVoiceChat && d.user) {
+                        this.kxsClient.voiceChat.removeUserFromVoice(d.user);
                     }
                 }
                 break;
@@ -6077,6 +6088,10 @@ class KxsNetwork {
     }
     getOnlineCount() {
         return this.kxsUsers;
+    }
+    gameEnded() {
+        var _a;
+        (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 4, d: {} }));
     }
 }
 
@@ -6275,14 +6290,36 @@ class KxsVoiceChat {
         this.micStream = null;
         this.micSource = null;
         this.processor = null;
+        // Overlay elements
+        this.overlayContainer = null;
+        this.activeUsers = new Map();
+        this.mutedUsers = new Set();
+        this.activityCheckInterval = null;
+        this.isOverlayVisible = true;
+        // Constants
+        this.ACTIVITY_THRESHOLD = 0.01;
+        this.INACTIVITY_TIMEOUT = 2000;
+        this.REMOVAL_TIMEOUT = 30000;
+        this.ACTIVITY_CHECK_INTERVAL = 500;
         this.kxsClient = kxsClient;
         this.kxsNetwork = kxsNetwork;
+        this.createOverlayContainer();
+    }
+    /**
+     * Remove a user from voice chat (e.g., when muted)
+     */
+    removeUserFromVoice(username) {
+        if (this.activeUsers.has(username)) {
+            this.activeUsers.delete(username);
+            this.updateOverlayUI();
+        }
     }
     startVoiceChat() {
         return KxsVoiceChat_awaiter(this, void 0, void 0, function* () {
             if (!this.kxsClient.isVoiceChatEnabled)
                 return;
             this.cleanup();
+            this.showOverlay();
             try {
                 this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 this.micStream = yield navigator.mediaDevices.getUserMedia({
@@ -6298,62 +6335,88 @@ class KxsVoiceChat {
                 this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
                 this.micSource.connect(this.processor);
                 this.processor.connect(this.audioCtx.destination);
-                // --- ENVOI AUDIO ---
-                this.processor.onaudioprocess = (e) => {
-                    if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN)
-                        return;
-                    const input = e.inputBuffer.getChannelData(0);
-                    const int16 = new Int16Array(input.length);
-                    for (let i = 0; i < input.length; i++) {
-                        int16[i] = Math.max(-32768, Math.min(32767, input[i] * 32767));
-                    }
-                    this.kxsNetwork.ws.send(JSON.stringify({ op: 99, d: Array.from(int16) }));
-                };
-                // --- RECEPTION & LECTURE ---
-                this.kxsNetwork.ws.addEventListener('message', (msg) => {
-                    let parsed;
-                    try {
-                        parsed = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
-                    }
-                    catch (_a) {
-                        return;
-                    }
-                    if (!parsed || parsed.op !== 99 || !parsed.d)
-                        return;
-                    try {
-                        const int16Data = new Int16Array(parsed.d);
-                        const floatData = new Float32Array(int16Data.length);
-                        for (let i = 0; i < int16Data.length; i++) {
-                            floatData[i] = int16Data[i] / 32767;
-                        }
-                        const buffer = this.audioCtx.createBuffer(1, floatData.length, this.audioCtx.sampleRate);
-                        buffer.getChannelData(0).set(floatData);
-                        const source = this.audioCtx.createBufferSource();
-                        source.buffer = buffer;
-                        source.connect(this.audioCtx.destination);
-                        source.start();
-                    }
-                    catch (error) {
-                        console.error("Erreur lors du traitement audio:", error);
-                    }
-                });
-                this.kxsNetwork.ws.onopen = () => {
-                    this.kxsClient.nm.showNotification('Chat vocal connecté ✓', 'success', 3000);
-                };
-                this.kxsNetwork.ws.onclose = () => {
-                    this.kxsClient.nm.showNotification('Chat vocal déconnecté X', 'error', 3000);
-                    this.cleanup();
-                };
+                // Set up audio processing
+                this.setupAudioProcessing();
+                this.setupWebSocketListeners();
             }
             catch (error) {
-                console.error("Erreur d'initialisation du chat vocal:", error);
-                alert("Impossible d'initialiser le chat vocal: " + error.message);
+                console.error("Voice chat initialization error:", error);
+                alert("Unable to initialize voice chat: " + error.message);
                 this.cleanup();
             }
         });
     }
+    setupAudioProcessing() {
+        if (!this.processor)
+            return;
+        this.processor.onaudioprocess = (e) => {
+            if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN)
+                return;
+            const input = e.inputBuffer.getChannelData(0);
+            const int16 = new Int16Array(input.length);
+            for (let i = 0; i < input.length; i++) {
+                int16[i] = Math.max(-32768, Math.min(32767, input[i] * 32767));
+            }
+            this.kxsNetwork.ws.send(JSON.stringify({ op: 99, d: Array.from(int16) }));
+        };
+    }
+    setupWebSocketListeners() {
+        if (!this.kxsNetwork.ws)
+            return;
+        this.kxsNetwork.ws.addEventListener('message', this.handleAudioMessage.bind(this));
+        this.kxsNetwork.ws.onopen = () => {
+            this.kxsClient.nm.showNotification('Voice chat connected ✓', 'success', 3000);
+        };
+        this.kxsNetwork.ws.onclose = () => {
+            this.kxsClient.nm.showNotification('Voice chat disconnected X', 'error', 3000);
+            this.cleanup();
+        };
+    }
+    handleAudioMessage(msg) {
+        let parsed;
+        try {
+            parsed = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+        }
+        catch (_a) {
+            return;
+        }
+        if (!parsed || parsed.op !== 99 || !parsed.d || !parsed.u)
+            return;
+        try {
+            // Skip if user is muted
+            if (this.mutedUsers.has(parsed.u))
+                return;
+            const int16Data = new Int16Array(parsed.d);
+            const floatData = new Float32Array(int16Data.length);
+            // Calculate audio level for visualization
+            let audioLevel = 0;
+            for (let i = 0; i < int16Data.length; i++) {
+                floatData[i] = int16Data[i] / 32767;
+                audioLevel += floatData[i] * floatData[i];
+            }
+            audioLevel = Math.sqrt(audioLevel / int16Data.length);
+            // Update user activity in the overlay
+            this.updateUserActivity(parsed.u, audioLevel);
+            // Play the audio
+            this.playAudio(floatData);
+        }
+        catch (error) {
+            console.error("Audio processing error:", error);
+        }
+    }
+    playAudio(floatData) {
+        if (!this.audioCtx)
+            return;
+        const buffer = this.audioCtx.createBuffer(1, floatData.length, this.audioCtx.sampleRate);
+        buffer.getChannelData(0).set(floatData);
+        const source = this.audioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.audioCtx.destination);
+        source.start();
+    }
     stopVoiceChat() {
         this.cleanup();
+        this.hideOverlay();
     }
     cleanup() {
         if (this.processor) {
@@ -6372,15 +6435,17 @@ class KxsVoiceChat {
             this.audioCtx.close();
             this.audioCtx = null;
         }
+        if (this.activityCheckInterval) {
+            window.clearInterval(this.activityCheckInterval);
+            this.activityCheckInterval = null;
+        }
     }
     toggleVoiceChat() {
         var _a, _b;
         if (this.kxsClient.isVoiceChatEnabled) {
             (_a = this.kxsNetwork.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({
                 op: 98,
-                d: {
-                    isVoiceChat: true
-                }
+                d: { isVoiceChat: true }
             }));
             this.startVoiceChat();
         }
@@ -6388,11 +6453,268 @@ class KxsVoiceChat {
             this.stopVoiceChat();
             (_b = this.kxsNetwork.ws) === null || _b === void 0 ? void 0 : _b.send(JSON.stringify({
                 op: 98,
-                d: {
-                    isVoiceChat: false
-                }
+                d: { isVoiceChat: false }
             }));
         }
+    }
+    createOverlayContainer() {
+        if (this.overlayContainer)
+            return;
+        this.overlayContainer = document.createElement('div');
+        this.overlayContainer.id = 'kxs-voice-chat-overlay';
+        Object.assign(this.overlayContainer.style, {
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            width: '200px',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            color: 'white',
+            padding: '10px',
+            borderRadius: '5px',
+            zIndex: '1000',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            display: 'none'
+        });
+        // Add title
+        const title = document.createElement('div');
+        title.textContent = 'Voice Chat';
+        Object.assign(title.style, {
+            fontWeight: 'bold',
+            marginBottom: '5px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+            paddingBottom: '5px'
+        });
+        this.overlayContainer.appendChild(title);
+        // Container for users
+        const usersContainer = document.createElement('div');
+        usersContainer.id = 'kxs-voice-chat-users';
+        this.overlayContainer.appendChild(usersContainer);
+        document.body.appendChild(this.overlayContainer);
+        this.startActivityCheck();
+    }
+    showOverlay() {
+        if (!this.overlayContainer)
+            return;
+        this.overlayContainer.style.display = 'block';
+        this.isOverlayVisible = true;
+        if (!this.activityCheckInterval) {
+            this.startActivityCheck();
+        }
+    }
+    hideOverlay() {
+        if (!this.overlayContainer)
+            return;
+        this.overlayContainer.style.display = 'none';
+        this.isOverlayVisible = false;
+    }
+    toggleOverlay() {
+        if (this.isOverlayVisible) {
+            this.hideOverlay();
+        }
+        else {
+            this.showOverlay();
+        }
+        return this.isOverlayVisible;
+    }
+    updateUserActivity(username, audioLevel) {
+        const now = Date.now();
+        const isActive = audioLevel > this.ACTIVITY_THRESHOLD;
+        let user = this.activeUsers.get(username);
+        if (!user) {
+            user = {
+                username,
+                isActive,
+                lastActivity: now,
+                audioLevel,
+                isMuted: this.mutedUsers.has(username)
+            };
+            this.activeUsers.set(username, user);
+        }
+        else {
+            user.isActive = isActive;
+            user.lastActivity = now;
+            user.audioLevel = audioLevel;
+            user.isMuted = this.mutedUsers.has(username);
+        }
+        this.updateOverlayUI();
+    }
+    startActivityCheck() {
+        this.activityCheckInterval = window.setInterval(() => {
+            const now = Date.now();
+            let updated = false;
+            this.activeUsers.forEach((user, username) => {
+                // Set inactive if no activity for the specified timeout
+                if (now - user.lastActivity > this.INACTIVITY_TIMEOUT && user.isActive) {
+                    user.isActive = false;
+                    updated = true;
+                }
+                // Remove users inactive for longer period
+                if (now - user.lastActivity > this.REMOVAL_TIMEOUT) {
+                    this.activeUsers.delete(username);
+                    updated = true;
+                }
+            });
+            if (updated) {
+                this.updateOverlayUI();
+            }
+        }, this.ACTIVITY_CHECK_INTERVAL);
+    }
+    updateOverlayUI() {
+        if (!this.overlayContainer || !this.isOverlayVisible)
+            return;
+        const usersContainer = document.getElementById('kxs-voice-chat-users');
+        if (!usersContainer)
+            return;
+        // Clear existing users
+        usersContainer.innerHTML = '';
+        // Add users or show "no users" message
+        if (this.activeUsers.size === 0) {
+            this.renderNoUsersMessage(usersContainer);
+        }
+        else {
+            this.activeUsers.forEach(user => {
+                this.renderUserElement(usersContainer, user);
+            });
+        }
+    }
+    renderNoUsersMessage(container) {
+        const noUsers = document.createElement('div');
+        noUsers.textContent = 'No active users';
+        Object.assign(noUsers.style, {
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontStyle: 'italic',
+            textAlign: 'center',
+            padding: '5px'
+        });
+        container.appendChild(noUsers);
+    }
+    renderUserElement(container, user) {
+        const userElement = document.createElement('div');
+        userElement.className = 'kxs-voice-chat-user';
+        Object.assign(userElement.style, {
+            display: 'flex',
+            alignItems: 'center',
+            margin: '3px 0',
+            padding: '3px',
+            borderRadius: '3px',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+        });
+        // Status indicator
+        const indicator = this.createStatusIndicator(user);
+        // Username label
+        const usernameLabel = document.createElement('span');
+        usernameLabel.textContent = user.username;
+        Object.assign(usernameLabel.style, {
+            flexGrow: '1',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+        });
+        // Mute button - FIX: Create this element properly
+        const muteButton = this.createMuteButton(user);
+        // Add elements to container
+        userElement.appendChild(indicator);
+        userElement.appendChild(usernameLabel);
+        userElement.appendChild(muteButton);
+        container.appendChild(userElement);
+    }
+    createStatusIndicator(user) {
+        const indicator = document.createElement('div');
+        Object.assign(indicator.style, {
+            width: '14px',
+            height: '14px',
+            borderRadius: '50%',
+            marginRight: '8px',
+            cursor: 'pointer'
+        });
+        indicator.title = user.isMuted ? 'Unmute' : 'Mute';
+        if (user.isActive) {
+            const scale = 1 + Math.min(user.audioLevel * 3, 1);
+            Object.assign(indicator.style, {
+                backgroundColor: '#2ecc71',
+                transform: `scale(${scale})`,
+                boxShadow: '0 0 5px #2ecc71',
+                transition: 'transform 0.1s ease-in-out'
+            });
+        }
+        else {
+            indicator.style.backgroundColor = '#7f8c8d';
+        }
+        return indicator;
+    }
+    createMuteButton(user) {
+        const muteButton = document.createElement('button');
+        muteButton.type = 'button'; // Important: specify type to prevent form submission behavior
+        muteButton.textContent = user.isMuted ? 'UNMUTE' : 'MUTE';
+        Object.assign(muteButton.style, {
+            backgroundColor: user.isMuted ? '#e74c3c' : '#7f8c8d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '3px',
+            padding: '2px 5px',
+            marginLeft: '5px',
+            cursor: 'pointer',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            minWidth: '40px'
+        });
+        muteButton.addEventListener('mouseover', () => {
+            muteButton.style.opacity = '0.8';
+        });
+        muteButton.addEventListener('mouseout', () => {
+            muteButton.style.opacity = '1';
+        });
+        const handleMuteToggle = (e) => {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+            const newMutedState = !user.isMuted;
+            user.isMuted = newMutedState;
+            if (newMutedState) {
+                this.mutedUsers.add(user.username);
+            }
+            else {
+                this.mutedUsers.delete(user.username);
+            }
+            this.sendMuteState(user.username, newMutedState);
+            this.updateOverlayUI();
+            console.log(`${user.username} is now ${newMutedState ? 'muted' : 'unmuted'}`);
+            return false;
+        };
+        ['click', 'mousedown', 'pointerdown'].forEach(eventType => {
+            muteButton.addEventListener(eventType, handleMuteToggle, true);
+        });
+        muteButton.onclick = (e) => {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+            const newMutedState = !user.isMuted;
+            user.isMuted = newMutedState;
+            if (newMutedState) {
+                this.mutedUsers.add(user.username);
+            }
+            else {
+                this.mutedUsers.delete(user.username);
+            }
+            this.sendMuteState(user.username, newMutedState);
+            this.updateOverlayUI();
+            return false;
+        };
+        return muteButton;
+    }
+    sendMuteState(username, isMuted) {
+        if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN) {
+            console.warn('WebSocket not available or not open');
+            return;
+        }
+        this.kxsNetwork.ws.send(JSON.stringify({
+            op: 100,
+            d: {
+                user: username,
+                isMuted: isMuted
+            }
+        }));
     }
 }
 
@@ -6674,13 +6996,21 @@ class KxsClient {
             "dinner",
         ];
         nodes.forEach((node) => {
+            var _a;
             if (node instanceof HTMLElement) {
                 const deathTitle = node.querySelector(".ui-stats-header-title");
+                const deathTitle_2 = node.querySelector(".ui-stats-title");
                 if (loseArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
+                    this.kxsNetwork.gameEnded();
                     this.handlePlayerDeath();
                 }
                 else if (winArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
+                    this.kxsNetwork.gameEnded();
                     this.handlePlayerWin();
+                }
+                else if ((_a = deathTitle_2 === null || deathTitle_2 === void 0 ? void 0 : deathTitle_2.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes("result")) {
+                    this.kxsNetwork.gameEnded();
+                    this.handlePlayerDeath();
                 }
             }
         });
