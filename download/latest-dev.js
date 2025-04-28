@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.6
+// @version      2.0.8
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1901,7 +1901,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.6"};
+const package_namespaceObject = {"rE":"2.0.8"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2559,6 +2559,16 @@ class KxsLegacyClientSecondaryMenu {
             },
         });
         let pluginsSection = this.addSection("Plugins");
+        this.addOption(pluginsSection, {
+            label: "Voice Chat",
+            value: this.kxsClient.isVoiceChatEnabled,
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isVoiceChatEnabled = !this.kxsClient.isVoiceChatEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.voiceChat.toggleVoiceChat();
+            },
+        });
         this.addOption(pluginsSection, {
             label: "Webhook URL",
             value: this.kxsClient.discordWebhookUrl || "",
@@ -3346,6 +3356,18 @@ class KxsClientSecondaryMenu {
             onChange: (value) => {
                 this.kxsClient.isNotifyingForToggleMenu = !this.kxsClient.isNotifyingForToggleMenu;
                 this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(SERVER, {
+            label: "Voice Chat",
+            value: this.kxsClient.isVoiceChatEnabled,
+            icon: '<svg fill="#000000" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <path d="M26,30H24V27H20a5.0055,5.0055,0,0,1-5-5V20.7207l-2.3162-.772a1,1,0,0,1-.5412-1.4631L15,13.7229V11a9.01,9.01,0,0,1,9-9h5V4H24a7.0078,7.0078,0,0,0-7,7v3a.9991.9991,0,0,1-.1426.5144l-2.3586,3.9312,1.8174.6057A1,1,0,0,1,17,20v2a3.0033,3.0033,0,0,0,3,3h5a1,1,0,0,1,1,1Z"></path> <rect x="19" y="12" width="4" height="2"></rect> <path d="M9.3325,25.2168a7.0007,7.0007,0,0,1,0-10.4341l1.334,1.49a5,5,0,0,0,0,7.4537Z"></path> <path d="M6.3994,28.8008a11.0019,11.0019,0,0,1,0-17.6006L7.6,12.8a9.0009,9.0009,0,0,0,0,14.4014Z"></path> <rect id="_Transparent_Rectangle_" data-name="<Transparent Rectangle>" class="cls-1" width="32" height="32"></rect> </g></svg>',
+            category: "SERVER",
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isVoiceChatEnabled = !this.kxsClient.isVoiceChatEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.voiceChat.toggleVoiceChat();
             },
         });
         this.addOption(SERVER, {
@@ -5864,15 +5886,6 @@ class GameHistoryMenu {
 
 
 ;// ./src/NETWORK/KxsNetwork.ts
-var KxsNetwork_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 class KxsNetwork {
     sendGlobalChatMessage(text) {
@@ -5897,6 +5910,7 @@ class KxsNetwork {
         this.maxReconnectAttempts = 3;
         this.reconnectTimeout = 0;
         this.reconnectDelay = 15000; // Initial reconnect delay of 1 second
+        this.kxsUsers = 0;
         this.kxsClient = kxsClient;
     }
     connect() {
@@ -5954,13 +5968,21 @@ class KxsNetwork {
             op: 2,
             d: {
                 username: this.getUsername(),
+                isVoiceChat: this.kxsClient.isVoiceChatEnabled
             }
         };
         this.send(payload);
     }
     handleMessage(data) {
-        var _a;
+        var _a, _b;
         switch (data.op) {
+            case 1: //Heart
+                {
+                    if ((_a = data === null || data === void 0 ? void 0 : data.d) === null || _a === void 0 ? void 0 : _a.count) {
+                        this.kxsUsers = data.d.count;
+                    }
+                }
+                break;
             case 3: // Kxs user join game
                 if (data.d && Array.isArray(data.d.players)) {
                     const myName = this.getUsername();
@@ -5980,13 +6002,17 @@ class KxsNetwork {
                 }
                 break;
             case 10: // Hello
-                const { heartbeat_interval } = data.d;
-                this.startHeartbeat(heartbeat_interval);
-                this.identify();
+                {
+                    const { heartbeat_interval } = data.d;
+                    this.startHeartbeat(heartbeat_interval);
+                    this.identify();
+                }
                 break;
             case 2: // Dispatch
-                if ((_a = data === null || data === void 0 ? void 0 : data.d) === null || _a === void 0 ? void 0 : _a.uuid) {
-                    this.isAuthenticated = true;
+                {
+                    if ((_b = data === null || data === void 0 ? void 0 : data.d) === null || _b === void 0 ? void 0 : _b.uuid) {
+                        this.isAuthenticated = true;
+                    }
                 }
                 break;
         }
@@ -6050,11 +6076,7 @@ class KxsNetwork {
         return this.HOST;
     }
     getOnlineCount() {
-        return KxsNetwork_awaiter(this, void 0, void 0, function* () {
-            return yield (yield fetch(this.getHTTPURL() + "/online-count", {
-                method: "GET"
-            })).json();
-        });
+        return this.kxsUsers;
     }
 }
 
@@ -6237,6 +6259,144 @@ class KxsChat {
 }
 
 
+;// ./src/UTILS/KxsVoiceChat.ts
+var KxsVoiceChat_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+class KxsVoiceChat {
+    constructor(kxsClient, kxsNetwork) {
+        this.audioCtx = null;
+        this.micStream = null;
+        this.micSource = null;
+        this.processor = null;
+        this.kxsClient = kxsClient;
+        this.kxsNetwork = kxsNetwork;
+    }
+    startVoiceChat() {
+        return KxsVoiceChat_awaiter(this, void 0, void 0, function* () {
+            if (!this.kxsClient.isVoiceChatEnabled)
+                return;
+            this.cleanup();
+            try {
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                this.micStream = yield navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        sampleRate: 48000,
+                        channelCount: 1,
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+                this.micSource = this.audioCtx.createMediaStreamSource(this.micStream);
+                this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
+                this.micSource.connect(this.processor);
+                this.processor.connect(this.audioCtx.destination);
+                // --- ENVOI AUDIO ---
+                this.processor.onaudioprocess = (e) => {
+                    if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN)
+                        return;
+                    const input = e.inputBuffer.getChannelData(0);
+                    const int16 = new Int16Array(input.length);
+                    for (let i = 0; i < input.length; i++) {
+                        int16[i] = Math.max(-32768, Math.min(32767, input[i] * 32767));
+                    }
+                    this.kxsNetwork.ws.send(JSON.stringify({ op: 99, d: Array.from(int16) }));
+                };
+                // --- RECEPTION & LECTURE ---
+                this.kxsNetwork.ws.addEventListener('message', (msg) => {
+                    let parsed;
+                    try {
+                        parsed = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+                    }
+                    catch (_a) {
+                        return;
+                    }
+                    if (!parsed || parsed.op !== 99 || !parsed.d)
+                        return;
+                    try {
+                        const int16Data = new Int16Array(parsed.d);
+                        const floatData = new Float32Array(int16Data.length);
+                        for (let i = 0; i < int16Data.length; i++) {
+                            floatData[i] = int16Data[i] / 32767;
+                        }
+                        const buffer = this.audioCtx.createBuffer(1, floatData.length, this.audioCtx.sampleRate);
+                        buffer.getChannelData(0).set(floatData);
+                        const source = this.audioCtx.createBufferSource();
+                        source.buffer = buffer;
+                        source.connect(this.audioCtx.destination);
+                        source.start();
+                    }
+                    catch (error) {
+                        console.error("Erreur lors du traitement audio:", error);
+                    }
+                });
+                this.kxsNetwork.ws.onopen = () => {
+                    this.kxsClient.nm.showNotification('Chat vocal connecté ✓', 'success', 3000);
+                };
+                this.kxsNetwork.ws.onclose = () => {
+                    this.kxsClient.nm.showNotification('Chat vocal déconnecté X', 'error', 3000);
+                    this.cleanup();
+                };
+            }
+            catch (error) {
+                console.error("Erreur d'initialisation du chat vocal:", error);
+                alert("Impossible d'initialiser le chat vocal: " + error.message);
+                this.cleanup();
+            }
+        });
+    }
+    stopVoiceChat() {
+        this.cleanup();
+    }
+    cleanup() {
+        if (this.processor) {
+            this.processor.disconnect();
+            this.processor = null;
+        }
+        if (this.micSource) {
+            this.micSource.disconnect();
+            this.micSource = null;
+        }
+        if (this.micStream) {
+            this.micStream.getTracks().forEach(track => track.stop());
+            this.micStream = null;
+        }
+        if (this.audioCtx) {
+            this.audioCtx.close();
+            this.audioCtx = null;
+        }
+    }
+    toggleVoiceChat() {
+        var _a, _b;
+        if (this.kxsClient.isVoiceChatEnabled) {
+            (_a = this.kxsNetwork.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({
+                op: 98,
+                d: {
+                    isVoiceChat: true
+                }
+            }));
+            this.startVoiceChat();
+        }
+        else {
+            this.stopVoiceChat();
+            (_b = this.kxsNetwork.ws) === null || _b === void 0 ? void 0 : _b.send(JSON.stringify({
+                op: 98,
+                d: {
+                    isVoiceChat: false
+                }
+            }));
+        }
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -6247,6 +6407,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -6297,6 +6458,7 @@ class KxsClient {
         this.isGunOverlayColored = true;
         this.customCrosshair = null;
         this.isGunBorderChromatic = false;
+        this.isVoiceChatEnabled = false;
         this.isFocusModeEnabled = false;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
@@ -6339,12 +6501,14 @@ class KxsClient {
         }
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
         this.chat = new KxsChat(this);
+        this.voiceChat = new KxsVoiceChat(this, this.kxsNetwork);
         if (this.isSpotifyPlayerEnabled) {
             this.createSimpleSpotifyPlayer();
         }
         this.MainMenuCleaning();
         this.kxsNetwork.connect();
         this.createOnlineMenu();
+        this.voiceChat.startVoiceChat();
     }
     parseToken(token) {
         if (token) {
@@ -6417,8 +6581,8 @@ class KxsClient {
             const countEl = this.onlineMenuElement.querySelector('#kxs-online-count');
             const dot = this.onlineMenuElement.querySelector('#kxs-online-dot');
             try {
-                const res = yield this.kxsNetwork.getOnlineCount();
-                const count = typeof res.count === 'number' ? res.count : '?';
+                const res = this.kxsNetwork.getOnlineCount();
+                const count = typeof res === 'number' ? res : '?';
                 if (countEl)
                     countEl.textContent = `${count} Kxs users`;
                 if (dot) {
@@ -6477,7 +6641,8 @@ class KxsClient {
             soundLibrary: this.soundLibrary,
             customCrosshair: this.customCrosshair,
             isGunOverlayColored: this.isGunOverlayColored,
-            isGunBorderChromatic: this.isGunBorderChromatic
+            isGunBorderChromatic: this.isGunBorderChromatic,
+            isVoiceChatEnabled: this.isVoiceChatEnabled
         }));
     }
     ;
@@ -6839,7 +7004,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -6863,6 +7028,7 @@ class KxsClient {
             this.customCrosshair = (_s = savedSettings.customCrosshair) !== null && _s !== void 0 ? _s : this.customCrosshair;
             this.isGunOverlayColored = (_t = savedSettings.isGunOverlayColored) !== null && _t !== void 0 ? _t : this.isGunOverlayColored;
             this.isGunBorderChromatic = (_u = savedSettings.isGunBorderChromatic) !== null && _u !== void 0 ? _u : this.isGunBorderChromatic;
+            this.isVoiceChatEnabled = (_v = savedSettings.isVoiceChatEnabled) !== null && _v !== void 0 ? _v : this.isVoiceChatEnabled;
             if (savedSettings.soundLibrary) {
                 // Check if the sound value exists
                 if (savedSettings.soundLibrary.win_sound_url) {
