@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.9
+// @version      2.0.10
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1901,7 +1901,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.9"};
+const package_namespaceObject = {"rE":"2.0.10"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -6296,6 +6296,8 @@ class KxsVoiceChat {
         this.mutedUsers = new Set();
         this.activityCheckInterval = null;
         this.isOverlayVisible = true;
+        this.isLocalMuted = false;
+        this.localMuteButton = null;
         // Constants
         this.ACTIVITY_THRESHOLD = 0.01;
         this.INACTIVITY_TIMEOUT = 2000;
@@ -6351,6 +6353,9 @@ class KxsVoiceChat {
             return;
         this.processor.onaudioprocess = (e) => {
             if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN)
+                return;
+            // Ne pas envoyer les données audio si l'utilisateur local est muté
+            if (this.isLocalMuted)
                 return;
             const input = e.inputBuffer.getChannelData(0);
             const int16 = new Int16Array(input.length);
@@ -6476,16 +6481,28 @@ class KxsVoiceChat {
             fontSize: '14px',
             display: 'none'
         });
-        // Add title
-        const title = document.createElement('div');
-        title.textContent = 'Voice Chat';
-        Object.assign(title.style, {
-            fontWeight: 'bold',
+        // Add title and controls container (for title and mute button)
+        const controlsContainer = document.createElement('div');
+        Object.assign(controlsContainer.style, {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             marginBottom: '5px',
             borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
             paddingBottom: '5px'
         });
-        this.overlayContainer.appendChild(title);
+        // Title
+        const title = document.createElement('div');
+        title.textContent = 'Voice Chat';
+        Object.assign(title.style, {
+            fontWeight: 'bold'
+        });
+        // Create local mute button
+        this.localMuteButton = this.createLocalMuteButton();
+        // Add elements to controls container
+        controlsContainer.appendChild(title);
+        controlsContainer.appendChild(this.localMuteButton);
+        this.overlayContainer.appendChild(controlsContainer);
         // Container for users
         const usersContainer = document.createElement('div');
         usersContainer.id = 'kxs-voice-chat-users';
@@ -6679,7 +6696,6 @@ class KxsVoiceChat {
             }
             this.sendMuteState(user.username, newMutedState);
             this.updateOverlayUI();
-            console.log(`${user.username} is now ${newMutedState ? 'muted' : 'unmuted'}`);
             return false;
         };
         ['click', 'mousedown', 'pointerdown'].forEach(eventType => {
@@ -6715,6 +6731,55 @@ class KxsVoiceChat {
                 isMuted: isMuted
             }
         }));
+    }
+    createLocalMuteButton() {
+        const muteButton = document.createElement('button');
+        muteButton.type = 'button';
+        muteButton.textContent = this.isLocalMuted ? 'UNMUTE' : 'MUTE';
+        muteButton.id = 'kxs-voice-chat-local-mute';
+        Object.assign(muteButton.style, {
+            backgroundColor: this.isLocalMuted ? '#e74c3c' : '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: '3px',
+            padding: '2px 5px',
+            cursor: 'pointer',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            minWidth: '55px'
+        });
+        muteButton.addEventListener('mouseover', () => {
+            muteButton.style.opacity = '0.8';
+        });
+        muteButton.addEventListener('mouseout', () => {
+            muteButton.style.opacity = '1';
+        });
+        // Utiliser un gestionnaire d'événement unique plus simple avec une vérification pour éviter les multiples déclenchements
+        muteButton.onclick = (e) => {
+            // Arrêter complètement la propagation de l'événement
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+            // Basculer l'état de mute
+            this.toggleLocalMute();
+            return false;
+        };
+        return muteButton;
+    }
+    toggleLocalMute() {
+        // Inverser l'état
+        this.isLocalMuted = !this.isLocalMuted;
+        // Mettre à jour l'apparence du bouton si présent
+        if (this.localMuteButton) {
+            // Définir clairement le texte et la couleur du bouton en fonction de l'état
+            this.localMuteButton.textContent = this.isLocalMuted ? 'UNMUTE' : 'MUTE';
+            this.localMuteButton.style.backgroundColor = this.isLocalMuted ? '#e74c3c' : '#3498db';
+        }
+        // Type de notification en fonction de si nous sommes sur error, info ou success
+        const notificationType = this.isLocalMuted ? 'error' : 'success';
+        // Notification de changement d'état
+        const message = this.isLocalMuted ? 'You are muted' : 'You are unmuted';
+        this.kxsClient.nm.showNotification(message, notificationType, 2000);
     }
 }
 
