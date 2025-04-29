@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.10
+// @version      2.0.11
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1901,7 +1901,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.10"};
+const package_namespaceObject = {"rE":"2.0.11"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2128,7 +2128,6 @@ class DiscordWebSocket {
                 const { heartbeat_interval } = data.d;
                 this.startHeartbeat(heartbeat_interval);
                 this.identify();
-                this.kxsClient.nm.showNotification('Started Discord RPC', 'success', 3000);
                 break;
             case 11: // Heartbeat ACK
                 this.kxsClient.logger.log('[RichPresence] Heartbeat acknowledged');
@@ -2137,7 +2136,7 @@ class DiscordWebSocket {
                 this.sequence = data.s;
                 if (data.t === 'READY') {
                     this.isAuthenticated = true;
-                    this.kxsClient.nm.showNotification('Connected to Discord gateway', 'success', 2500);
+                    this.kxsClient.nm.showNotification('Started Discord RPC', 'success', 3000);
                 }
                 break;
         }
@@ -2559,6 +2558,16 @@ class KxsLegacyClientSecondaryMenu {
             },
         });
         let pluginsSection = this.addSection("Plugins");
+        this.addOption(pluginsSection, {
+            label: "Chat",
+            value: this.kxsClient.isKxsChatEnabled,
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isKxsChatEnabled = !this.kxsClient.isKxsChatEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.chat.toggleChat();
+            },
+        });
         this.addOption(pluginsSection, {
             label: "Voice Chat",
             value: this.kxsClient.isVoiceChatEnabled,
@@ -3356,6 +3365,18 @@ class KxsClientSecondaryMenu {
             onChange: (value) => {
                 this.kxsClient.isNotifyingForToggleMenu = !this.kxsClient.isNotifyingForToggleMenu;
                 this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(SERVER, {
+            label: "Chat",
+            value: this.kxsClient.isKxsChatEnabled,
+            icon: '<svg fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M232.727,238.545v186.182H281.6l-13.964,69.818l97.745-69.818H512V238.545H232.727z M477.091,389.818H365.382h-11.187 l-9.103,6.502l-25.912,18.508l5.003-25.01H281.6h-13.964V273.455h209.455V389.818z"></path> </g> </g> <g> <g> <path d="M279.273,17.455H0v186.182h65.164l97.745,69.818l-13.964-69.818h130.327V17.455z M244.364,168.727h-95.418h-42.582 l5.003,25.01L85.455,175.23l-9.104-6.502H65.164H34.909V52.364h209.455V168.727z"></path> </g> </g> <g> <g> <rect x="180.364" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="122.182" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="64" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="413.091" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="354.909" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="296.727" y="314.182" width="34.909" height="34.909"></rect> </g> </g> </g></svg>',
+            category: "SERVER",
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isKxsChatEnabled = !this.kxsClient.isKxsChatEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.chat.toggleChat();
             },
         });
         this.addOption(SERVER, {
@@ -6104,8 +6125,22 @@ class KxsChat {
         this.messagesContainer = null;
         this.chatMessages = [];
         this.chatOpen = false;
+        this.handleKeyDown = (e) => {
+            if (e.key === 'Enter' && !this.chatOpen && document.activeElement !== this.chatInput) {
+                e.preventDefault();
+                this.openChatInput();
+            }
+            else if (e.key === 'Escape' && this.chatOpen) {
+                this.closeChatInput();
+            }
+        };
         this.kxsClient = kxsClient;
         this.initGlobalChat();
+        // Initialize chat visibility based on the current setting
+        if (this.chatBox && !this.kxsClient.isKxsChatEnabled) {
+            this.chatBox.style.display = 'none';
+            window.removeEventListener('keydown', this.handleKeyDown);
+        }
     }
     initGlobalChat() {
         const area = document.getElementById('game-touch-area');
@@ -6235,15 +6270,7 @@ class KxsChat {
             }, true);
         });
         // Gestion clavier
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !this.chatOpen && document.activeElement !== input) {
-                e.preventDefault();
-                this.openChatInput();
-            }
-            else if (e.key === 'Escape' && this.chatOpen) {
-                this.closeChatInput();
-            }
-        });
+        window.addEventListener('keydown', this.handleKeyDown);
     }
     openChatInput() {
         if (!this.chatInput)
@@ -6262,7 +6289,7 @@ class KxsChat {
         this.chatOpen = false;
     }
     addChatMessage(user, text) {
-        if (!this.chatBox)
+        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
             return;
         this.chatMessages.push({ user, text });
         if (this.chatMessages.length > 5)
@@ -6270,6 +6297,21 @@ class KxsChat {
         if (this.messagesContainer) {
             this.messagesContainer.innerHTML = this.chatMessages.map(m => `<span><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</span>`).join('');
         }
+    }
+    toggleChat() {
+        if (this.chatBox) {
+            this.chatBox.style.display = this.kxsClient.isKxsChatEnabled ? 'flex' : 'none';
+        }
+        if (this.kxsClient.isKxsChatEnabled) {
+            window.addEventListener('keydown', this.handleKeyDown);
+        }
+        else {
+            this.closeChatInput();
+            window.removeEventListener('keydown', this.handleKeyDown);
+        }
+        const message = this.kxsClient.isKxsChatEnabled ? 'Chat enabled' : 'Chat disabled';
+        const type = this.kxsClient.isKxsChatEnabled ? 'success' : 'info';
+        this.kxsClient.nm.showNotification(message, type, 600);
     }
 }
 
@@ -6342,7 +6384,6 @@ class KxsVoiceChat {
                 this.setupWebSocketListeners();
             }
             catch (error) {
-                console.error("Voice chat initialization error:", error);
                 alert("Unable to initialize voice chat: " + error.message);
                 this.cleanup();
             }
@@ -6369,13 +6410,6 @@ class KxsVoiceChat {
         if (!this.kxsNetwork.ws)
             return;
         this.kxsNetwork.ws.addEventListener('message', this.handleAudioMessage.bind(this));
-        this.kxsNetwork.ws.onopen = () => {
-            this.kxsClient.nm.showNotification('Voice chat connected ✓', 'success', 3000);
-        };
-        this.kxsNetwork.ws.onclose = () => {
-            this.kxsClient.nm.showNotification('Voice chat disconnected X', 'error', 3000);
-            this.cleanup();
-        };
     }
     handleAudioMessage(msg) {
         let parsed;
@@ -6479,8 +6513,20 @@ class KxsVoiceChat {
             zIndex: '1000',
             fontFamily: 'Arial, sans-serif',
             fontSize: '14px',
-            display: 'none'
+            display: 'none',
+            cursor: 'move'
         });
+        // Charger la position sauvegardée si elle existe
+        const savedPosition = localStorage.getItem('kxs-voice-chat-position');
+        if (savedPosition) {
+            try {
+                const { x, y } = JSON.parse(savedPosition);
+                this.overlayContainer.style.left = `${x}px`;
+                this.overlayContainer.style.top = `${y}px`;
+                this.overlayContainer.style.right = 'auto';
+            }
+            catch (e) { }
+        }
         // Add title and controls container (for title and mute button)
         const controlsContainer = document.createElement('div');
         Object.assign(controlsContainer.style, {
@@ -6497,6 +6543,28 @@ class KxsVoiceChat {
         Object.assign(title.style, {
             fontWeight: 'bold'
         });
+        // Fonction pour mettre à jour l'état draggable selon la visibilité du menu RSHIFT
+        const updateVoiceChatDraggable = () => {
+            const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
+            if (isMenuOpen) {
+                this.overlayContainer.style.pointerEvents = 'auto';
+                this.overlayContainer.style.cursor = 'move';
+                this.kxsClient.makeDraggable(this.overlayContainer, 'kxs-voice-chat-position');
+            }
+            else {
+                this.overlayContainer.style.pointerEvents = 'none';
+                this.overlayContainer.style.cursor = 'default';
+            }
+        };
+        // Initial state
+        updateVoiceChatDraggable();
+        // Observer les changements du menu
+        const observer = new MutationObserver(updateVoiceChatDraggable);
+        if (this.kxsClient.secondaryMenu && this.kxsClient.secondaryMenu.menu) {
+            observer.observe(this.kxsClient.secondaryMenu.menu, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+        // Fallback timer pour s'assurer de l'état correct
+        setInterval(updateVoiceChatDraggable, 500);
         // Create local mute button
         this.localMuteButton = this.createLocalMuteButton();
         // Add elements to controls container
@@ -6721,7 +6789,6 @@ class KxsVoiceChat {
     }
     sendMuteState(username, isMuted) {
         if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN) {
-            console.warn('WebSocket not available or not open');
             return;
         }
         this.kxsNetwork.ws.send(JSON.stringify({
@@ -6845,6 +6912,7 @@ class KxsClient {
         this.isGunOverlayColored = true;
         this.customCrosshair = null;
         this.isGunBorderChromatic = false;
+        this.isKxsChatEnabled = true;
         this.isVoiceChatEnabled = false;
         this.isFocusModeEnabled = false;
         this.defaultPositions = {
@@ -7029,7 +7097,8 @@ class KxsClient {
             customCrosshair: this.customCrosshair,
             isGunOverlayColored: this.isGunOverlayColored,
             isGunBorderChromatic: this.isGunBorderChromatic,
-            isVoiceChatEnabled: this.isVoiceChatEnabled
+            isVoiceChatEnabled: this.isVoiceChatEnabled,
+            isKxsChatEnabled: this.isKxsChatEnabled,
         }));
     }
     ;
@@ -7399,7 +7468,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -7424,6 +7493,7 @@ class KxsClient {
             this.isGunOverlayColored = (_t = savedSettings.isGunOverlayColored) !== null && _t !== void 0 ? _t : this.isGunOverlayColored;
             this.isGunBorderChromatic = (_u = savedSettings.isGunBorderChromatic) !== null && _u !== void 0 ? _u : this.isGunBorderChromatic;
             this.isVoiceChatEnabled = (_v = savedSettings.isVoiceChatEnabled) !== null && _v !== void 0 ? _v : this.isVoiceChatEnabled;
+            this.isKxsChatEnabled = (_w = savedSettings.isKxsChatEnabled) !== null && _w !== void 0 ? _w : this.isKxsChatEnabled;
             if (savedSettings.soundLibrary) {
                 // Check if the sound value exists
                 if (savedSettings.soundLibrary.win_sound_url) {
