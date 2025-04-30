@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.0.12
+// @version      2.1.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1902,7 +1902,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.0.12"};
+const package_namespaceObject = {"rE":"2.1.1"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2315,647 +2315,14 @@ class NotificationManager {
 }
 
 
-;// ./src/HUD/LegacyClientSecondaryMenu.ts
+;// ./src/HUD/ClientSecondaryMenu.ts
 
-
-class KxsLegacyClientSecondaryMenu {
-    constructor(kxsClient) {
-        this.kxsClient = kxsClient;
-        this.isClientMenuVisible = false;
-        this.isDragging = false;
-        this.dragOffset = { x: 0, y: 0 };
-        this.sections = [];
-        this.menu = document.createElement("div");
-        this.isOpen = false;
-        this.boundShiftListener = this.handleShiftPress.bind(this);
-        this.boundEscapeListener = this.handleEscapePress.bind(this);
-        this.boundMouseDownListener = this.handleMouseDown.bind(this);
-        this.boundMouseMoveListener = this.handleMouseMove.bind(this);
-        this.boundMouseUpListener = this.handleMouseUp.bind(this);
-        this.initMenu();
-        this.addShiftListener();
-        this.addDragListeners();
-        this.loadOption();
-    }
-    handleShiftPress(event) {
-        if (event.key === "Shift" && event.location == 2) {
-            // this.clearMenu();
-            this.toggleMenuVisibility();
-        }
-    }
-    handleEscapePress(event) {
-        if (event.key === "Escape" && this.isClientMenuVisible) {
-            // Fermer le menu si la touche Échap est pressée et que le menu est visible
-            this.toggleMenuVisibility();
-            // Empêcher la propagation ET l'action par défaut
-            event.stopPropagation();
-            event.preventDefault();
-            // Arrêter complètement la propagation de l'événement
-            return false;
-        }
-    }
-    handleMouseDown(e) {
-        // Empêcher la propagation de l'événement mousedown vers la page web
-        // pour TOUS les éléments du menu, y compris les éléments interactifs
-        e.stopPropagation();
-        // Activer le drag & drop seulement si on clique sur une zone non interactive
-        if (e.target instanceof HTMLElement && !e.target.matches("input, select, button")) {
-            this.isDragging = true;
-            const rect = this.menu.getBoundingClientRect();
-            this.dragOffset = {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            };
-            this.menu.style.cursor = "grabbing";
-        }
-    }
-    handleMouseMove(e) {
-        if (!this.isDragging)
-            return;
-        e.preventDefault();
-        const newX = e.clientX - this.dragOffset.x;
-        const newY = e.clientY - this.dragOffset.y;
-        const maxX = window.innerWidth - this.menu.offsetWidth;
-        const maxY = window.innerHeight - this.menu.offsetHeight;
-        this.menu.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
-        this.menu.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
-    }
-    handleMouseUp(e) {
-        // Arrêter le drag & drop
-        const wasDragging = this.isDragging;
-        this.isDragging = false;
-        this.menu.style.cursor = "move";
-        // Empêcher la propagation de l'événement mouseup vers la page web
-        // pour tous les éléments du menu, y compris les éléments interactifs
-        if (this.menu.contains(e.target)) {
-            e.stopPropagation();
-        }
-    }
-    initMenu() {
-        this.menu.id = "kxsMenuIG";
-        this.applyMenuStyles();
-        this.createHeader();
-        document.body.appendChild(this.menu);
-        // Empêcher la propagation des événements souris (clics et molette) vers la page web
-        // Utiliser la phase de bouillonnement (bubbling) au lieu de la phase de capture
-        // pour permettre aux éléments enfants de recevoir les événements d'abord
-        this.menu.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-        this.menu.addEventListener('wheel', (e) => {
-            e.stopPropagation();
-        });
-    }
-    loadOption() {
-        let HUD = this.addSection("HUD");
-        let SOUND = this.addSection("SOUND");
-        this.addOption(SOUND, {
-            label: "Win sound",
-            value: this.kxsClient.soundLibrary.win_sound_url,
-            type: "input",
-            onChange: (value) => {
-                this.kxsClient.soundLibrary.win_sound_url = value;
-                this.kxsClient.updateLocalStorage();
-            }
-        });
-        this.addOption(SOUND, {
-            label: "Death sound",
-            value: this.kxsClient.soundLibrary.death_sound_url,
-            type: "input",
-            onChange: (value) => {
-                this.kxsClient.soundLibrary.death_sound_url = value;
-                this.kxsClient.updateLocalStorage();
-            }
-        });
-        this.addOption(HUD, {
-            label: "Use Legacy Menu",
-            value: this.kxsClient.isLegaySecondaryMenu,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isLegaySecondaryMenu = !this.kxsClient.isLegaySecondaryMenu;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.secondaryMenu = new KxsClientSecondaryMenu(this.kxsClient);
-                this.destroy();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Clean Main Menu",
-            value: this.kxsClient.isMainMenuCleaned,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isMainMenuCleaned = !this.kxsClient.isMainMenuCleaned;
-                this.kxsClient.MainMenuCleaning();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Message Open/Close RSHIFT Menu",
-            value: this.kxsClient.isNotifyingForToggleMenu,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isNotifyingForToggleMenu = !this.kxsClient.isNotifyingForToggleMenu;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Show Ping",
-            value: this.kxsClient.isPingVisible,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isPingVisible = !this.kxsClient.isPingVisible;
-                this.kxsClient.updatePingVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Show FPS",
-            value: this.kxsClient.isFpsVisible,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isFpsVisible = !this.kxsClient.isFpsVisible;
-                this.kxsClient.updateFpsVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Show Kills",
-            value: this.kxsClient.isKillsVisible,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isKillsVisible = !this.kxsClient.isKillsVisible;
-                this.kxsClient.updateKillsVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Kill Feed Chroma",
-            value: this.kxsClient.isKillFeedBlint,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isKillFeedBlint = !this.kxsClient.isKillFeedBlint;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.hud.toggleKillFeed();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Weapon Border",
-            value: this.kxsClient.isGunOverlayColored,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isGunOverlayColored = !this.kxsClient.isGunOverlayColored;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.hud.toggleWeaponBorderHandler();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Chromatic Weapon Border",
-            value: this.kxsClient.isGunBorderChromatic,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isGunBorderChromatic = !this.kxsClient.isGunBorderChromatic;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.hud.toggleChromaticWeaponBorder();
-                if (this.kxsClient.isGunOverlayColored) {
-                    this.kxsClient.hud.toggleWeaponBorderHandler();
-                }
-            },
-        });
-        this.addOption(HUD, {
-            label: "Custom Crosshair",
-            value: this.kxsClient.customCrosshair || "",
-            type: "input",
-            onChange: (value) => {
-                this.kxsClient.customCrosshair = value;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.hud.loadCustomCrosshair();
-            },
-        });
-        let miscSection = this.addSection("Misc");
-        this.addOption(miscSection, {
-            label: "Gameplay History",
-            value: true,
-            type: "click",
-            onChange: (value) => {
-                this.kxsClient.historyManager.show();
-            },
-        });
-        let musicSection = this.addSection("Music");
-        this.addOption(musicSection, {
-            label: "Death sound",
-            value: this.kxsClient.isDeathSoundEnabled,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isDeathSoundEnabled = !this.kxsClient.isDeathSoundEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(musicSection, {
-            label: "Win sound",
-            value: this.kxsClient.isWinSoundEnabled,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isWinSoundEnabled = !this.kxsClient.isWinSoundEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        let pluginsSection = this.addSection("Plugins");
-        this.addOption(pluginsSection, {
-            label: "Chat",
-            value: this.kxsClient.isKxsChatEnabled,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isKxsChatEnabled = !this.kxsClient.isKxsChatEnabled;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.chat.toggleChat();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: "Voice Chat",
-            value: this.kxsClient.isVoiceChatEnabled,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isVoiceChatEnabled = !this.kxsClient.isVoiceChatEnabled;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.voiceChat.toggleVoiceChat();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: "Webhook URL",
-            value: this.kxsClient.discordWebhookUrl || "",
-            type: "input",
-            onChange: (value) => {
-                value = value.toString().trim();
-                this.kxsClient.discordWebhookUrl = value;
-                this.kxsClient.discordTracker.setWebhookUrl(value);
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: "Heal Warning",
-            value: this.kxsClient.isHealthWarningEnabled,
-            type: "toggle",
-            onChange: (value) => {
-                var _a, _b;
-                this.kxsClient.isHealthWarningEnabled = !this.kxsClient.isHealthWarningEnabled;
-                if (this.kxsClient.isHealthWarningEnabled) {
-                    // Always enter placement mode when enabling from RSHIFT menu
-                    (_a = this.kxsClient.healWarning) === null || _a === void 0 ? void 0 : _a.enableDragging();
-                }
-                else {
-                    (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
-                }
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: "Update Checker",
-            value: this.kxsClient.isAutoUpdateEnabled,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isAutoUpdateEnabled = !this.kxsClient.isAutoUpdateEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: `Spotify Player`,
-            value: this.kxsClient.isSpotifyPlayerEnabled,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isSpotifyPlayerEnabled = !this.kxsClient.isSpotifyPlayerEnabled;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.toggleSpotifyMenu();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: `Uncap FPS`,
-            value: this.kxsClient.isFpsUncapped,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isFpsUncapped = !this.kxsClient.isFpsUncapped;
-                this.kxsClient.setAnimationFrameCallback();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: `Winning Animation`,
-            value: this.kxsClient.isWinningAnimationEnabled,
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isWinningAnimationEnabled = !this.kxsClient.isWinningAnimationEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: `Rich Presence (Account token required)`,
-            value: this.kxsClient.discordToken || "",
-            type: "input",
-            onChange: (value) => {
-                value = value.toString().trim();
-                this.kxsClient.discordToken = this.kxsClient.parseToken(value);
-                this.kxsClient.discordRPC.disconnect();
-                this.kxsClient.discordRPC.connect();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: `Kill Leader Tracking`,
-            value: this.kxsClient.isKillLeaderTrackerEnabled,
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isKillLeaderTrackerEnabled = !this.kxsClient.isKillLeaderTrackerEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(pluginsSection, {
-            label: `Friends Detector (separe with ',')`,
-            value: this.kxsClient.all_friends,
-            type: "input",
-            onChange: (value) => {
-                this.kxsClient.all_friends = value;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: `Change Background`,
-            value: true,
-            type: "click",
-            onChange: () => {
-                const backgroundElement = document.getElementById("background");
-                if (!backgroundElement) {
-                    alert("Element with id 'background' not found.");
-                    return;
-                }
-                const choice = prompt("Enter '0' to default Kxs background, '1' to provide a URL or '2' to upload a local image:");
-                if (choice === "0") {
-                    localStorage.removeItem("lastBackgroundUrl");
-                    localStorage.removeItem("lastBackgroundFile");
-                    localStorage.removeItem("lastBackgroundType");
-                    localStorage.removeItem("lastBackgroundValue");
-                }
-                else if (choice === "1") {
-                    const newBackgroundUrl = prompt("Enter the URL of the new background image:");
-                    if (newBackgroundUrl) {
-                        backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
-                        this.kxsClient.saveBackgroundToLocalStorage(newBackgroundUrl);
-                        alert("Background updated successfully!");
-                    }
-                }
-                else if (choice === "2") {
-                    const fileInput = document.createElement("input");
-                    fileInput.type = "file";
-                    fileInput.accept = "image/*";
-                    fileInput.onchange = (event) => {
-                        var _a, _b;
-                        const file = (_b = (_a = event.target) === null || _a === void 0 ? void 0 : _a.files) === null || _b === void 0 ? void 0 : _b[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                backgroundElement.style.backgroundImage = `url(${reader.result})`;
-                                this.kxsClient.saveBackgroundToLocalStorage(file);
-                                alert("Background updated successfully!");
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    };
-                    fileInput.click();
-                }
-            },
-        });
-    }
-    clearMenu() {
-        this.sections.forEach((section) => {
-            if (section.element) {
-                section.element.remove();
-            }
-        });
-        this.sections = [];
-    }
-    applyMenuStyles() {
-        Object.assign(this.menu.style, {
-            backgroundColor: "rgba(30, 30, 30, 0.95)",
-            padding: "15px",
-            borderRadius: "10px",
-            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.7)",
-            zIndex: "10001",
-            width: "300px",
-            fontFamily: "Arial, sans-serif",
-            color: "#fff",
-            maxHeight: "500px",
-            overflowY: "auto",
-            position: "fixed",
-            top: "15%",
-            left: "10%",
-            cursor: "move",
-            display: "none",
-        });
-    }
-    createHeader() {
-        const title = document.createElement("h2");
-        title.textContent = "KxsClient v" + package_namespaceObject.rE;
-        Object.assign(title.style, {
-            margin: "0 0 10px",
-            textAlign: "center",
-            fontSize: "18px",
-            color: "#FFAE00",
-        });
-        this.menu.appendChild(title);
-    }
-    addSection(title) {
-        const section = {
-            title,
-            options: [],
-        };
-        const sectionElement = document.createElement("div");
-        sectionElement.className = "menu-section";
-        const sectionTitle = document.createElement("h3");
-        sectionTitle.textContent = title;
-        Object.assign(sectionTitle.style, {
-            margin: "15px 0 10px",
-            fontSize: "16px",
-            color: "#4CAF50",
-        });
-        sectionElement.appendChild(sectionTitle);
-        this.menu.appendChild(sectionElement);
-        // Stocker la référence à l'élément DOM
-        section.element = sectionElement;
-        this.sections.push(section);
-        return section;
-    }
-    addOption(section, option) {
-        section.options.push(option);
-        const optionDiv = document.createElement("div");
-        Object.assign(optionDiv.style, {
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
-            padding: "4px",
-            borderRadius: "4px",
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
-        });
-        const label = document.createElement("span");
-        label.textContent = option.label;
-        label.style.color = "#fff";
-        let valueElement = null;
-        switch (option.type) {
-            case "toggle":
-                valueElement = this.createToggleElement(option);
-                break;
-            case "input":
-                valueElement = this.createInputElement(option);
-                break;
-            case "click":
-                valueElement = this.createClickElement(option);
-                break;
-        }
-        optionDiv.appendChild(label);
-        optionDiv.appendChild(valueElement);
-        // Utiliser la référence stockée à l'élément de section
-        if (section.element) {
-            section.element.appendChild(optionDiv);
-        }
-    }
-    createToggleElement(option) {
-        const toggle = document.createElement("div");
-        toggle.style.cursor = "pointer";
-        toggle.style.color = option.value ? "#4CAF50" : "#ff4444";
-        toggle.textContent = String(option.value);
-        toggle.addEventListener("click", () => {
-            var _a;
-            const newValue = !option.value;
-            option.value = newValue;
-            toggle.textContent = String(newValue);
-            toggle.style.color = newValue ? "#4CAF50" : "#ff4444";
-            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, newValue);
-        });
-        return toggle;
-    }
-    createClickElement(option) {
-        const button = document.createElement("button");
-        button.textContent = option.label;
-        button.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-        button.style.border = "none";
-        button.style.borderRadius = "3px";
-        button.style.color = "#FFAE00";
-        button.style.padding = "2px 5px";
-        button.style.cursor = "pointer";
-        button.style.fontSize = "12px";
-        button.addEventListener("click", () => {
-            var _a;
-            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, true);
-        });
-        return button;
-    }
-    createInputElement(option) {
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = String(option.value);
-        Object.assign(input.style, {
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
-            border: "none",
-            borderRadius: "3px",
-            color: "#FFAE00",
-            padding: "2px 5px",
-            width: "60px",
-            textAlign: "right",
-        });
-        input.addEventListener("change", () => {
-            var _a;
-            option.value = input.value;
-            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, input.value);
-        });
-        // Empêcher la propagation des touches de texte vers la page web
-        // mais permettre l'interaction avec l'input
-        input.addEventListener("keydown", (e) => {
-            e.stopPropagation();
-        });
-        input.addEventListener("keyup", (e) => {
-            e.stopPropagation();
-        });
-        input.addEventListener("keypress", (e) => {
-            e.stopPropagation();
-        });
-        // Empêcher la propagation des événements de souris
-        input.addEventListener("mousedown", (e) => {
-            e.stopPropagation();
-        });
-        input.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-        return input;
-    }
-    addShiftListener() {
-        // Gestionnaire pour la touche Shift (ouverture du menu)
-        window.addEventListener("keydown", this.boundShiftListener);
-        // Utiliser la phase de capture pour intercepter l'événement Escape
-        // avant qu'il n'atteigne le jeu
-        document.addEventListener("keydown", this.boundEscapeListener, true);
-    }
-    addDragListeners() {
-        this.menu.addEventListener("mousedown", this.boundMouseDownListener);
-        window.addEventListener("mousemove", this.boundMouseMoveListener);
-        window.addEventListener("mouseup", this.boundMouseUpListener);
-    }
-    toggleMenuVisibility() {
-        this.isClientMenuVisible = !this.isClientMenuVisible;
-        // Mettre à jour la propriété publique en même temps
-        this.isOpen = this.isClientMenuVisible;
-        if (this.kxsClient.isNotifyingForToggleMenu) {
-            this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
-        }
-        this.menu.style.display = this.isClientMenuVisible ? "block" : "none";
-    }
-    destroy() {
-        // Remove event listeners
-        window.removeEventListener("keydown", this.boundShiftListener);
-        document.removeEventListener("keydown", this.boundEscapeListener, true);
-        this.menu.removeEventListener("mousedown", this.boundMouseDownListener);
-        window.removeEventListener("mousemove", this.boundMouseMoveListener);
-        window.removeEventListener("mouseup", this.boundMouseUpListener);
-        // Remove all section elements and clear sections array
-        this.sections.forEach(section => {
-            if (section.element) {
-                // Remove all option elements within the section
-                const optionElements = section.element.querySelectorAll("div");
-                optionElements.forEach(element => {
-                    // Remove event listeners from toggle and input elements
-                    const interactive = element.querySelector("div, input");
-                    if (interactive) {
-                        interactive.replaceWith(interactive.cloneNode(true));
-                    }
-                    element.remove();
-                });
-                section.element.remove();
-            }
-        });
-        this.sections = [];
-        // Remove the menu from DOM
-        this.menu.remove();
-        // Reset instance variables
-        this.isClientMenuVisible = false;
-        this.isDragging = false;
-        this.dragOffset = { x: 0, y: 0 };
-        this.menu = null;
-        // Clear references
-        this.kxsClient = null;
-        this.boundShiftListener = null;
-        this.boundMouseDownListener = null;
-        this.boundMouseMoveListener = null;
-        this.boundMouseUpListener = null;
-    }
-    getMenuVisibility() {
-        return this.isClientMenuVisible;
-    }
-}
-
-
-;// ./src/HUD/ClientSecondaryMenuRework.ts
-
-
-const category = ["ALL", "HUD", "SERVER", "MECHANIC", "SOUND", "MISC"];
+const category = ["ALL", "HUD", "SERVER", "MECHANIC", "MISC"];
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
         this.searchTerm = '';
+        // Fonction pour fermer un sous-menu
+        this.closeSubMenu = () => { };
         this.shiftListener = (event) => {
             if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
@@ -3205,8 +2572,51 @@ class KxsClientSecondaryMenu {
         let HUD = this.addSection("HUD", 'HUD');
         let MECHANIC = this.addSection("MECHANIC", 'MECHANIC');
         let SERVER = this.addSection("SERVER", 'SERVER');
-        let SOUND = this.addSection("SOUND", 'SOUND');
         let MISC = this.addSection("MISC", 'MISC');
+        this.addOption(SERVER, {
+            label: "Kxs Network",
+            value: true,
+            category: "SERVER",
+            type: "sub",
+            icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>network</title> <path d="M27 21.75c-0.795 0.004-1.538 0.229-2.169 0.616l0.018-0.010-2.694-2.449c0.724-1.105 1.154-2.459 1.154-3.913 0-1.572-0.503-3.027-1.358-4.212l0.015 0.021 3.062-3.062c0.57 0.316 1.249 0.503 1.971 0.508h0.002c2.347 0 4.25-1.903 4.25-4.25s-1.903-4.25-4.25-4.25c-2.347 0-4.25 1.903-4.25 4.25v0c0.005 0.724 0.193 1.403 0.519 1.995l-0.011-0.022-3.062 3.062c-1.147-0.84-2.587-1.344-4.144-1.344-0.868 0-1.699 0.157-2.467 0.443l0.049-0.016-0.644-1.17c0.726-0.757 1.173-1.787 1.173-2.921 0-2.332-1.891-4.223-4.223-4.223s-4.223 1.891-4.223 4.223c0 2.332 1.891 4.223 4.223 4.223 0.306 0 0.605-0.033 0.893-0.095l-0.028 0.005 0.642 1.166c-1.685 1.315-2.758 3.345-2.758 5.627 0 0.605 0.076 1.193 0.218 1.754l-0.011-0.049-0.667 0.283c-0.78-0.904-1.927-1.474-3.207-1.474-2.334 0-4.226 1.892-4.226 4.226s1.892 4.226 4.226 4.226c2.334 0 4.226-1.892 4.226-4.226 0-0.008-0-0.017-0-0.025v0.001c-0.008-0.159-0.023-0.307-0.046-0.451l0.003 0.024 0.667-0.283c1.303 2.026 3.547 3.349 6.1 3.349 1.703 0 3.268-0.589 4.503-1.574l-0.015 0.011 2.702 2.455c-0.258 0.526-0.41 1.144-0.414 1.797v0.001c0 2.347 1.903 4.25 4.25 4.25s4.25-1.903 4.25-4.25c0-2.347-1.903-4.25-4.25-4.25v0zM8.19 5c0-0.966 0.784-1.75 1.75-1.75s1.75 0.784 1.75 1.75c0 0.966-0.784 1.75-1.75 1.75v0c-0.966-0.001-1.749-0.784-1.75-1.75v-0zM5 22.42c-0.966-0.001-1.748-0.783-1.748-1.749s0.783-1.749 1.749-1.749c0.966 0 1.748 0.782 1.749 1.748v0c-0.001 0.966-0.784 1.749-1.75 1.75h-0zM27 3.25c0.966 0 1.75 0.784 1.75 1.75s-0.784 1.75-1.75 1.75c-0.966 0-1.75-0.784-1.75-1.75v0c0.001-0.966 0.784-1.749 1.75-1.75h0zM11.19 16c0-0.001 0-0.002 0-0.003 0-2.655 2.152-4.807 4.807-4.807 1.328 0 2.53 0.539 3.4 1.409l0.001 0.001 0.001 0.001c0.87 0.87 1.407 2.072 1.407 3.399 0 2.656-2.153 4.808-4.808 4.808s-4.808-2.153-4.808-4.808c0-0 0-0 0-0v0zM27 27.75c-0.966 0-1.75-0.784-1.75-1.75s0.784-1.75 1.75-1.75c0.966 0 1.75 0.784 1.75 1.75v0c-0.001 0.966-0.784 1.749-1.75 1.75h-0z"></path> </g></svg>',
+            fields: [
+                {
+                    label: "Spoof Nickname",
+                    category: "SERVER",
+                    icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>hacker-solid</title> <g id="Layer_2" data-name="Layer 2"> <g id="invisible_box" data-name="invisible box"> <rect width="48" height="48" fill="none"></rect> </g> <g id="Q3_icons" data-name="Q3 icons"> <g> <path d="M24,30a60.3,60.3,0,0,1-13-1.3L7,27.6V40.2a1.9,1.9,0,0,0,1.5,1.9l12,2.9a2.4,2.4,0,0,0,2.1-.8L24,42.5l1.4,1.7A2.1,2.1,0,0,0,27,45h.5l12-2.9A1.9,1.9,0,0,0,41,40.2V27.6l-4,1.1A60.3,60.3,0,0,1,24,30Zm-7,8c-2,0-4-1.9-4-3s2-1,4-1,4,.9,4,2S19,38,17,38Zm14,0c-2,0-4-.9-4-2s2-2,4-2,4-.1,4,1S33,38,31,38Z"></path> <path d="M39.4,16,37.3,6.2A4,4,0,0,0,33.4,3H29.1a3.9,3.9,0,0,0-3.4,1.9L24,7.8,22.3,4.9A3.9,3.9,0,0,0,18.9,3H14.6a4,4,0,0,0-3.9,3.2L8.6,16C4.5,17.3,2,19,2,21c0,3.9,9.8,7,22,7s22-3.1,22-7C46,19,43.5,17.3,39.4,16Z"></path> </g> </g> </g> </g></svg>',
+                    type: "toggle",
+                    value: true,
+                    onChange: () => {
+                        this.kxsClient.kxsNetworkSettings.nickname_anonymized = !this.kxsClient.kxsNetworkSettings.nickname_anonymized;
+                        this.kxsClient.updateLocalStorage();
+                    }
+                },
+                {
+                    label: "Voice Chat",
+                    value: this.kxsClient.isVoiceChatEnabled,
+                    icon: '<svg fill="#000000" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <path d="M26,30H24V27H20a5.0055,5.0055,0,0,1-5-5V20.7207l-2.3162-.772a1,1,0,0,1-.5412-1.4631L15,13.7229V11a9.01,9.01,0,0,1,9-9h5V4H24a7.0078,7.0078,0,0,0-7,7v3a.9991.9991,0,0,1-.1426.5144l-2.3586,3.9312,1.8174.6057A1,1,0,0,1,17,20v2a3.0033,3.0033,0,0,0,3,3h5a1,1,0,0,1,1,1Z"></path> <rect x="19" y="12" width="4" height="2"></rect> <path d="M9.3325,25.2168a7.0007,7.0007,0,0,1,0-10.4341l1.334,1.49a5,5,0,0,0,0,7.4537Z"></path> <path d="M6.3994,28.8008a11.0019,11.0019,0,0,1,0-17.6006L7.6,12.8a9.0009,9.0009,0,0,0,0,14.4014Z"></path> <rect id="_Transparent_Rectangle_" data-name="<Transparent Rectangle>" class="cls-1" width="32" height="32"></rect> </g></svg>',
+                    category: "SERVER",
+                    type: "toggle",
+                    onChange: () => {
+                        this.kxsClient.isVoiceChatEnabled = !this.kxsClient.isVoiceChatEnabled;
+                        this.kxsClient.updateLocalStorage();
+                        this.kxsClient.voiceChat.toggleVoiceChat();
+                    },
+                },
+                {
+                    label: "Chat",
+                    value: this.kxsClient.isKxsChatEnabled,
+                    icon: '<svg fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M232.727,238.545v186.182H281.6l-13.964,69.818l97.745-69.818H512V238.545H232.727z M477.091,389.818H365.382h-11.187 l-9.103,6.502l-25.912,18.508l5.003-25.01H281.6h-13.964V273.455h209.455V389.818z"></path> </g> </g> <g> <g> <path d="M279.273,17.455H0v186.182h65.164l97.745,69.818l-13.964-69.818h130.327V17.455z M244.364,168.727h-95.418h-42.582 l5.003,25.01L85.455,175.23l-9.104-6.502H65.164H34.909V52.364h209.455V168.727z"></path> </g> </g> <g> <g> <rect x="180.364" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="122.182" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="64" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="413.091" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="354.909" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="296.727" y="314.182" width="34.909" height="34.909"></rect> </g> </g> </g></svg>',
+                    category: "SERVER",
+                    type: "toggle",
+                    onChange: () => {
+                        this.kxsClient.isKxsChatEnabled = !this.kxsClient.isKxsChatEnabled;
+                        this.kxsClient.updateLocalStorage();
+                        this.kxsClient.chat.toggleChat();
+                    },
+                }
+            ],
+        });
         this.addOption(MISC, {
             label: "Game History",
             value: true,
@@ -3217,29 +2627,69 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.historyManager.show();
             }
         });
-        this.addOption(SOUND, {
+        this.addOption(MECHANIC, {
             label: "Win sound",
-            value: this.kxsClient.soundLibrary.win_sound_url,
-            category: "SOUND",
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 6V18M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
-            type: "input",
-            placeholder: "URL of a sound",
-            onChange: (value) => {
-                this.kxsClient.soundLibrary.win_sound_url = value;
-                this.kxsClient.updateLocalStorage();
-            }
+            value: true,
+            type: "sub",
+            icon: '<svg fill="#000000" version="1.1" id="Trophy_x5F_cup" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 256 256" enable-background="new 0 0 256 256" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M190.878,111.272c31.017-11.186,53.254-40.907,53.254-75.733l-0.19-8.509h-48.955V5H64.222v22.03H15.266l-0.19,8.509 c0,34.825,22.237,64.546,53.254,75.733c7.306,18.421,22.798,31.822,41.878,37.728v20c-0.859,15.668-14.112,29-30,29v18h-16v35H195 v-35h-16v-18c-15.888,0-29.141-13.332-30-29v-20C168.08,143.094,183.572,129.692,190.878,111.272z M195,44h30.563 c-0.06,0.427-0.103,1.017-0.171,1.441c-3.02,18.856-14.543,34.681-30.406,44.007C195.026,88.509,195,44,195,44z M33.816,45.441 c-0.068-0.424-0.111-1.014-0.171-1.441h30.563c0,0-0.026,44.509,0.013,45.448C48.359,80.122,36.837,64.297,33.816,45.441z M129.604,86.777l-20.255,13.52l6.599-23.442L96.831,61.77l24.334-0.967l8.44-22.844l8.44,22.844l24.334,0.967L143.26,76.856 l6.599,23.442L129.604,86.777z"></path> </g></svg>',
+            category: "MECHANIC",
+            fields: [
+                {
+                    label: "Enable",
+                    value: this.kxsClient.isWinSoundEnabled,
+                    category: "MECHANIC",
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 6V18M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+                    type: "toggle",
+                    onChange: () => {
+                        this.kxsClient.isWinSoundEnabled = !this.kxsClient.isWinSoundEnabled;
+                        this.kxsClient.updateLocalStorage();
+                    },
+                },
+                {
+                    label: "Sound URL",
+                    value: this.kxsClient.soundLibrary.win_sound_url,
+                    category: "MECHANIC",
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 6V18M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+                    type: "input",
+                    placeholder: "URL of a sound",
+                    onChange: (value) => {
+                        this.kxsClient.soundLibrary.win_sound_url = value;
+                        this.kxsClient.updateLocalStorage();
+                    }
+                }
+            ]
         });
-        this.addOption(SOUND, {
+        this.addOption(MECHANIC, {
             label: "Death sound",
-            value: this.kxsClient.soundLibrary.death_sound_url,
-            category: "SOUND",
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 12V18M15 6V8M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
-            type: "input",
-            placeholder: "URL of a sound",
-            onChange: (value) => {
-                this.kxsClient.soundLibrary.death_sound_url = value;
-                this.kxsClient.updateLocalStorage();
-            }
+            value: true,
+            type: "sub",
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M19 21C19 21.5523 18.5523 22 18 22H14H10H6C5.44771 22 5 21.5523 5 21V18.75C5 17.7835 4.2165 17 3.25 17C2.55964 17 2 16.4404 2 15.75V11C2 5.47715 6.47715 1 12 1C17.5228 1 22 5.47715 22 11V15.75C22 16.4404 21.4404 17 20.75 17C19.7835 17 19 17.7835 19 18.75V21ZM17 20V18.75C17 16.9358 18.2883 15.4225 20 15.075V11C20 6.58172 16.4183 3 12 3C7.58172 3 4 6.58172 4 11V15.075C5.71168 15.4225 7 16.9358 7 18.75V20H9V18C9 17.4477 9.44771 17 10 17C10.5523 17 11 17.4477 11 18V20H13V18C13 17.4477 13.4477 17 14 17C14.5523 17 15 17.4477 15 18V20H17ZM11 12.5C11 13.8807 8.63228 15 7.25248 15C5.98469 15 5.99206 14.055 6.00161 12.8306V12.8305C6.00245 12.7224 6.00331 12.6121 6.00331 12.5C6.00331 11.1193 7.12186 10 8.50166 10C9.88145 10 11 11.1193 11 12.5ZM17.9984 12.8306C17.9975 12.7224 17.9967 12.6121 17.9967 12.5C17.9967 11.1193 16.8781 10 15.4983 10C14.1185 10 13 11.1193 13 12.5C13 13.8807 15.3677 15 16.7475 15C18.0153 15 18.0079 14.055 17.9984 12.8306Z" fill="#000000"></path> </g></svg>',
+            category: "MECHANIC",
+            fields: [
+                {
+                    label: "Enable",
+                    value: this.kxsClient.isDeathSoundEnabled,
+                    category: "MECHANIC",
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 6V18M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+                    type: "toggle",
+                    onChange: () => {
+                        this.kxsClient.isDeathSoundEnabled = !this.kxsClient.isDeathSoundEnabled;
+                        this.kxsClient.updateLocalStorage();
+                    },
+                },
+                {
+                    label: "Sound URL",
+                    value: this.kxsClient.soundLibrary.death_sound_url,
+                    category: "MECHANIC",
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 11V13M6 10V14M9 11V13M12 9V15M15 12V18M15 6V8M18 10V14M21 11V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+                    type: "input",
+                    placeholder: "URL of a sound",
+                    onChange: (value) => {
+                        this.kxsClient.soundLibrary.death_sound_url = value;
+                        this.kxsClient.updateLocalStorage();
+                    }
+                }
+            ]
         });
         this.addOption(HUD, {
             label: "Clean Main Menu",
@@ -3254,40 +2704,49 @@ class KxsClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
-            label: "Show Ping",
-            value: this.kxsClient.isPingVisible,
-            category: "HUD",
-            icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><defs><style>.a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}</style></defs><path class="a" d="M34.6282,24.0793a14.7043,14.7043,0,0,0-22.673,1.7255"></path><path class="a" d="M43.5,20.5846a23.8078,23.8078,0,0,0-39,0"></path><path class="a" d="M43.5,20.5845,22.0169,29.0483a5.5583,5.5583,0,1,0,6.2116,8.7785l.0153.0206Z"></path></g></svg>',
-            type: "toggle",
-            onChange: (value) => {
-                this.kxsClient.isPingVisible = !this.kxsClient.isPingVisible;
-                this.kxsClient.updatePingVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Show FPS",
-            value: this.kxsClient.isFpsVisible,
-            category: "HUD",
-            type: "toggle",
-            icon: '<svg fill="#000000" viewBox="0 0 24 24" id="60fps" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" class="icon flat-line"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><rect id="primary" x="10.5" y="8.5" width="14" height="7" rx="1" transform="translate(5.5 29.5) rotate(-90)" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></rect><path id="primary-2" data-name="primary" d="M3,12H9a1,1,0,0,1,1,1v5a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V6A1,1,0,0,1,4,5h6" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path></g></svg>',
-            onChange: (value) => {
-                this.kxsClient.isFpsVisible = !this.kxsClient.isFpsVisible;
-                this.kxsClient.updateFpsVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Show Kills",
-            value: this.kxsClient.isKillsVisible,
-            type: "toggle",
-            category: "HUD",
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M14.7245 11.2754L16 12.4999L10.0129 17.8218C8.05054 19.5661 5.60528 20.6743 3 20.9999L3.79443 19.5435C4.6198 18.0303 5.03249 17.2737 5.50651 16.5582C5.92771 15.9224 6.38492 15.3113 6.87592 14.7278C7.42848 14.071 8.0378 13.4615 9.25644 12.2426L12 9.49822M11.5 8.99787L17.4497 3.04989C18.0698 2.42996 19.0281 2.3017 19.7894 2.73674C20.9027 3.37291 21.1064 4.89355 20.1997 5.80024L19.8415 6.15847C19.6228 6.3771 19.3263 6.49992 19.0171 6.49992H18L16 8.49992V8.67444C16 9.16362 16 9.40821 15.9447 9.63839C15.8957 9.84246 15.8149 10.0375 15.7053 10.2165C15.5816 10.4183 15.4086 10.5913 15.0627 10.9372L14.2501 11.7498L11.5 8.99787Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
-            onChange: (value) => {
-                this.kxsClient.isKillsVisible = !this.kxsClient.isKillsVisible;
-                this.kxsClient.updateKillsVisibility();
-                this.kxsClient.updateLocalStorage();
-            },
+            label: "Counters",
+            value: true,
+            category: "SERVER",
+            type: "sub",
+            icon: '<svg fill="#000000" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M 13.1640 4.6562 L 43.3280 4.6562 C 43.1874 2.6875 42.0624 1.6328 39.9062 1.6328 L 16.5858 1.6328 C 14.4296 1.6328 13.3046 2.6875 13.1640 4.6562 Z M 8.1015 11.1484 L 47.9454 11.1484 C 47.5936 9.0156 46.5625 7.8438 44.2187 7.8438 L 11.8046 7.8438 C 9.4609 7.8438 8.4531 9.0156 8.1015 11.1484 Z M 10.2343 54.3672 L 45.7888 54.3672 C 50.6641 54.3672 53.1251 51.9297 53.1251 47.1016 L 53.1251 22.2109 C 53.1251 17.3828 50.6641 14.9453 45.7888 14.9453 L 10.2343 14.9453 C 5.3358 14.9453 2.8749 17.3594 2.8749 22.2109 L 2.8749 47.1016 C 2.8749 51.9297 5.3358 54.3672 10.2343 54.3672 Z"></path></g></svg>',
+            fields: [
+                {
+                    label: "Show Kills",
+                    value: this.kxsClient.isKillsVisible,
+                    type: "toggle",
+                    category: "HUD",
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M14.7245 11.2754L16 12.4999L10.0129 17.8218C8.05054 19.5661 5.60528 20.6743 3 20.9999L3.79443 19.5435C4.6198 18.0303 5.03249 17.2737 5.50651 16.5582C5.92771 15.9224 6.38492 15.3113 6.87592 14.7278C7.42848 14.071 8.0378 13.4615 9.25644 12.2426L12 9.49822M11.5 8.99787L17.4497 3.04989C18.0698 2.42996 19.0281 2.3017 19.7894 2.73674C20.9027 3.37291 21.1064 4.89355 20.1997 5.80024L19.8415 6.15847C19.6228 6.3771 19.3263 6.49992 19.0171 6.49992H18L16 8.49992V8.67444C16 9.16362 16 9.40821 15.9447 9.63839C15.8957 9.84246 15.8149 10.0375 15.7053 10.2165C15.5816 10.4183 15.4086 10.5913 15.0627 10.9372L14.2501 11.7498L11.5 8.99787Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
+                    onChange: (value) => {
+                        this.kxsClient.isKillsVisible = !this.kxsClient.isKillsVisible;
+                        this.kxsClient.updateKillsVisibility();
+                        this.kxsClient.updateLocalStorage();
+                    },
+                },
+                {
+                    label: "Show FPS",
+                    value: this.kxsClient.isFpsVisible,
+                    category: "HUD",
+                    type: "toggle",
+                    icon: '<svg fill="#000000" viewBox="0 0 24 24" id="60fps" data-name="Flat Line" xmlns="http://www.w3.org/2000/svg" class="icon flat-line"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><rect id="primary" x="10.5" y="8.5" width="14" height="7" rx="1" transform="translate(5.5 29.5) rotate(-90)" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></rect><path id="primary-2" data-name="primary" d="M3,12H9a1,1,0,0,1,1,1v5a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V6A1,1,0,0,1,4,5h6" style="fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path></g></svg>',
+                    onChange: (value) => {
+                        this.kxsClient.isFpsVisible = !this.kxsClient.isFpsVisible;
+                        this.kxsClient.updateFpsVisibility();
+                        this.kxsClient.updateLocalStorage();
+                    },
+                },
+                {
+                    label: "Show Ping",
+                    value: this.kxsClient.isPingVisible,
+                    category: "HUD",
+                    icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><defs><style>.a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}</style></defs><path class="a" d="M34.6282,24.0793a14.7043,14.7043,0,0,0-22.673,1.7255"></path><path class="a" d="M43.5,20.5846a23.8078,23.8078,0,0,0-39,0"></path><path class="a" d="M43.5,20.5845,22.0169,29.0483a5.5583,5.5583,0,1,0,6.2116,8.7785l.0153.0206Z"></path></g></svg>',
+                    type: "toggle",
+                    onChange: (value) => {
+                        this.kxsClient.isPingVisible = !this.kxsClient.isPingVisible;
+                        this.kxsClient.updatePingVisibility();
+                        this.kxsClient.updateLocalStorage();
+                    },
+                }
+            ],
         });
         this.addOption(HUD, {
             label: "Weapon Border",
@@ -3323,41 +2782,6 @@ class KxsClientSecondaryMenu {
             }
         });
         this.addOption(HUD, {
-            label: "Use Legacy Menu",
-            value: this.kxsClient.isLegaySecondaryMenu,
-            type: "toggle",
-            category: 'HUD',
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 12H20M4 8H20M4 16H12" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
-            onChange: (value) => {
-                this.kxsClient.isLegaySecondaryMenu = !this.kxsClient.isLegaySecondaryMenu;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.secondaryMenu = new KxsLegacyClientSecondaryMenu(this.kxsClient);
-                this.destroy();
-            },
-        });
-        this.addOption(MECHANIC, {
-            label: "Death sound",
-            value: this.kxsClient.isDeathSoundEnabled,
-            type: "toggle",
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M19 21C19 21.5523 18.5523 22 18 22H14H10H6C5.44771 22 5 21.5523 5 21V18.75C5 17.7835 4.2165 17 3.25 17C2.55964 17 2 16.4404 2 15.75V11C2 5.47715 6.47715 1 12 1C17.5228 1 22 5.47715 22 11V15.75C22 16.4404 21.4404 17 20.75 17C19.7835 17 19 17.7835 19 18.75V21ZM17 20V18.75C17 16.9358 18.2883 15.4225 20 15.075V11C20 6.58172 16.4183 3 12 3C7.58172 3 4 6.58172 4 11V15.075C5.71168 15.4225 7 16.9358 7 18.75V20H9V18C9 17.4477 9.44771 17 10 17C10.5523 17 11 17.4477 11 18V20H13V18C13 17.4477 13.4477 17 14 17C14.5523 17 15 17.4477 15 18V20H17ZM11 12.5C11 13.8807 8.63228 15 7.25248 15C5.98469 15 5.99206 14.055 6.00161 12.8306V12.8305C6.00245 12.7224 6.00331 12.6121 6.00331 12.5C6.00331 11.1193 7.12186 10 8.50166 10C9.88145 10 11 11.1193 11 12.5ZM17.9984 12.8306C17.9975 12.7224 17.9967 12.6121 17.9967 12.5C17.9967 11.1193 16.8781 10 15.4983 10C14.1185 10 13 11.1193 13 12.5C13 13.8807 15.3677 15 16.7475 15C18.0153 15 18.0079 14.055 17.9984 12.8306Z" fill="#000000"></path> </g></svg>',
-            category: "MECHANIC",
-            onChange: (value) => {
-                this.kxsClient.isDeathSoundEnabled = !this.kxsClient.isDeathSoundEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
-            label: "Win sound",
-            value: this.kxsClient.isWinSoundEnabled,
-            type: "toggle",
-            icon: '<svg fill="#000000" version="1.1" id="Trophy_x5F_cup" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 256 256" enable-background="new 0 0 256 256" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M190.878,111.272c31.017-11.186,53.254-40.907,53.254-75.733l-0.19-8.509h-48.955V5H64.222v22.03H15.266l-0.19,8.509 c0,34.825,22.237,64.546,53.254,75.733c7.306,18.421,22.798,31.822,41.878,37.728v20c-0.859,15.668-14.112,29-30,29v18h-16v35H195 v-35h-16v-18c-15.888,0-29.141-13.332-30-29v-20C168.08,143.094,183.572,129.692,190.878,111.272z M195,44h30.563 c-0.06,0.427-0.103,1.017-0.171,1.441c-3.02,18.856-14.543,34.681-30.406,44.007C195.026,88.509,195,44,195,44z M33.816,45.441 c-0.068-0.424-0.111-1.014-0.171-1.441h30.563c0,0-0.026,44.509,0.013,45.448C48.359,80.122,36.837,64.297,33.816,45.441z M129.604,86.777l-20.255,13.52l6.599-23.442L96.831,61.77l24.334-0.967l8.44-22.844l8.44,22.844l24.334,0.967L143.26,76.856 l6.599,23.442L129.604,86.777z"></path> </g></svg>',
-            category: "HUD",
-            onChange: (value) => {
-                this.kxsClient.isWinSoundEnabled = !this.kxsClient.isWinSoundEnabled;
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(HUD, {
             label: "Message Open/Close RSHIFT Menu",
             value: this.kxsClient.isNotifyingForToggleMenu,
             type: "toggle",
@@ -3366,30 +2790,6 @@ class KxsClientSecondaryMenu {
             onChange: (value) => {
                 this.kxsClient.isNotifyingForToggleMenu = !this.kxsClient.isNotifyingForToggleMenu;
                 this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(SERVER, {
-            label: "Chat",
-            value: this.kxsClient.isKxsChatEnabled,
-            icon: '<svg fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M232.727,238.545v186.182H281.6l-13.964,69.818l97.745-69.818H512V238.545H232.727z M477.091,389.818H365.382h-11.187 l-9.103,6.502l-25.912,18.508l5.003-25.01H281.6h-13.964V273.455h209.455V389.818z"></path> </g> </g> <g> <g> <path d="M279.273,17.455H0v186.182h65.164l97.745,69.818l-13.964-69.818h130.327V17.455z M244.364,168.727h-95.418h-42.582 l5.003,25.01L85.455,175.23l-9.104-6.502H65.164H34.909V52.364h209.455V168.727z"></path> </g> </g> <g> <g> <rect x="180.364" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="122.182" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="64" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="413.091" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="354.909" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="296.727" y="314.182" width="34.909" height="34.909"></rect> </g> </g> </g></svg>',
-            category: "SERVER",
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isKxsChatEnabled = !this.kxsClient.isKxsChatEnabled;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.chat.toggleChat();
-            },
-        });
-        this.addOption(SERVER, {
-            label: "Voice Chat",
-            value: this.kxsClient.isVoiceChatEnabled,
-            icon: '<svg fill="#000000" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <path d="M26,30H24V27H20a5.0055,5.0055,0,0,1-5-5V20.7207l-2.3162-.772a1,1,0,0,1-.5412-1.4631L15,13.7229V11a9.01,9.01,0,0,1,9-9h5V4H24a7.0078,7.0078,0,0,0-7,7v3a.9991.9991,0,0,1-.1426.5144l-2.3586,3.9312,1.8174.6057A1,1,0,0,1,17,20v2a3.0033,3.0033,0,0,0,3,3h5a1,1,0,0,1,1,1Z"></path> <rect x="19" y="12" width="4" height="2"></rect> <path d="M9.3325,25.2168a7.0007,7.0007,0,0,1,0-10.4341l1.334,1.49a5,5,0,0,0,0,7.4537Z"></path> <path d="M6.3994,28.8008a11.0019,11.0019,0,0,1,0-17.6006L7.6,12.8a9.0009,9.0009,0,0,0,0,14.4014Z"></path> <rect id="_Transparent_Rectangle_" data-name="<Transparent Rectangle>" class="cls-1" width="32" height="32"></rect> </g></svg>',
-            category: "SERVER",
-            type: "toggle",
-            onChange: () => {
-                this.kxsClient.isVoiceChatEnabled = !this.kxsClient.isVoiceChatEnabled;
-                this.kxsClient.updateLocalStorage();
-                this.kxsClient.voiceChat.toggleVoiceChat();
             },
         });
         this.addOption(SERVER, {
@@ -3622,6 +3022,9 @@ class KxsClientSecondaryMenu {
             case "toggle":
                 control = this.createToggleButton(option);
                 break;
+            case "sub":
+                control = this.createSubButton(option);
+                break;
             case "click":
                 control = this.createClickButton(option);
         }
@@ -3842,6 +3245,226 @@ class KxsClientSecondaryMenu {
         });
         this.blockMousePropagation(info);
         return info;
+    }
+    // Crée un bouton pour ouvrir un sous-menu de configuration de mode
+    createSubButton(option) {
+        const btn = document.createElement("button");
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        // Styles pour le bouton de sous-menu (gris par défaut)
+        Object.assign(btn.style, {
+            width: "100%",
+            padding: isMobile ? "2px 0px" : "8px",
+            height: isMobile ? "24px" : "auto",
+            background: "#6B7280", // Couleur grise par défaut
+            border: "none",
+            borderRadius: isMobile ? "3px" : "6px",
+            color: "white",
+            cursor: "pointer",
+            transition: "background 0.2s",
+            fontSize: isMobile ? "9px" : "14px",
+            fontWeight: "bold",
+            minHeight: isMobile ? "20px" : "unset",
+            letterSpacing: isMobile ? "0.5px" : "1px"
+        });
+        btn.textContent = "CONFIGURE";
+        // Variables pour le sous-menu
+        let subMenuContainer = null;
+        // Sauvegarde des éléments originaux à masquer/afficher
+        let originalElements = [];
+        let isSubMenuOpen = false;
+        // Gestionnaire d'événement pour ouvrir le sous-menu
+        btn.addEventListener("click", () => {
+            // Si aucun champ n'est défini, ne rien faire
+            if (!option.fields || option.fields.length === 0) {
+                if (option.onChange) {
+                    option.onChange(option.value);
+                }
+                return;
+            }
+            // Si le sous-menu est déjà ouvert, le fermer
+            if (isSubMenuOpen) {
+                this.closeSubMenu();
+                return;
+            }
+            // Trouver tous les éléments principaux à masquer
+            originalElements = [];
+            const allSections = document.querySelectorAll('.menu-section');
+            allSections.forEach(section => {
+                originalElements.push(section);
+                section.style.display = 'none';
+            });
+            // Masquer aussi le conteneur de la grille
+            const grid = document.getElementById('kxsMenuGrid');
+            if (grid) {
+                originalElements.push(grid);
+                grid.style.display = 'none';
+            }
+            // Créer le conteneur du sous-menu
+            subMenuContainer = document.createElement("div");
+            subMenuContainer.id = "kxs-submenu";
+            subMenuContainer.className = "kxs-submenu-container";
+            Object.assign(subMenuContainer.style, {
+                width: "100%",
+                padding: "10px 0",
+                boxSizing: "border-box",
+                overflowY: "auto",
+                background: "rgba(17, 24, 39, 0.95)"
+            });
+            this.blockMousePropagation(subMenuContainer);
+            // Créer l'en-tête du sous-menu
+            const subMenuHeader = document.createElement("div");
+            Object.assign(subMenuHeader.style, {
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: isMobile ? "10px" : "15px",
+                paddingBottom: isMobile ? "5px" : "10px",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+                paddingLeft: isMobile ? "10px" : "15px",
+                paddingRight: isMobile ? "10px" : "15px",
+                width: "100%",
+                boxSizing: "border-box"
+            });
+            this.blockMousePropagation(subMenuHeader);
+            // Bouton de retour
+            const backBtn = document.createElement("button");
+            backBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M15 19L8 12L15 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg> Back`;
+            Object.assign(backBtn.style, {
+                background: "none",
+                border: "none",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "5px",
+                fontSize: isMobile ? "12px" : "14px"
+            });
+            this.blockMousePropagation(backBtn);
+            // Titre du sous-menu
+            const subMenuTitle = document.createElement("h3");
+            subMenuTitle.textContent = option.label;
+            Object.assign(subMenuTitle.style, {
+                margin: "0",
+                color: "#fff",
+                fontSize: isMobile ? "16px" : "20px",
+                fontWeight: "bold",
+                textAlign: "center",
+                flex: "1"
+            });
+            this.blockMousePropagation(subMenuTitle);
+            // Ajouter l'événement au bouton retour pour fermer le sous-menu
+            backBtn.addEventListener("click", () => {
+                this.closeSubMenu();
+            });
+            // Assembler l'en-tête
+            subMenuHeader.appendChild(backBtn);
+            subMenuHeader.appendChild(subMenuTitle);
+            subMenuHeader.appendChild(document.createElement("div")); // Espace vide pour l'équilibre
+            subMenuContainer.appendChild(subMenuHeader);
+            // Créer la grille pour les options
+            const optionsGrid = document.createElement("div");
+            Object.assign(optionsGrid.style, {
+                display: "grid",
+                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+                gap: isMobile ? "8px" : "16px",
+                padding: isMobile ? "4px" : "16px",
+                gridAutoRows: isMobile ? "minmax(100px, auto)" : "minmax(150px, auto)",
+                width: "100%",
+                boxSizing: "border-box"
+            });
+            this.blockMousePropagation(optionsGrid);
+            // Créer les cartes pour chaque option
+            option.fields.forEach(mod => {
+                this.createModCard(mod, optionsGrid);
+            });
+            subMenuContainer.appendChild(optionsGrid);
+            // Ajouter le sous-menu au menu principal
+            this.menu.appendChild(subMenuContainer);
+            isSubMenuOpen = true;
+            // Définir la méthode pour fermer le sous-menu
+            this.closeSubMenu = () => {
+                // Supprimer le sous-menu
+                if (subMenuContainer && subMenuContainer.parentElement) {
+                    subMenuContainer.parentElement.removeChild(subMenuContainer);
+                }
+                // Réafficher tous les éléments originaux
+                originalElements.forEach(el => {
+                    if (el.id === 'kxsMenuGrid') {
+                        el.style.display = 'grid';
+                    }
+                    else {
+                        el.style.display = 'block';
+                    }
+                });
+                // Réinitialiser les états
+                this.filterOptions(); // S'assurer que les options sont correctement filtrées
+                subMenuContainer = null;
+                isSubMenuOpen = false;
+            };
+            // Appeler le callback si défini
+            if (option.onChange) {
+                option.onChange(option.value);
+            }
+        });
+        this.blockMousePropagation(btn);
+        return btn;
+    }
+    // Crée une carte pour un mod dans le sous-menu
+    createModCard(mod, container) {
+        const modCard = document.createElement("div");
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        Object.assign(modCard.style, {
+            background: "rgba(31, 41, 55, 0.8)",
+            borderRadius: "10px",
+            padding: isMobile ? "10px" : "16px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: isMobile ? "8px" : "12px",
+            minHeight: isMobile ? "100px" : "150px",
+        });
+        // Icône
+        const iconContainer = document.createElement("div");
+        Object.assign(iconContainer.style, {
+            width: isMobile ? "32px" : "48px",
+            height: isMobile ? "32px" : "48px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: isMobile ? "4px" : "8px"
+        });
+        iconContainer.innerHTML = mod.icon || '';
+        // Titre
+        const title = document.createElement("div");
+        title.textContent = mod.label;
+        title.style.fontSize = isMobile ? "14px" : "16px";
+        title.style.textAlign = "center";
+        // Contrôle selon le type
+        let control = null;
+        switch (mod.type) {
+            case "info":
+                control = this.createInfoElement(mod);
+                break;
+            case "input":
+                control = this.createInputElement(mod);
+                break;
+            case "toggle":
+                control = this.createToggleButton(mod);
+                break;
+            case "click":
+                control = this.createClickButton(mod);
+        }
+        modCard.appendChild(iconContainer);
+        modCard.appendChild(title);
+        if (control) {
+            modCard.appendChild(control);
+        }
+        container.appendChild(modCard);
+        this.blockMousePropagation(modCard);
     }
     addDragListeners() {
         this.menu.addEventListener('mousedown', (e) => {
@@ -5933,6 +5556,7 @@ class KxsNetwork {
         this.reconnectTimeout = 0;
         this.reconnectDelay = 15000; // Initial reconnect delay of 1 second
         this.kxsUsers = 0;
+        this.privateUsername = this.generateRandomUsername();
         this.kxsClient = kxsClient;
     }
     connect() {
@@ -5982,8 +5606,16 @@ class KxsNetwork {
             this.kxsClient.nm.showNotification('Failed to reconnect after multiple attempts', 'error', 2000);
         }
     }
+    generateRandomUsername() {
+        let char = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let username = '';
+        for (let i = 0; i < 6; i++) {
+            username += char[Math.floor(Math.random() * char.length)];
+        }
+        return "kxs_" + username;
+    }
     getUsername() {
-        return JSON.parse(localStorage.getItem("surviv_config") || "{}").playerName;
+        return this.kxsClient.kxsNetworkSettings.nickname_anonymized ? this.privateUsername : JSON.parse(localStorage.getItem("surviv_config") || "{}").playerName;
     }
     identify() {
         const payload = {
@@ -6880,7 +6512,6 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
-
 class KxsClient {
     constructor() {
         this.onlineMenuElement = null;
@@ -6902,7 +6533,6 @@ class KxsClient {
         this.isAutoUpdateEnabled = true;
         this.isWinningAnimationEnabled = true;
         this.isKillLeaderTrackerEnabled = true;
-        this.isLegaySecondaryMenu = false;
         this.isKillFeedBlint = false;
         this.isSpotifyPlayerEnabled = false;
         this.discordToken = null;
@@ -6927,6 +6557,9 @@ class KxsClient {
             ping: { width: 100, height: 30 },
             kills: { width: 100, height: 30 },
         };
+        this.kxsNetworkSettings = {
+            nickname_anonymized: false,
+        };
         this.soundLibrary = {
             win_sound_url: win_sound,
             death_sound_url: death_sound,
@@ -6949,12 +6582,7 @@ class KxsClient {
         this.initDeathDetection();
         this.discordRPC.connect();
         this.hud = new KxsClientHUD(this);
-        if (this.isLegaySecondaryMenu) {
-            this.secondaryMenu = new KxsLegacyClientSecondaryMenu(this);
-        }
-        else {
-            this.secondaryMenu = new KxsClientSecondaryMenu(this);
-        }
+        this.secondaryMenu = new KxsClientSecondaryMenu(this);
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
         this.chat = new KxsChat(this);
         this.voiceChat = new KxsVoiceChat(this, this.kxsNetwork);
@@ -7088,7 +6716,6 @@ class KxsClient {
             isWinningAnimationEnabled: this.isWinningAnimationEnabled,
             discordToken: this.discordToken,
             isKillLeaderTrackerEnabled: this.isKillLeaderTrackerEnabled,
-            isLegaySecondaryMenu: this.isLegaySecondaryMenu,
             isKillFeedBlint: this.isKillFeedBlint,
             all_friends: this.all_friends,
             isSpotifyPlayerEnabled: this.isSpotifyPlayerEnabled,
@@ -7100,6 +6727,7 @@ class KxsClient {
             isGunBorderChromatic: this.isGunBorderChromatic,
             isVoiceChatEnabled: this.isVoiceChatEnabled,
             isKxsChatEnabled: this.isKxsChatEnabled,
+            kxsNetworkSettings: this.kxsNetworkSettings
         }));
     }
     ;
@@ -7484,17 +7112,17 @@ class KxsClient {
             this.isWinningAnimationEnabled = (_h = savedSettings.isWinningAnimationEnabled) !== null && _h !== void 0 ? _h : this.isWinningAnimationEnabled;
             this.discordToken = (_j = savedSettings.discordToken) !== null && _j !== void 0 ? _j : this.discordToken;
             this.isKillLeaderTrackerEnabled = (_k = savedSettings.isKillLeaderTrackerEnabled) !== null && _k !== void 0 ? _k : this.isKillLeaderTrackerEnabled;
-            this.isLegaySecondaryMenu = (_l = savedSettings.isLegaySecondaryMenu) !== null && _l !== void 0 ? _l : this.isLegaySecondaryMenu;
-            this.isKillFeedBlint = (_m = savedSettings.isKillFeedBlint) !== null && _m !== void 0 ? _m : this.isKillFeedBlint;
-            this.all_friends = (_o = savedSettings.all_friends) !== null && _o !== void 0 ? _o : this.all_friends;
-            this.isSpotifyPlayerEnabled = (_p = savedSettings.isSpotifyPlayerEnabled) !== null && _p !== void 0 ? _p : this.isSpotifyPlayerEnabled;
-            this.isMainMenuCleaned = (_q = savedSettings.isMainMenuCleaned) !== null && _q !== void 0 ? _q : this.isMainMenuCleaned;
-            this.isNotifyingForToggleMenu = (_r = savedSettings.isNotifyingForToggleMenu) !== null && _r !== void 0 ? _r : this.isNotifyingForToggleMenu;
-            this.customCrosshair = (_s = savedSettings.customCrosshair) !== null && _s !== void 0 ? _s : this.customCrosshair;
-            this.isGunOverlayColored = (_t = savedSettings.isGunOverlayColored) !== null && _t !== void 0 ? _t : this.isGunOverlayColored;
-            this.isGunBorderChromatic = (_u = savedSettings.isGunBorderChromatic) !== null && _u !== void 0 ? _u : this.isGunBorderChromatic;
-            this.isVoiceChatEnabled = (_v = savedSettings.isVoiceChatEnabled) !== null && _v !== void 0 ? _v : this.isVoiceChatEnabled;
-            this.isKxsChatEnabled = (_w = savedSettings.isKxsChatEnabled) !== null && _w !== void 0 ? _w : this.isKxsChatEnabled;
+            this.isKillFeedBlint = (_l = savedSettings.isKillFeedBlint) !== null && _l !== void 0 ? _l : this.isKillFeedBlint;
+            this.all_friends = (_m = savedSettings.all_friends) !== null && _m !== void 0 ? _m : this.all_friends;
+            this.isSpotifyPlayerEnabled = (_o = savedSettings.isSpotifyPlayerEnabled) !== null && _o !== void 0 ? _o : this.isSpotifyPlayerEnabled;
+            this.isMainMenuCleaned = (_p = savedSettings.isMainMenuCleaned) !== null && _p !== void 0 ? _p : this.isMainMenuCleaned;
+            this.isNotifyingForToggleMenu = (_q = savedSettings.isNotifyingForToggleMenu) !== null && _q !== void 0 ? _q : this.isNotifyingForToggleMenu;
+            this.customCrosshair = (_r = savedSettings.customCrosshair) !== null && _r !== void 0 ? _r : this.customCrosshair;
+            this.isGunOverlayColored = (_s = savedSettings.isGunOverlayColored) !== null && _s !== void 0 ? _s : this.isGunOverlayColored;
+            this.isGunBorderChromatic = (_t = savedSettings.isGunBorderChromatic) !== null && _t !== void 0 ? _t : this.isGunBorderChromatic;
+            this.isVoiceChatEnabled = (_u = savedSettings.isVoiceChatEnabled) !== null && _u !== void 0 ? _u : this.isVoiceChatEnabled;
+            this.isKxsChatEnabled = (_v = savedSettings.isKxsChatEnabled) !== null && _v !== void 0 ? _v : this.isKxsChatEnabled;
+            this.kxsNetworkSettings = (_w = savedSettings.kxsNetworkSettings) !== null && _w !== void 0 ? _w : this.kxsNetworkSettings;
             if (savedSettings.soundLibrary) {
                 // Check if the sound value exists
                 if (savedSettings.soundLibrary.win_sound_url) {
