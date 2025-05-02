@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.4
+// @version      2.1.5
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1656,7 +1656,7 @@ const stuff_emojis = {
     helmet: "⛑️"
 };
 class WebhookValidator {
-    static isValidWebhookUrl(url) {
+    static isValidWebhookUrl(url = '') {
         return url.startsWith("https://");
     }
     static isWebhookAlive(webhookUrl) {
@@ -1902,7 +1902,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.4"};
+const package_namespaceObject = {"rE":"2.1.5"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
