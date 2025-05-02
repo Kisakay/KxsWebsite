@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.5
+// @version      2.1.6
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1902,7 +1902,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.5"};
+const package_namespaceObject = {"rE":"2.1.6"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2317,6 +2317,7 @@ class NotificationManager {
 
 ;// ./src/HUD/ClientSecondaryMenu.ts
 
+
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "MISC"];
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
@@ -2427,7 +2428,7 @@ class KxsClientSecondaryMenu {
         const header = document.createElement("div");
         // Détection mobile pour styles réduits
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
-        const logoSize = isMobile ? 16 : 24;
+        const logoSize = isMobile ? 20 : 30;
         const titleFontSize = isMobile ? 12 : 20;
         const headerGap = isMobile ? 4 : 10;
         const headerMarginBottom = isMobile ? 8 : 20;
@@ -2439,7 +2440,16 @@ class KxsClientSecondaryMenu {
             <div style="display: flex; align-items: center; gap: ${headerGap}px;">
                 <img src="${kxs_logo}" 
                     alt="Logo" style="width: ${logoSize}px; height: ${logoSize}px;">
-                <span style="font-size: ${titleFontSize}px; font-weight: bold;">KXS CLIENT</span>
+                <span style="font-size: ${titleFontSize}px; font-weight: bold;">KXS CLIENT <span style="
+                 font-size: ${isMobile ? 10 : 14}px;
+                 font-weight: 700;
+                 color: #3B82F6;
+                 opacity: 0.95;
+                 position: relative;
+                 top: ${isMobile ? -1 : -2}px;
+                 margin-left: ${isMobile ? 2 : 3}px;
+                 letter-spacing: 0.5px;
+               ">v${package_namespaceObject.rE}</span></span>
             </div>
             <div style="display: flex; gap: ${headerGap}px;">
               <button style="
