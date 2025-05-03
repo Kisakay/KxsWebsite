@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.6
+// @version      2.1.7
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1902,7 +1902,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.6"};
+const package_namespaceObject = {"rE":"2.1.7"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -3537,7 +3537,7 @@ class KxsClientSecondaryMenu {
         // Mettre à jour la propriété publique en même temps
         this.isOpen = this.isClientMenuVisible;
         if (this.kxsClient.isNotifyingForToggleMenu) {
-            this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1400);
+            this.kxsClient.nm.showNotification(this.isClientMenuVisible ? "Opening menu..." : "Closing menu...", "info", 1100);
         }
         this.menu.style.display = this.isClientMenuVisible ? "block" : "none";
         // If opening the menu, make sure to display options
@@ -5692,7 +5692,12 @@ class KxsNetwork {
                         // Détecter les nouveaux joueurs (hors soi-même)
                         const newPlayers = currentPlayers.filter((name) => !previousPlayers.includes(name));
                         for (const newPlayer of newPlayers) {
-                            this.kxsClient.nm.showNotification(`🎉 ${newPlayer} is a Kxs player!`, 'info', 3500);
+                            if (this.kxsClient.isKxsChatEnabled) {
+                                this.kxsClient.chat.addSystemMessage(`${newPlayer} joined the game as a Kxs player`);
+                            }
+                            else {
+                                this.kxsClient.nm.showNotification(`🎉 ${newPlayer} is a Kxs player!`, 'info', 3500);
+                            }
                         }
                         this.currentGamePlayers = currentPlayers;
                     }
@@ -5770,7 +5775,8 @@ class KxsNetwork {
                 op: 3, // Custom operation code for game info
                 d: {
                     type: 'find_game_response',
-                    gameId
+                    gameId,
+                    user: this.getUsername()
                 }
             };
             this.send(payload);
@@ -5970,12 +5976,38 @@ class KxsChat {
     addChatMessage(user, text) {
         if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
             return;
-        this.chatMessages.push({ user, text });
+        this.chatMessages.push({ user, text, isSystem: false });
         if (this.chatMessages.length > 5)
             this.chatMessages.shift();
-        if (this.messagesContainer) {
-            this.messagesContainer.innerHTML = this.chatMessages.map(m => `<span><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</span>`).join('');
-        }
+        this.renderMessages();
+    }
+    /**
+     * Ajoute un message système dans le chat
+     * @param text Texte du message système
+     */
+    addSystemMessage(text) {
+        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
+            return;
+        // Ajouter le message système avec un marqueur spécifique isSystem = true
+        this.chatMessages.push({ user: "", text, isSystem: true });
+        if (this.chatMessages.length > 5)
+            this.chatMessages.shift();
+        this.renderMessages();
+    }
+    /**
+     * Rend les messages du chat avec leur style approprié
+     */
+    renderMessages() {
+        if (!this.messagesContainer)
+            return;
+        this.messagesContainer.innerHTML = this.chatMessages.map(m => {
+            if (m.isSystem) {
+                return `<span style='color:#3B82F6; font-style:italic;'>${m.text}</span>`;
+            }
+            else {
+                return `<span><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</span>`;
+            }
+        }).join('');
     }
     toggleChat() {
         if (this.chatBox) {
@@ -6671,7 +6703,7 @@ class KxsClient {
         menu.id = 'kxs-online-menu';
         menu.style.position = 'absolute';
         menu.style.top = '18px';
-        menu.style.right = '18px';
+        menu.style.left = '18px'; // Changé de 'right' à 'left'
         menu.style.background = 'rgba(30,30,40,0.92)';
         menu.style.color = '#fff';
         menu.style.padding = '8px 18px';
@@ -6685,8 +6717,8 @@ class KxsClient {
         menu.style.display = 'flex';
         menu.style.alignItems = 'center';
         menu.innerHTML = `
-			<span id="kxs-online-dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#3fae2a;margin-right:10px;box-shadow:0 0 8px #3fae2a;animation:kxs-pulse 1s infinite alternate;"></span>
-			<b></b> <span id="kxs-online-count">...</span>
+		  <span id="kxs-online-dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#3fae2a;margin-right:10px;box-shadow:0 0 8px #3fae2a;animation:kxs-pulse 1s infinite alternate;"></span>
+		  <b></b> <span id="kxs-online-count">...</span>
 		`;
         // Ajoute l'animation CSS
         if (!document.getElementById('kxs-online-style')) {
@@ -6694,10 +6726,10 @@ class KxsClient {
             style.id = 'kxs-online-style';
             style.innerHTML = `
 			@keyframes kxs-pulse {
-				0% { box-shadow:0 0 8px #3fae2a; opacity: 1; }
-				100% { box-shadow:0 0 16px #3fae2a; opacity: 0.6; }
+			  0% { box-shadow:0 0 8px #3fae2a; opacity: 1; }
+			  100% { box-shadow:0 0 16px #3fae2a; opacity: 0.6; }
 			}
-			`;
+		  `;
             document.head.appendChild(style);
         }
         overlay.appendChild(menu);
