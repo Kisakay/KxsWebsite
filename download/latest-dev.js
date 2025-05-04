@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.8
+// @version      2.1.9
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1903,7 +1903,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.8"};
+const package_namespaceObject = {"rE":"2.1.9"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -8346,15 +8346,22 @@ class EasterEgg {
         this.zelda3Sound = null;
         this.periodSound = null;
         this.ambientSound = null;
+        this.buttonClickSound = null;
+        this.arrowKeySound = null;
+        this.enterKeySound = null;
+        this.closeMenuSound = null;
         this.textElement = null;
         this.fireElements = [];
         this.pillars = [];
         this.isActive = false;
+        this.isInitialized = false;
+        this.overlayElement = null;
         this.animationFrameId = null;
         this.originalBodyContent = '';
         this.serverSelector = null;
         this.serverButton = null;
         this.messageChangeInterval = null;
+        this.originalPageTitle = '';
         this.messages = [
             "You're already in",
             "You didnt have found Kxs, is kxs who found you",
@@ -8363,30 +8370,127 @@ class EasterEgg {
             "Kxs is the one who will save you",
             "I am Kxs, the one who will save you"
         ];
+        this.globalEventHandlersInitialized = false;
         this.init();
     }
     init() {
+        // Save original page title
+        this.originalPageTitle = document.title;
         // Check if we're on the target website
         if (window.location.hostname === 'kxs.rip' || window.location.hostname === 'www.kxs.rip') {
             // Initialize sounds
             this.zelda3Sound = new Audio('https://kxs.rip/assets/message.mp3'); // Replace with actual Zelda sound
             this.periodSound = new Audio('https://kxs.rip/assets/message-finish.mp3'); // Sound for the final period
             this.ambientSound = new Audio('https://kxs.rip/assets/hell_ambiance.m4a'); // Replace with actual ambient URL
+            this.buttonClickSound = new Audio('https://kxs.rip/assets/enter.mp3'); // Button click sound
+            this.arrowKeySound = new Audio('https://kxs.rip/assets/arrow.mp3'); // Arrow key sound
+            this.enterKeySound = new Audio('https://kxs.rip/assets/enter.mp3'); // Enter key sound
+            this.closeMenuSound = new Audio('https://kxs.rip/assets/close.mp3'); // Close menu sound
             if (this.ambientSound) {
                 this.ambientSound.loop = true;
             }
-            // Apply the Easter egg
-            this.applyEasterEgg();
+            // Create the initial overlay with Click prompt instead of immediately applying Easter egg
+            this.createInitialOverlay();
+            // Initialize global event handlers for interaction sounds
+            this.initGlobalEventHandlers();
         }
+    }
+    /**
+     * Creates the initial blur overlay with Click text
+     */
+    createInitialOverlay() {
+        // Store original body content to restore it later if needed
+        this.originalBodyContent = document.body.innerHTML;
+        // Save original styles
+        this.saveOriginalStyles();
+        // Create the overlay
+        this.overlayElement = document.createElement('div');
+        const overlay = this.overlayElement;
+        // Set full screen styles
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        overlay.style.backdropFilter = 'blur(10px)';
+        overlay.style['-webkit-backdrop-filter'] = 'blur(10px)';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.cursor = 'pointer';
+        overlay.style.zIndex = '9999';
+        overlay.style.transition = 'opacity 0.5s ease';
+        // Create the Click text
+        const clickText = document.createElement('div');
+        clickText.textContent = 'Click';
+        clickText.style.color = '#fff';
+        clickText.style.fontSize = '3rem';
+        clickText.style.fontWeight = 'bold';
+        clickText.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.7)';
+        clickText.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
+        clickText.style.letterSpacing = '5px';
+        // Add font for the text
+        const fontLink = document.createElement('link');
+        fontLink.rel = 'stylesheet';
+        fontLink.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap';
+        document.head.appendChild(fontLink);
+        // Add click event to start the Easter egg
+        overlay.addEventListener('click', () => {
+            this.removeOverlay();
+            this.applyEasterEgg();
+        });
+        // Add the text to the overlay
+        overlay.appendChild(clickText);
+        // Add the overlay to the body
+        document.body.appendChild(overlay);
+    }
+    /**
+     * Removes the initial overlay
+     */
+    removeOverlay() {
+        if (this.overlayElement && this.overlayElement.parentNode) {
+            // Fade out
+            this.overlayElement.style.opacity = '0';
+            // Remove after transition
+            setTimeout(() => {
+                if (this.overlayElement && this.overlayElement.parentNode) {
+                    this.overlayElement.parentNode.removeChild(this.overlayElement);
+                    this.overlayElement = null;
+                }
+            }, 500);
+        }
+    }
+    /**
+     * Initialize global event handlers for sounds
+     */
+    initGlobalEventHandlers() {
+        if (this.globalEventHandlersInitialized)
+            return;
+        this.globalEventHandlersInitialized = true;
+        // Play sound on button clicks
+        document.addEventListener('click', (e) => {
+            if (e.target instanceof HTMLButtonElement ||
+                e.target instanceof HTMLAnchorElement ||
+                (e.target instanceof HTMLElement && e.target.role === 'button')) {
+                this.playButtonSound();
+            }
+        });
+        // Play sound on arrow keys and enter key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                this.playArrowKeySound();
+            }
+            else if (e.key === 'Enter') {
+                this.playEnterKeySound();
+            }
+        });
     }
     applyEasterEgg() {
         if (this.isActive)
             return;
         this.isActive = true;
-        // Store original body content to restore it later if needed
-        this.originalBodyContent = document.body.innerHTML;
-        // Save original styles
-        this.saveOriginalStyles();
+        this.isInitialized = true;
         // Transform the website
         this.transformWebsite();
         // Start animations
@@ -8566,6 +8670,65 @@ class EasterEgg {
             });
         }
     }
+    /**
+     * Temporarily reduce ambient sound volume to allow other sounds to be heard better
+     */
+    lowerAmbientVolume() {
+        if (this.ambientSound) {
+            // Store current volume if we need it
+            const originalVolume = this.ambientSound.volume;
+            // Lower volume
+            this.ambientSound.volume = 0.1; // Lower to 1/3 of original volume
+            // Restore volume after a delay
+            setTimeout(() => {
+                if (this.ambientSound) {
+                    this.ambientSound.volume = 0.3; // Restore to original volume
+                }
+            }, 500); // Half second delay
+        }
+    }
+    /**
+     * Play button click sound
+     */
+    playButtonSound() {
+        if (this.buttonClickSound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.buttonClickSound.currentTime = 0;
+            this.buttonClickSound.volume = 0.3;
+            this.buttonClickSound.play().catch(err => {
+                console.error('Failed to play button sound:', err);
+            });
+        }
+    }
+    /**
+     * Play arrow key sound
+     */
+    playArrowKeySound() {
+        if (this.arrowKeySound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.arrowKeySound.currentTime = 0;
+            this.arrowKeySound.volume = 0.3;
+            this.arrowKeySound.play().catch(err => {
+                console.error('Failed to play arrow key sound:', err);
+            });
+        }
+    }
+    /**
+     * Play enter key sound
+     */
+    playEnterKeySound() {
+        if (this.enterKeySound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.enterKeySound.currentTime = 0;
+            this.enterKeySound.volume = 0.3;
+            this.enterKeySound.play().catch(err => {
+                console.error('Failed to play enter key sound:', err);
+            });
+        }
+    }
     displayMessage() {
         if (!this.textElement)
             return;
@@ -8583,6 +8746,8 @@ class EasterEgg {
         // Clear current text and ensure visibility
         this.textElement.textContent = '';
         this.textElement.style.opacity = '1';
+        // Update page title with message
+        document.title = message;
         // Calculate typing speed based on message length
         // Longer messages type faster (inversely proportional)
         const baseSpeed = 300; // Base speed in ms
@@ -8612,8 +8777,10 @@ class EasterEgg {
                         console.error('Failed to play Zelda sound:', err);
                     });
                 }
-                // Add character
+                // Add character to text element
                 this.textElement.textContent += message.charAt(i);
+                // Update page title in real-time with the current text
+                document.title = this.textElement.textContent || message;
                 // If last character and we should add a period, do it with a pause
                 if (shouldAddPeriod) {
                     setTimeout(() => {
@@ -8624,6 +8791,8 @@ class EasterEgg {
                                 console.error('Failed to play period sound:', err);
                             });
                             this.textElement.textContent += '.';
+                            // Update title with the final period
+                            document.title = this.textElement.textContent || (message + '.');
                         }
                     }, 400);
                 }
@@ -8762,22 +8931,77 @@ class EasterEgg {
      * Initialize and show the server selector
      */
     showServerSelector() {
+        // Play enter sound when opening the menu
+        if (this.enterKeySound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.enterKeySound.currentTime = 0;
+            this.enterKeySound.volume = 0.3;
+            this.enterKeySound.play().catch(err => {
+                console.error('Failed to play enter sound:', err);
+            });
+        }
         // Function to redirect to a selected server
         const redirectToServer = (server) => {
             window.location.href = `https://${server}`;
         };
         // Create server selector if it doesn't exist
         if (!this.serverSelector) {
-            this.serverSelector = new ServerSelector(config_namespaceObject.match, redirectToServer);
+            // Create a modified version of redirectToServer that includes the close sound
+            const redirectWithSound = (server) => {
+                // Play close sound first
+                if (this.closeMenuSound) {
+                    // Lower ambient volume
+                    this.lowerAmbientVolume();
+                    this.closeMenuSound.play().catch(err => {
+                        console.error('Failed to play close sound:', err);
+                    });
+                    // Redirect after a short delay to allow the sound to play
+                    setTimeout(() => {
+                        redirectToServer(server);
+                    }, 300);
+                }
+                else {
+                    // If sound failed to load, just redirect
+                    redirectToServer(server);
+                }
+            };
+            // Create server selector with our modified redirect function
+            this.serverSelector = new ServerSelector(config_namespaceObject.match, redirectWithSound);
+            // Handle close events to play the close sound
+            if (this.serverSelector) {
+                const originalClose = this.serverSelector.close.bind(this.serverSelector);
+                this.serverSelector.close = () => {
+                    // Play close sound
+                    if (this.closeMenuSound) {
+                        // Lower ambient volume
+                        this.lowerAmbientVolume();
+                        this.closeMenuSound.currentTime = 0;
+                        this.closeMenuSound.volume = 0.3;
+                        this.closeMenuSound.play().catch(err => {
+                            console.error('Failed to play close sound:', err);
+                        });
+                    }
+                    // Call original close method
+                    originalClose();
+                };
+            }
         }
         // Show the selector
         this.serverSelector.show();
     }
     // Call this method if you ever want to restore the original website
     restoreWebsite() {
-        if (!this.isActive)
+        if (!this.isInitialized)
             return;
         this.isActive = false;
+        this.isInitialized = false;
+        // Restore original page title
+        document.title = this.originalPageTitle;
+        // Remove overlay if it exists
+        if (this.overlayElement) {
+            this.removeOverlay();
+        }
         // Stop animations
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
@@ -8798,6 +9022,18 @@ class EasterEgg {
         if (this.ambientSound) {
             this.ambientSound.pause();
         }
+        if (this.buttonClickSound) {
+            this.buttonClickSound.pause();
+        }
+        if (this.arrowKeySound) {
+            this.arrowKeySound.pause();
+        }
+        if (this.enterKeySound) {
+            this.enterKeySound.pause();
+        }
+        if (this.closeMenuSound) {
+            this.closeMenuSound.pause();
+        }
         // Remove server selector if it exists
         if (this.serverSelector) {
             this.serverSelector.close();
@@ -8814,6 +9050,9 @@ class EasterEgg {
         document.body.style.background = this.originalStyles.bodyBackground || '';
         document.body.style.color = this.originalStyles.bodyColor || '';
         document.body.style.overflow = this.originalStyles.bodyOverflow || '';
+        // Re-initialize global event handlers since they may have been lost
+        this.globalEventHandlersInitialized = false;
+        this.initGlobalEventHandlers();
     }
 }
 
