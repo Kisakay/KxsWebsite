@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.9
+// @version      2.1.11
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1903,7 +1903,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.9"};
+const package_namespaceObject = {"rE":"2.1.11"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2907,6 +2907,19 @@ class KxsClientSecondaryMenu {
             },
         });
         this.addOption(HUD, {
+            label: "Brightness",
+            value: this.kxsClient.brightness,
+            icon: '<svg fill="#000000" viewBox="-5.5 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>light</title> <path d="M11.875 6v2.469c0 0.844-0.375 1.25-1.156 1.25s-1.156-0.406-1.156-1.25v-2.469c0-0.813 0.375-1.219 1.156-1.219s1.156 0.406 1.156 1.219zM14.219 9.25l1.438-2.031c0.469-0.625 1.063-0.75 1.656-0.313s0.656 1 0.188 1.688l-1.438 2c-0.469 0.688-1.031 0.75-1.656 0.313-0.594-0.438-0.656-0.969-0.188-1.656zM5.781 7.25l1.469 2c0.469 0.688 0.406 1.219-0.219 1.656-0.594 0.469-1.156 0.375-1.625-0.313l-1.469-2c-0.469-0.688-0.406-1.219 0.219-1.656 0.594-0.469 1.156-0.375 1.625 0.313zM10.719 11.125c2.688 0 4.875 2.188 4.875 4.875 0 2.656-2.188 4.813-4.875 4.813s-4.875-2.156-4.875-4.813c0-2.688 2.188-4.875 4.875-4.875zM1.594 11.813l2.375 0.75c0.781 0.25 1.063 0.719 0.813 1.469-0.219 0.75-0.75 0.969-1.563 0.719l-2.313-0.75c-0.781-0.25-1.063-0.75-0.844-1.5 0.25-0.719 0.75-0.938 1.531-0.688zM17.5 12.563l2.344-0.75c0.813-0.25 1.313-0.031 1.531 0.688 0.25 0.75-0.031 1.25-0.844 1.469l-2.313 0.781c-0.781 0.25-1.281 0.031-1.531-0.719-0.219-0.75 0.031-1.219 0.813-1.469zM10.719 18.688c1.5 0 2.719-1.219 2.719-2.688 0-1.5-1.219-2.719-2.719-2.719s-2.688 1.219-2.688 2.719c0 1.469 1.188 2.688 2.688 2.688zM0.906 17.969l2.344-0.75c0.781-0.25 1.313-0.063 1.531 0.688 0.25 0.75-0.031 1.219-0.813 1.469l-2.375 0.781c-0.781 0.25-1.281 0.031-1.531-0.719-0.219-0.75 0.063-1.219 0.844-1.469zM18.219 17.219l2.344 0.75c0.781 0.25 1.063 0.719 0.813 1.469-0.219 0.75-0.719 0.969-1.531 0.719l-2.344-0.781c-0.813-0.25-1.031-0.719-0.813-1.469 0.25-0.75 0.75-0.938 1.531-0.688zM3.938 23.344l1.469-1.969c0.469-0.688 1.031-0.781 1.625-0.313 0.625 0.438 0.688 0.969 0.219 1.656l-1.469 1.969c-0.469 0.688-1.031 0.813-1.656 0.375-0.594-0.438-0.656-1.031-0.188-1.719zM16.063 21.375l1.438 1.969c0.469 0.688 0.406 1.281-0.188 1.719s-1.188 0.281-1.656-0.344l-1.438-2c-0.469-0.688-0.406-1.219 0.188-1.656 0.625-0.438 1.188-0.375 1.656 0.313zM11.875 23.469v2.469c0 0.844-0.375 1.25-1.156 1.25s-1.156-0.406-1.156-1.25v-2.469c0-0.844 0.375-1.25 1.156-1.25s1.156 0.406 1.156 1.25z"></path> </g></svg>',
+            category: "HUD",
+            type: "slider",
+            min: 20,
+            max: 100,
+            step: 1,
+            onChange: (value) => {
+                this.kxsClient.applyBrightness(value);
+            },
+        });
+        this.addOption(HUD, {
             label: "Kill Feed Chroma",
             value: this.kxsClient.isKillFeedBlint,
             icon: `<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g data-name="Layer 2" id="Layer_2"> <path d="M18,11a1,1,0,0,1-1,1,5,5,0,0,0-5,5,1,1,0,0,1-2,0,5,5,0,0,0-5-5,1,1,0,0,1,0-2,5,5,0,0,0,5-5,1,1,0,0,1,2,0,5,5,0,0,0,5,5A1,1,0,0,1,18,11Z"></path> <path d="M19,24a1,1,0,0,1-1,1,2,2,0,0,0-2,2,1,1,0,0,1-2,0,2,2,0,0,0-2-2,1,1,0,0,1,0-2,2,2,0,0,0,2-2,1,1,0,0,1,2,0,2,2,0,0,0,2,2A1,1,0,0,1,19,24Z"></path> <path d="M28,17a1,1,0,0,1-1,1,4,4,0,0,0-4,4,1,1,0,0,1-2,0,4,4,0,0,0-4-4,1,1,0,0,1,0-2,4,4,0,0,0,4-4,1,1,0,0,1,2,0,4,4,0,0,0,4,4A1,1,0,0,1,28,17Z"></path> </g> </g></svg>`,
@@ -3046,6 +3059,9 @@ class KxsClientSecondaryMenu {
                 break;
             case "sub":
                 control = this.createSubButton(option);
+                break;
+            case "slider":
+                control = this.createSliderElement(option);
                 break;
             case "click":
                 control = this.createClickButton(option);
@@ -3251,6 +3267,166 @@ class KxsClientSecondaryMenu {
         });
         this.blockMousePropagation(input);
         return input;
+    }
+    createSliderElement(option) {
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        const container = document.createElement("div");
+        Object.assign(container.style, {
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            marginTop: isMobile ? "3px" : "5px",
+        });
+        // Conteneur pour le slider et la valeur
+        const sliderContainer = document.createElement("div");
+        Object.assign(sliderContainer.style, {
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            gap: isMobile ? "8px" : "12px",
+        });
+        // Wrapper du slider pour gérer la couleur de fond
+        const sliderWrapper = document.createElement("div");
+        Object.assign(sliderWrapper.style, {
+            position: "relative",
+            width: "100%",
+            height: isMobile ? "10px" : "12px",
+            background: "rgba(30, 35, 45, 0.5)",
+            borderRadius: "6px",
+            overflow: "hidden",
+            border: "1px solid rgba(59, 130, 246, 0.25)",
+        });
+        // Barre de progression bleue
+        const progressBar = document.createElement("div");
+        Object.assign(progressBar.style, {
+            position: "absolute",
+            left: "0",
+            top: "0",
+            height: "100%",
+            width: `${((Number(option.value) - (option.min || 0)) / ((option.max || 100) - (option.min || 0))) * 100}%`,
+            background: "#3B82F6", // Couleur bleue pleine
+            borderRadius: "6px 0 0 6px", // Arrondi uniquement à gauche
+            transition: "width 0.1s ease-out",
+        });
+        // Créer le slider
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = String(option.min || 0);
+        slider.max = String(option.max || 100);
+        slider.step = String(option.step || 1);
+        slider.value = String(option.value);
+        slider.className = "kxs-minimal-slider";
+        Object.assign(slider.style, {
+            position: "absolute",
+            left: "0",
+            top: "0",
+            width: "100%",
+            height: "100%",
+            margin: "0",
+            appearance: "none",
+            background: "transparent", // Transparent pour voir la barre de progression
+            cursor: "pointer",
+            outline: "none",
+            border: "none",
+            zIndex: "2", // Au-dessus de la barre de progression
+        });
+        // Valeur actuelle avec style simple
+        const valueDisplay = document.createElement("div");
+        valueDisplay.textContent = String(option.value);
+        Object.assign(valueDisplay.style, {
+            minWidth: isMobile ? "28px" : "36px",
+            textAlign: "center",
+            color: "#ffffff",
+            fontSize: isMobile ? "11px" : "13px",
+            fontFamily: "'Segoe UI', Arial, sans-serif",
+            background: "rgba(59, 130, 246, 0.1)",
+            padding: isMobile ? "2px 4px" : "3px 6px",
+            borderRadius: "4px",
+            border: "1px solid rgba(59, 130, 246, 0.3)",
+            transition: "all 0.15s ease-out",
+        });
+        // Styles personnalisés pour le curseur du slider uniquement
+        const sliderStyles = `
+			/* Style du curseur */
+			.kxs-minimal-slider::-webkit-slider-thumb {
+				appearance: none;
+				width: ${isMobile ? "14px" : "16px"};
+				height: ${isMobile ? "14px" : "16px"};
+				border-radius: 50%;
+				background: linear-gradient(135deg, #4f8bf9, #3B82F6);
+				cursor: pointer;
+				border: none;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+				transition: background 0.2s, transform 0.1s;
+				z-index: 3;
+			}
+
+			.kxs-minimal-slider::-moz-range-thumb {
+				width: ${isMobile ? "14px" : "16px"};
+				height: ${isMobile ? "14px" : "16px"};
+				border-radius: 50%;
+				background: linear-gradient(135deg, #4f8bf9, #3B82F6);
+				cursor: pointer;
+				border: none;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+				transition: background 0.2s, transform 0.1s;
+				z-index: 3;
+			}
+
+			/* Masquer la piste par défaut */
+			.kxs-minimal-slider::-webkit-slider-runnable-track {
+				background: transparent;
+				height: 100%;
+			}
+			
+			.kxs-minimal-slider::-moz-range-track {
+				background: transparent;
+				height: 100%;
+			}
+
+			/* Effets au survol */
+			.kxs-minimal-slider:hover::-webkit-slider-thumb {
+				background: linear-gradient(135deg, #5a93fa, #4289f7);
+				transform: scale(1.05);
+			}
+
+			.kxs-minimal-slider:hover::-moz-range-thumb {
+				background: linear-gradient(135deg, #5a93fa, #4289f7);
+				transform: scale(1.05);
+			}
+		`;
+        // Ajouter les styles personnalisés
+        const style = document.createElement("style");
+        style.textContent = sliderStyles;
+        document.head.appendChild(style);
+        // Ajouter les gestionnaires d'événements
+        slider.addEventListener("input", () => {
+            var _a;
+            // Mettre à jour la valeur affichée
+            valueDisplay.textContent = slider.value;
+            // Mettre à jour la largeur de la barre de progression
+            const percentage = ((Number(slider.value) - (option.min || 0)) / ((option.max || 100) - (option.min || 0))) * 100;
+            progressBar.style.width = `${percentage}%`;
+            // Mettre à jour la valeur de l'option
+            option.value = Number(slider.value);
+            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, Number(slider.value));
+            // Effet visuel sur la valeur
+            valueDisplay.style.background = "rgba(59, 130, 246, 0.25)";
+            setTimeout(() => {
+                valueDisplay.style.background = "rgba(59, 130, 246, 0.1)";
+            }, 150);
+        });
+        // Empêcher les événements de se propager vers le jeu
+        slider.addEventListener("mousedown", (e) => e.stopPropagation());
+        slider.addEventListener("mouseup", (e) => e.stopPropagation());
+        this.blockMousePropagation(slider, false);
+        // Assembler tous les éléments
+        sliderWrapper.appendChild(progressBar);
+        sliderWrapper.appendChild(slider);
+        sliderContainer.appendChild(sliderWrapper);
+        sliderContainer.appendChild(valueDisplay);
+        container.appendChild(sliderContainer);
+        return container;
     }
     createInfoElement(option) {
         const info = document.createElement("div");
@@ -3476,6 +3652,9 @@ class KxsClientSecondaryMenu {
                 break;
             case "toggle":
                 control = this.createToggleButton(mod);
+                break;
+            case "slider":
+                control = this.createSliderElement(mod);
                 break;
             case "click":
                 control = this.createClickButton(mod);
@@ -4733,6 +4912,17 @@ class KxsClientHUD {
             this.frameCount = 0;
             this.kxsClient.lastFrameTime = now;
             this.kills = this.kxsClient.getKills();
+            // Vérifie et crée les compteurs s'ils n'existent pas encore mais sont activés
+            if (this.kxsClient.isFpsVisible && !this.kxsClient.counters.fps) {
+                this.initCounter("fps", "FPS", "60");
+            }
+            if (this.kxsClient.isKillsVisible && !this.kxsClient.counters.kills) {
+                this.initCounter("kills", "Kills", "0");
+            }
+            if (this.kxsClient.isPingVisible && !this.kxsClient.counters.ping) {
+                this.initCounter("ping", "Ping", "45ms");
+            }
+            // Met à jour les valeurs des compteurs visibles
             if (this.kxsClient.isFpsVisible && this.kxsClient.counters.fps) {
                 this.kxsClient.counters.fps.textContent = `FPS: ${this.fps}`;
             }
@@ -4755,6 +4945,8 @@ class KxsClientHUD {
         (_a = this.kxsClient.kill_leader) === null || _a === void 0 ? void 0 : _a.update(this.kills);
     }
     initCounter(name, label, initialText) {
+        // Vérifier si le compteur existe déjà et le supprimer si c'est le cas
+        this.removeCounter(name);
         const counter = document.createElement("div");
         counter.id = `${name}Counter`;
         const counterContainer = document.createElement("div");
@@ -4802,6 +4994,41 @@ class KxsClientHUD {
         });
         this.kxsClient.makeDraggable(counterContainer, `${name}CounterPosition`);
         this.kxsClient.counters[name] = counter;
+    }
+    /**
+     * Supprime un compteur du DOM et de la référence dans kxsClient.counters
+     * @param name Nom du compteur à supprimer (fps, kills, ping)
+     */
+    removeCounter(name) {
+        // Supprime l'élément du DOM s'il existe
+        const counterContainer = document.getElementById(`${name}CounterContainer`);
+        if (counterContainer) {
+            counterContainer.remove();
+        }
+        // Supprime la référence dans kxsClient.counters
+        if (this.kxsClient.counters[name]) {
+            // Utilise delete pour supprimer la propriété au lieu de l'affecter à null
+            delete this.kxsClient.counters[name];
+        }
+    }
+    /**
+     * Gère l'affichage ou le masquage d'un compteur en fonction de son état
+     * @param name Nom du compteur (fps, kills, ping)
+     * @param visible État de visibilité souhaité
+     * @param label Libellé du compteur
+     * @param initialText Texte initial à afficher
+     */
+    toggleCounter(name, visible, label, initialText) {
+        if (visible) {
+            // Si le compteur doit être visible mais n'existe pas, on le crée
+            if (!this.kxsClient.counters[name]) {
+                this.initCounter(name, label, initialText);
+            }
+        }
+        else {
+            // Si le compteur ne doit pas être visible mais existe, on le supprime
+            this.removeCounter(name);
+        }
     }
     resetCounter(name, label, initialText) {
         const counter = this.kxsClient.counters[name];
@@ -6626,6 +6853,7 @@ class KxsClient {
         this.isVoiceChatEnabled = false;
         this.isFocusModeEnabled = false;
         this.isHealBarIndicatorEnabled = true;
+        this.brightness = 50;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -6649,6 +6877,7 @@ class KxsClient {
         this.db = new browser/* SteganoDB */.w({ database: "KxsClient", tableName: "gameplay_history" });
         // Before all, load local storage
         this.loadLocalStorage();
+        this.updateLocalStorage();
         this.changeSurvevLogo();
         this.nm = NotificationManager.getInstance();
         this.discordRPC = new DiscordWebSocket(this, this.parseToken(this.discordToken));
@@ -6808,10 +7037,17 @@ class KxsClient {
             isVoiceChatEnabled: this.isVoiceChatEnabled,
             isKxsChatEnabled: this.isKxsChatEnabled,
             kxsNetworkSettings: this.kxsNetworkSettings,
-            isHealBarIndicatorEnabled: this.isHealBarIndicatorEnabled
+            isHealBarIndicatorEnabled: this.isHealBarIndicatorEnabled,
+            brightness: this.brightness
         }));
     }
     ;
+    applyBrightness(value) {
+        this.brightness = value;
+        const brightnessValue = value / 50; // 0 à 2, avec 1 étant la luminosité normale
+        document.documentElement.style.filter = `brightness(${brightnessValue})`;
+        this.updateLocalStorage();
+    }
     initDeathDetection() {
         const config = {
             childList: true,
@@ -7178,7 +7414,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -7207,6 +7443,10 @@ class KxsClient {
             this.isHealBarIndicatorEnabled = (_x = savedSettings.isHealBarIndicatorEnabled) !== null && _x !== void 0 ? _x : this.isHealBarIndicatorEnabled;
             this.isWinSoundEnabled = (_y = savedSettings.isWinSoundEnabled) !== null && _y !== void 0 ? _y : this.isWinSoundEnabled;
             this.isDeathSoundEnabled = (_z = savedSettings.isDeathSoundEnabled) !== null && _z !== void 0 ? _z : this.isDeathSoundEnabled;
+            this.brightness = (_0 = savedSettings.brightness) !== null && _0 !== void 0 ? _0 : this.brightness;
+            // Apply brightness setting
+            const brightnessValue = this.brightness / 50;
+            document.documentElement.style.filter = `brightness(${brightnessValue})`;
             if (savedSettings.soundLibrary) {
                 // Check if the sound value exists
                 if (savedSettings.soundLibrary.win_sound_url) {
