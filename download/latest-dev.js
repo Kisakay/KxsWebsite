@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
+<<<<<<< Updated upstream
 // @version      2.1.11
+=======
+// @version      2.1.12
+>>>>>>> Stashed changes
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1903,7 +1907,11 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
+<<<<<<< Updated upstream
 const package_namespaceObject = {"rE":"2.1.11"};
+=======
+const package_namespaceObject = {"rE":"2.1.12"};
+>>>>>>> Stashed changes
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -9305,10 +9313,10 @@ class EasterEgg {
 
 
 
-if (window.location.hostname === "kxs.rip") {
+if (window.location.href === "https://kxs.rip/") {
     const easterEgg = new EasterEgg();
 }
-else {
+else if (!window.location.href.includes("kxs.rip")) {
     intercept("audio/ambient/menu_music_01.mp3", background_song);
     intercept('img/survev_logo_full.png', full_logo);
     const kxsClient = new KxsClient();
