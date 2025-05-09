@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.15
+// @version      2.1.16
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2147,7 +2147,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.15"};
+const package_namespaceObject = {"rE":"2.1.16"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2344,18 +2344,13 @@ class DiscordWebSocket {
             return;
         }
         this.ws = new WebSocket('wss://gateway.discord.gg/?v=9&encoding=json');
-        this.ws.onopen = () => {
-            this.kxsClient.logger.log('[RichPresence] WebSocket connection established');
-        };
+        this.ws.onopen = () => { };
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             this.handleMessage(data);
         };
-        this.ws.onerror = (error) => {
-            this.kxsClient.nm.showNotification('WebSocket error: ' + error.type, 'error', 5000);
-        };
+        this.ws.onerror = (error) => { };
         this.ws.onclose = () => {
-            this.kxsClient.nm.showNotification('Disconnected from Discord gateway', 'info', 5000);
             clearInterval(this.heartbeatInterval);
             this.isAuthenticated = false;
         };
