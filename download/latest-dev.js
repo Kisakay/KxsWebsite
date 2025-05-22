@@ -1,11 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-<<<<<<< Updated upstream
-// @version      2.1.16
-=======
 // @version      2.1.17
->>>>>>> Stashed changes
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -55,244 +51,6 @@ module.exports = {
   compareIdentifiers,
   rcompareIdentifiers,
 }
-
-
-/***/ }),
-
-/***/ 229:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-var __webpack_unused_export__;
-
-__webpack_unused_export__ = ({ value: true });
-exports.A = void 0;
-;
-class SimplifiedSteganoDB {
-    data;
-    options;
-    database;
-    constructor(options) {
-        this.database = options?.database || "stegano.db";
-        this.data = {};
-        this.fetchDataFromFile();
-    }
-    read() { return localStorage.getItem(this.database) || this.data; }
-    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
-    setNestedProperty = (object, key, value) => {
-        const properties = key.split('.');
-        let currentObject = object;
-        for (let i = 0; i < properties.length - 1; i++) {
-            const property = properties[i];
-            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
-                currentObject[property] = {};
-            }
-            currentObject = currentObject[property];
-        }
-        currentObject[properties[properties.length - 1]] = value;
-    };
-    getNestedProperty = (object, key) => {
-        const properties = key.split('.');
-        let index = 0;
-        for (; index < properties.length; ++index) {
-            object = object && object[properties[index]];
-        }
-        return object;
-    };
-    fetchDataFromFile() {
-        try {
-            const content = this.read();
-            this.data = JSON.parse(content);
-        }
-        catch (error) {
-            this.data = {};
-        }
-    }
-    updateNestedProperty(key, operation, value) {
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        if (!this.data[id] && operation !== 'get') {
-            this.data[id] = nestedPath ? {} : undefined;
-        }
-        if (this.data[id] === undefined && operation === 'get') {
-            return undefined;
-        }
-        switch (operation) {
-            case 'get':
-                return nestedPath ? this.getNestedProperty(this.data[id], nestedPath) : this.data[id];
-            case 'set':
-                if (nestedPath) {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, value);
-                }
-                else {
-                    this.data[id] = value;
-                }
-                this.write();
-                break;
-            case 'add':
-                if (!nestedPath) {
-                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) + value;
-                }
-                else {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
-                }
-                this.write();
-                break;
-            case 'sub':
-                if (!nestedPath) {
-                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) - value;
-                }
-                else {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
-                }
-                this.write();
-                break;
-            case 'delete':
-                if (nestedPath) {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        return;
-                    }
-                    const properties = nestedPath.split('.');
-                    let currentObject = this.data[id];
-                    for (let i = 0; i < properties.length - 1; i++) {
-                        const property = properties[i];
-                        if (!currentObject[property]) {
-                            return;
-                        }
-                        currentObject = currentObject[property];
-                    }
-                    delete currentObject[properties[properties.length - 1]];
-                }
-                else {
-                    delete this.data[id];
-                }
-                this.write();
-                break;
-            case 'pull':
-                const existingArray = nestedPath ?
-                    this.getNestedProperty(this.data[id], nestedPath) :
-                    this.data[id];
-                if (!Array.isArray(existingArray)) {
-                    throw new Error('The stored value is not an array');
-                }
-                const newArray = existingArray.filter((item) => item !== value);
-                if (nestedPath) {
-                    this.setNestedProperty(this.data[id], nestedPath, newArray);
-                }
-                else {
-                    this.data[id] = newArray;
-                }
-                this.write();
-                break;
-        }
-    }
-    get(key) {
-        return this.updateNestedProperty(key, 'get');
-    }
-    set(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'set', value);
-    }
-    pull(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'pull', value);
-    }
-    add(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'add', count);
-    }
-    sub(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'sub', count);
-    }
-    delete(key) {
-        this.updateNestedProperty(key, 'delete');
-    }
-    cache(key, value, time) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null ou contain a space.");
-        }
-        if (!time || isNaN(time)) {
-            throw new SyntaxError("The time needs to be a number. (ms)");
-        }
-        this.updateNestedProperty(key, 'set', value);
-        setTimeout(() => {
-            this.updateNestedProperty(key, 'delete');
-        }, time);
-    }
-    push(key, element) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        if (!this.data[id]) {
-            this.data[id] = nestedPath ? {} : [];
-        }
-        if (nestedPath) {
-            const existingArray = this.getNestedProperty(this.data[id], nestedPath);
-            if (!existingArray) {
-                this.setNestedProperty(this.data[id], nestedPath, [element]);
-            }
-            else if (!Array.isArray(existingArray)) {
-                throw new Error('The stored value is not an array');
-            }
-            else {
-                existingArray.push(element);
-                this.setNestedProperty(this.data[id], nestedPath, existingArray);
-            }
-        }
-        else {
-            if (!Array.isArray(this.data[id])) {
-                this.data[id] = [];
-            }
-            this.data[id].push(element);
-        }
-        this.write();
-    }
-    has(key) {
-        return Boolean(this.get(key));
-    }
-    deleteAll() {
-        this.data = {};
-        this.write();
-    }
-    all() {
-        return this.data;
-    }
-}
-exports.A = SimplifiedSteganoDB;
 
 
 /***/ }),
@@ -361,250 +119,6 @@ const parseOptions = options => {
   return options
 }
 module.exports = parseOptions
-
-
-/***/ }),
-
-/***/ 686:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-var __webpack_unused_export__;
-
-__webpack_unused_export__ = ({ value: true });
-exports.w = void 0;
-;
-class SteganoDB {
-    data;
-    currentTable;
-    options;
-    database;
-    constructor(options) {
-        this.currentTable = options?.tableName || "json";
-        this.database = options.database || "stegano.db";
-        this.data = {
-            [this.currentTable]: []
-        };
-        this.fetchDataFromFile();
-    }
-    read() { return localStorage.getItem(this.database) || this.data; }
-    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
-    setNestedProperty = (object, key, value) => {
-        const properties = key.split('.');
-        let currentObject = object;
-        for (let i = 0; i < properties.length - 1; i++) {
-            const property = properties[i];
-            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
-                currentObject[property] = {};
-            }
-            currentObject = currentObject[property];
-        }
-        currentObject[properties[properties.length - 1]] = value;
-    };
-    getNestedProperty = (object, key) => {
-        const properties = key.split('.');
-        let index = 0;
-        for (; index < properties.length; ++index) {
-            object = object && object[properties[index]];
-        }
-        return object;
-    };
-    fetchDataFromFile() {
-        try {
-            const content = this.read();
-            this.data = JSON.parse(content);
-        }
-        catch (error) {
-            this.data = { [this.currentTable]: [] };
-        }
-    }
-    updateNestedProperty(key, operation, value) {
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        let currentValue = this.data[this.currentTable].find((entry) => entry.id === id);
-        if (!currentValue && operation !== 'get') {
-            currentValue = { id, value: {} };
-            this.data[this.currentTable].push(currentValue);
-        }
-        if (!currentValue && operation === 'get') {
-            return undefined;
-        }
-        switch (operation) {
-            case 'get':
-                return nestedPath ? this.getNestedProperty(currentValue.value, nestedPath) : currentValue.value;
-            case 'set':
-                if (nestedPath) {
-                    this.setNestedProperty(currentValue.value, nestedPath, value);
-                }
-                else {
-                    currentValue.value = value;
-                }
-                this.write();
-                break;
-            case 'add':
-                if (!nestedPath) {
-                    currentValue.value = (typeof currentValue.value === 'number' ? currentValue.value : 0) + value;
-                }
-                else {
-                    const existingValue = this.getNestedProperty(currentValue.value, nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(currentValue.value, nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
-                }
-                this.write();
-                break;
-            case 'sub':
-                if (!nestedPath) {
-                    currentValue.value = (typeof currentValue.value === 'number' ? currentValue.value : 0) - value;
-                }
-                else {
-                    const existingValue = this.getNestedProperty(currentValue.value, nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(currentValue.value, nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
-                }
-                this.write();
-                break;
-            case 'delete':
-                if (nestedPath) {
-                    const properties = nestedPath.split('.');
-                    let currentObject = currentValue.value;
-                    for (let i = 0; i < properties.length - 1; i++) {
-                        const property = properties[i];
-                        if (!currentObject[property]) {
-                            return;
-                        }
-                        currentObject = currentObject[property];
-                    }
-                    delete currentObject[properties[properties.length - 1]];
-                }
-                else {
-                    const index = this.data[this.currentTable].findIndex((entry) => entry.id === id);
-                    if (index !== -1) {
-                        this.data[this.currentTable].splice(index, 1);
-                    }
-                }
-                this.write();
-                break;
-            case 'pull':
-                const existingArray = nestedPath ? this.getNestedProperty(currentValue.value, nestedPath) : currentValue.value;
-                if (!Array.isArray(existingArray)) {
-                    throw new Error('The stored value is not an array');
-                }
-                const newArray = existingArray.filter((item) => item !== value);
-                if (nestedPath) {
-                    this.setNestedProperty(currentValue.value, nestedPath, newArray);
-                }
-                else {
-                    currentValue.value = newArray;
-                }
-                this.write();
-                break;
-        }
-    }
-    table(tableName) {
-        if (tableName.includes(" ") || !tableName || tableName === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (!this.data[tableName]) {
-            this.data[tableName] = [];
-        }
-        return new SteganoDB(this.options);
-    }
-    get(key) {
-        return this.updateNestedProperty(key, 'get');
-    }
-    set(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'set', value);
-    }
-    pull(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'pull', value);
-    }
-    add(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'add', count);
-    }
-    sub(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'sub', count);
-    }
-    delete(key) {
-        this.updateNestedProperty(key, 'delete');
-    }
-    cache(key, value, time) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null ou contain a space.");
-        }
-        if (!time || isNaN(time)) {
-            throw new SyntaxError("The time needs to be a number. (ms)");
-        }
-        this.updateNestedProperty(key, 'set', value);
-        setTimeout(() => {
-            this.updateNestedProperty(key, 'delete');
-        }, time);
-    }
-    push(key, element) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        let currentValue = this.data[this.currentTable].find((entry) => entry.id === id);
-        if (!currentValue) {
-            currentValue = { id, value: nestedPath ? {} : [] };
-            this.data[this.currentTable].push(currentValue);
-        }
-        if (nestedPath) {
-            const existingArray = this.getNestedProperty(currentValue.value, nestedPath);
-            if (!existingArray) {
-                this.setNestedProperty(currentValue.value, nestedPath, [element]);
-            }
-            else if (!Array.isArray(existingArray)) {
-                throw new Error('The stored value is not an array');
-            }
-            else {
-                existingArray.push(element);
-                this.setNestedProperty(currentValue.value, nestedPath, existingArray);
-            }
-        }
-        else {
-            if (!Array.isArray(currentValue.value)) {
-                currentValue.value = [];
-            }
-            currentValue.value.push(element);
-        }
-        this.write();
-    }
-    has(key) {
-        return Boolean(this.get(key));
-    }
-    deleteAll() {
-        this.data[this.currentTable] = [];
-        this.write();
-    }
-    all() {
-        return this.data[this.currentTable];
-    }
-}
-exports.w = SteganoDB;
 
 
 /***/ }),
@@ -872,8 +386,6 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
 
 /***/ }),
 
-<<<<<<< Updated upstream
-=======
 /***/ 814:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -1354,7 +866,6 @@ exports.A = SimplifiedSteganoDB;
 
 /***/ }),
 
->>>>>>> Stashed changes
 /***/ 874:
 /***/ ((module) => {
 
@@ -1786,13 +1297,8 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
-<<<<<<< Updated upstream
-// EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/simplified_browser.js
-var simplified_browser = __webpack_require__(229);
-=======
 // EXTERNAL MODULE: ./node_modules/stegano.db/lib/simplified_browser.js
 var simplified_browser = __webpack_require__(837);
->>>>>>> Stashed changes
 ;// ./config.json
 const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://resurviv.biz/*","*://leia-uwu.github.io/survev/*","*://survev.leia-is.gay/*","*://survivx.org","*://kxs.rip/*"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
@@ -2647,11 +2153,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-<<<<<<< Updated upstream
-const package_namespaceObject = {"rE":"2.1.16"};
-=======
 const package_namespaceObject = {"rE":"2.1.17"};
->>>>>>> Stashed changes
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -6222,8 +5724,8 @@ class Logger {
 }
 
 
-// EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/browser.js
-var browser = __webpack_require__(686);
+// EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser.js
+var browser = __webpack_require__(814);
 ;// ./src/HUD/HistoryManager.ts
 var HistoryManager_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
