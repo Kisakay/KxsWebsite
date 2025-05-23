@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.17
+// @version      2.1.18
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1313,6 +1313,9 @@ const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
 const survev_settings = new simplified_browser/* SimplifiedSteganoDB */.A({
     database: "surviv_config",
 });
+const kxs_settings = new simplified_browser/* SimplifiedSteganoDB */.A({
+    database: "userSettings"
+});
 
 ;// ./src/MECHANIC/intercept.ts
 function intercept(link, targetUrl) {
@@ -2153,7 +2156,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.17"};
+const package_namespaceObject = {"rE":"2.1.18"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -3155,6 +3158,17 @@ class KxsClientSecondaryMenu {
             type: "toggle",
             onChange: () => {
                 this.kxsClient.isWinningAnimationEnabled = !this.kxsClient.isWinningAnimationEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(HUD, {
+            label: `KxsClient Logo`,
+            value: this.kxsClient.isKxsClientLogoEnable,
+            icon: '<svg fill="#000000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" enable-background="new 0 0 52 52" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M20,37.5c0-0.8-0.7-1.5-1.5-1.5h-15C2.7,36,2,36.7,2,37.5v11C2,49.3,2.7,50,3.5,50h15c0.8,0,1.5-0.7,1.5-1.5 V37.5z"></path> <path d="M8.1,22H3.2c-1,0-1.5,0.9-0.9,1.4l8,8.3c0.4,0.3,1,0.3,1.4,0l8-8.3c0.6-0.6,0.1-1.4-0.9-1.4h-4.7 c0-5,4.9-10,9.9-10V6C15,6,8.1,13,8.1,22z"></path> <path d="M41.8,20.3c-0.4-0.3-1-0.3-1.4,0l-8,8.3c-0.6,0.6-0.1,1.4,0.9,1.4h4.8c0,6-4.1,10-10.1,10v6 c9,0,16.1-7,16.1-16H49c1,0,1.5-0.9,0.9-1.4L41.8,20.3z"></path> <path d="M50,3.5C50,2.7,49.3,2,48.5,2h-15C32.7,2,32,2.7,32,3.5v11c0,0.8,0.7,1.5,1.5,1.5h15c0.8,0,1.5-0.7,1.5-1.5 V3.5z"></path> </g></svg>',
+            category: "HUD",
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isKxsClientLogoEnable = !this.kxsClient.isKxsClientLogoEnable;
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -6095,6 +6109,7 @@ class KxsNetwork {
         this.reconnectDelay = 15000; // Initial reconnect delay of 1 second
         this.kxsUsers = 0;
         this.privateUsername = this.generateRandomUsername();
+        this.kxs_users = [];
         this.kxsClient = kxsClient;
     }
     connect() {
@@ -6170,9 +6185,11 @@ class KxsNetwork {
         switch (op) {
             case 1: //Heart
                 {
-                    if (d === null || d === void 0 ? void 0 : d.count) {
+                    if (d === null || d === void 0 ? void 0 : d.count)
                         this.kxsUsers = d.count;
-                    }
+                    if (d === null || d === void 0 ? void 0 : d.players)
+                        this.kxs_users = d.players;
+                    console.log(d === null || d === void 0 ? void 0 : d.players);
                 }
                 break;
             case 3: // Kxs user join game
@@ -6286,6 +6303,9 @@ class KxsNetwork {
     }
     getOnlineCount() {
         return this.kxsUsers;
+    }
+    getKxsUsers() {
+        return this.kxs_users;
     }
     gameEnded() {
         var _a;
@@ -7123,6 +7143,7 @@ class KxsClient {
         this.isFocusModeEnabled = false;
         this.isHealBarIndicatorEnabled = true;
         this.brightness = 50;
+        this.isKxsClientLogoEnable = true;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -7193,16 +7214,14 @@ class KxsClient {
         }
     }
     createOnlineMenu() {
-        // Cherche le div #start-overlay
         const overlay = document.getElementById('start-overlay');
         if (!overlay)
             return;
-        // Crée le menu
         const menu = document.createElement('div');
         menu.id = 'kxs-online-menu';
         menu.style.position = 'absolute';
         menu.style.top = '18px';
-        menu.style.left = '18px'; // Changé de 'right' à 'left'
+        menu.style.left = '18px';
         menu.style.background = 'rgba(30,30,40,0.92)';
         menu.style.color = '#fff';
         menu.style.padding = '8px 18px';
@@ -7215,11 +7234,32 @@ class KxsClient {
         menu.style.fontFamily = 'inherit';
         menu.style.display = 'flex';
         menu.style.alignItems = 'center';
+        menu.style.cursor = 'pointer';
         menu.innerHTML = `
 		  <span id="kxs-online-dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#3fae2a;margin-right:10px;box-shadow:0 0 8px #3fae2a;animation:kxs-pulse 1s infinite alternate;"></span>
 		  <b></b> <span id="kxs-online-count">...</span>
 		`;
-        // Ajoute l'animation CSS
+        const userListMenu = document.createElement('div');
+        userListMenu.id = 'kxs-online-users-menu';
+        userListMenu.style.position = 'absolute';
+        userListMenu.style.top = '100%';
+        userListMenu.style.left = '0';
+        userListMenu.style.marginTop = '8px';
+        userListMenu.style.background = 'rgba(30,30,40,0.95)';
+        userListMenu.style.color = '#fff';
+        userListMenu.style.padding = '10px';
+        userListMenu.style.borderRadius = '8px';
+        userListMenu.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+        userListMenu.style.fontSize = '14px';
+        userListMenu.style.zIndex = '1000';
+        userListMenu.style.minWidth = '180px';
+        userListMenu.style.maxHeight = '300px';
+        userListMenu.style.overflowY = 'auto';
+        userListMenu.style.display = 'none';
+        userListMenu.style.flexDirection = 'column';
+        userListMenu.style.gap = '6px';
+        userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">Chargement...</div>';
+        menu.appendChild(userListMenu);
         if (!document.getElementById('kxs-online-style')) {
             const style = document.createElement('style');
             style.id = 'kxs-online-style';
@@ -7231,6 +7271,27 @@ class KxsClient {
 		  `;
             document.head.appendChild(style);
         }
+        menu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (userListMenu) {
+                const isVisible = userListMenu.style.display === 'flex';
+                userListMenu.style.display = isVisible ? 'none' : 'flex';
+                if (userListMenu.style.display === 'flex') {
+                    setTimeout(() => {
+                        const closeMenuOnClickOutside = (event) => {
+                            if (!menu.contains(event.target) && !userListMenu.contains(event.target)) {
+                                userListMenu.style.display = 'none';
+                                document.removeEventListener('click', closeMenuOnClickOutside);
+                            }
+                        };
+                        document.addEventListener('click', closeMenuOnClickOutside);
+                    }, 0);
+                }
+            }
+        });
+        userListMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
         overlay.appendChild(menu);
         this.onlineMenuElement = menu;
         this.updateOnlineMenu();
@@ -7242,6 +7303,7 @@ class KxsClient {
                 return;
             const countEl = this.onlineMenuElement.querySelector('#kxs-online-count');
             const dot = this.onlineMenuElement.querySelector('#kxs-online-dot');
+            const userListMenu = this.onlineMenuElement.querySelector('#kxs-online-users-menu');
             try {
                 const res = this.kxsNetwork.getOnlineCount();
                 const count = typeof res === 'number' ? res : '?';
@@ -7252,6 +7314,23 @@ class KxsClient {
                     dot.style.boxShadow = '0 0 8px #3fae2a';
                     dot.style.animation = 'kxs-pulse 1s infinite alternate';
                 }
+                if (userListMenu) {
+                    const users = this.kxsNetwork.getKxsUsers();
+                    if (users && Array.isArray(users) && users.length > 0) {
+                        let userListHTML = '';
+                        userListHTML += '<div style="text-align:center;font-weight:bold;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.2);margin-bottom:8px;">Online users</div>';
+                        users.forEach(user => {
+                            userListHTML += `<div style="padding:4px 8px;border-radius:4px;background:rgba(255,255,255,0.05);">
+							<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fae2a;margin-right:8px;"></span>
+							${user}
+						</div>`;
+                        });
+                        userListMenu.innerHTML = userListHTML;
+                    }
+                    else {
+                        userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">No users online</div>';
+                    }
+                }
             }
             catch (e) {
                 if (countEl)
@@ -7260,6 +7339,9 @@ class KxsClient {
                     dot.style.background = '#888';
                     dot.style.boxShadow = 'none';
                     dot.style.animation = '';
+                }
+                if (userListMenu) {
+                    userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">API offline</div>';
                 }
             }
         });
@@ -7307,7 +7389,8 @@ class KxsClient {
             isKxsChatEnabled: this.isKxsChatEnabled,
             kxsNetworkSettings: this.kxsNetworkSettings,
             isHealBarIndicatorEnabled: this.isHealBarIndicatorEnabled,
-            brightness: this.brightness
+            brightness: this.brightness,
+            isKxsClientLogoEnable: this.isKxsClientLogoEnable
         }));
     }
     ;
@@ -7683,7 +7766,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -7713,6 +7796,7 @@ class KxsClient {
             this.isWinSoundEnabled = (_y = savedSettings.isWinSoundEnabled) !== null && _y !== void 0 ? _y : this.isWinSoundEnabled;
             this.isDeathSoundEnabled = (_z = savedSettings.isDeathSoundEnabled) !== null && _z !== void 0 ? _z : this.isDeathSoundEnabled;
             this.brightness = (_0 = savedSettings.brightness) !== null && _0 !== void 0 ? _0 : this.brightness;
+            this.isKxsClientLogoEnable = (_1 = savedSettings.isKxsClientLogoEnable) !== null && _1 !== void 0 ? _1 : this.isKxsClientLogoEnable;
             // Apply brightness setting
             const brightnessValue = this.brightness / 50;
             document.documentElement.style.filter = `brightness(${brightnessValue})`;
@@ -9585,7 +9669,10 @@ else if (window.location.pathname === "/") {
         - Avoiding intercepting another page as the root page
     */
     intercept("audio/ambient/menu_music_01.mp3", background_song);
-    intercept('img/survev_logo_full.png', full_logo);
+    if (kxs_settings.get("isKxsClientLogoEnable") === true) {
+        intercept('img/survev_logo_full.png', full_logo);
+    }
+    ;
     survev_settings.set("language", "en");
     const kxsClient = new KxsClient();
     const loadingScreen = new LoadingScreen(kxs_logo);
@@ -9607,14 +9694,12 @@ else if (window.location.pathname === "/") {
     const startBottomMiddle = document.getElementById("start-bottom-middle");
     if (startBottomMiddle) {
         const links = startBottomMiddle.getElementsByTagName("a");
-        for (let i = 0; i < links.length; i++) {
-            const link = links[i];
-            if (link.href.includes("changelogRec.html") || link.href.includes("changelog.html")) {
-                link.href = newChangelogUrl;
-                link.textContent = package_namespaceObject.rE;
-            }
-            if (i === 1) {
-                link.remove();
+        if (links.length > 0) {
+            const firstLink = links[0];
+            firstLink.href = newChangelogUrl;
+            firstLink.textContent = package_namespaceObject.rE;
+            while (links.length > 1) {
+                links[1].remove();
             }
         }
     }
