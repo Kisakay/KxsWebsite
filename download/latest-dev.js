@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.18
+// @version      2.1.19
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2156,7 +2156,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.18"};
+const package_namespaceObject = {"rE":"2.1.19"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -6189,7 +6189,6 @@ class KxsNetwork {
                         this.kxsUsers = d.count;
                     if (d === null || d === void 0 ? void 0 : d.players)
                         this.kxs_users = d.players;
-                    console.log(d === null || d === void 0 ? void 0 : d.players);
                 }
                 break;
             case 3: // Kxs user join game
@@ -9680,10 +9679,31 @@ else if (window.location.pathname === "/") {
     const backgroundElement = document.getElementById("background");
     if (backgroundElement)
         backgroundElement.style.backgroundImage = `url("${background_image}")`;
+    const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
+    existingFavicons.forEach(favicon => favicon.remove());
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+    const isFirefox = /Firefox/.test(navigator.userAgent);
     const favicon = document.createElement('link');
-    favicon.rel = 'icon';
-    favicon.type = 'image/png';
-    favicon.href = kxs_logo;
+    if (isFirefox) {
+        favicon.rel = 'icon';
+        favicon.type = 'image/png';
+        favicon.href = kxs_logo;
+    }
+    else if (isChrome) {
+        favicon.rel = 'shortcut icon';
+        favicon.href = kxs_logo;
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.href = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFdwI2QJIiywAAAABJRU5ErkJggg==';
+        document.head.appendChild(link);
+        setTimeout(() => {
+            link.href = kxs_logo;
+        }, 50);
+    }
+    else {
+        favicon.rel = 'icon';
+        favicon.href = kxs_logo;
+    }
     document.head.appendChild(favicon);
     document.title = "KxsClient";
     const uiStatsLogo = document.querySelector('#ui-stats-logo');
