@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.20
+// @version      2.1.21
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1744,6 +1744,7 @@ class GridSystem {
         this.snapThreshold = 15; // Distance in pixels to trigger snap
         this.gridVisible = false;
         this.magneticEdges = true;
+        this.counterElements = {};
         this.gridContainer = this.createGridOverlay();
         this.setupKeyBindings();
     }
@@ -1801,6 +1802,90 @@ class GridSystem {
         this.gridVisible = !this.gridVisible;
         this.gridContainer.style.display = this.gridVisible ? "block" : "none";
     }
+    registerCounter(id, element) {
+        if (element) {
+            this.counterElements[id] = element;
+        }
+        else {
+            delete this.counterElements[id];
+        }
+    }
+    areElementsAdjacent(element1, element2) {
+        const rect1 = element1.getBoundingClientRect();
+        const rect2 = element2.getBoundingClientRect();
+        const tolerance = 5;
+        const isLeftAdjacent = Math.abs((rect1.left + rect1.width) - rect2.left) < tolerance;
+        const isRightAdjacent = Math.abs((rect2.left + rect2.width) - rect1.left) < tolerance;
+        const isTopAdjacent = Math.abs((rect1.top + rect1.height) - rect2.top) < tolerance;
+        const isBottomAdjacent = Math.abs((rect2.top + rect2.height) - rect1.top) < tolerance;
+        const overlapVertically = (rect1.top < rect2.bottom && rect1.bottom > rect2.top) ||
+            (rect2.top < rect1.bottom && rect2.bottom > rect1.top);
+        const overlapHorizontally = (rect1.left < rect2.right && rect1.right > rect2.left) ||
+            (rect2.left < rect1.right && rect2.right > rect1.left);
+        let position = "";
+        if (isLeftAdjacent && overlapVertically)
+            position = "left";
+        else if (isRightAdjacent && overlapVertically)
+            position = "right";
+        else if (isTopAdjacent && overlapHorizontally)
+            position = "top";
+        else if (isBottomAdjacent && overlapHorizontally)
+            position = "bottom";
+        return {
+            isAdjacent: (isLeftAdjacent || isRightAdjacent) && overlapVertically ||
+                (isTopAdjacent || isBottomAdjacent) && overlapHorizontally,
+            position
+        };
+    }
+    updateCounterCorners() {
+        const counterIds = Object.keys(this.counterElements);
+        counterIds.forEach(id => {
+            const container = this.counterElements[id];
+            const counter = container.querySelector('div');
+            if (counter) {
+                counter.style.borderRadius = '5px';
+            }
+        });
+        for (let i = 0; i < counterIds.length; i++) {
+            for (let j = i + 1; j < counterIds.length; j++) {
+                const container1 = this.counterElements[counterIds[i]];
+                const container2 = this.counterElements[counterIds[j]];
+                const counter1 = container1.querySelector('div');
+                const counter2 = container2.querySelector('div');
+                if (counter1 && counter2) {
+                    const { isAdjacent, position } = this.areElementsAdjacent(container1, container2);
+                    if (isAdjacent) {
+                        switch (position) {
+                            case "left":
+                                counter1.style.borderTopRightRadius = '0';
+                                counter1.style.borderBottomRightRadius = '0';
+                                counter2.style.borderTopLeftRadius = '0';
+                                counter2.style.borderBottomLeftRadius = '0';
+                                break;
+                            case "right":
+                                counter1.style.borderTopLeftRadius = '0';
+                                counter1.style.borderBottomLeftRadius = '0';
+                                counter2.style.borderTopRightRadius = '0';
+                                counter2.style.borderBottomRightRadius = '0';
+                                break;
+                            case "top":
+                                counter1.style.borderBottomLeftRadius = '0';
+                                counter1.style.borderBottomRightRadius = '0';
+                                counter2.style.borderTopLeftRadius = '0';
+                                counter2.style.borderTopRightRadius = '0';
+                                break;
+                            case "bottom":
+                                counter1.style.borderTopLeftRadius = '0';
+                                counter1.style.borderTopRightRadius = '0';
+                                counter2.style.borderBottomLeftRadius = '0';
+                                counter2.style.borderBottomRightRadius = '0';
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
     snapToGrid(element, x, y) {
         const rect = element.getBoundingClientRect();
         const elementWidth = rect.width;
@@ -1839,6 +1924,7 @@ class GridSystem {
                 snappedY = screenEdges.middle;
             }
         }
+        setTimeout(() => this.updateCounterCorners(), 10);
         return { x: snappedX, y: snappedY };
     }
     highlightNearestGridLine(x, y) {
@@ -2156,7 +2242,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.20"};
+const package_namespaceObject = {"rE":"2.1.21"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -4339,6 +4425,7 @@ class KxsClientHUD {
         if (this.kxsClient.isGunOverlayColored) {
             this.toggleWeaponBorderHandler();
         }
+        this.updateCountersDraggableState();
         this.startUpdateLoop();
         this.escapeMenu();
         this.initFriendDetector();
@@ -4354,6 +4441,12 @@ class KxsClientHUD {
             this.loadCustomCrosshair();
         }
         this.setupCtrlFocusModeListener();
+        window.addEventListener('load', () => {
+            this.updateCounterCorners();
+        });
+        window.addEventListener('resize', () => {
+            this.updateCounterCorners();
+        });
     }
     setupCtrlFocusModeListener() {
         document.addEventListener('keydown', (e) => {
@@ -5278,6 +5371,14 @@ class KxsClientHUD {
         });
         this.kxsClient.makeDraggable(counterContainer, `${name}CounterPosition`);
         this.kxsClient.counters[name] = counter;
+        this.kxsClient.gridSystem.registerCounter(name, counterContainer);
+        const savedPosition = localStorage.getItem(`${name}CounterPosition`);
+        if (savedPosition) {
+            const { x, y } = JSON.parse(savedPosition);
+            counterContainer.style.left = `${x}px`;
+            counterContainer.style.top = `${y}px`;
+        }
+        this.updateCounterCorners();
     }
     /**
      * Supprime un compteur du DOM et de la référence dans kxsClient.counters
@@ -5294,6 +5395,8 @@ class KxsClientHUD {
             // Utilise delete pour supprimer la propriété au lieu de l'affecter à null
             delete this.kxsClient.counters[name];
         }
+        this.kxsClient.gridSystem.registerCounter(name, null);
+        this.kxsClient.gridSystem.updateCounterCorners();
     }
     /**
      * Gère l'affichage ou le masquage d'un compteur en fonction de son état
@@ -5328,10 +5431,14 @@ class KxsClientHUD {
             width: `${this.kxsClient.defaultSizes[name].width}px`,
             height: `${this.kxsClient.defaultSizes[name].height}px`,
             fontSize: "18px",
+            borderRadius: "5px",
         });
         counter.textContent = `${label}: ${initialText}`;
         // Clear the saved position for this counter only
         localStorage.removeItem(`${name}CounterPosition`);
+        setTimeout(() => {
+            this.kxsClient.gridSystem.updateCounterCorners();
+        }, 50);
     }
     updateBoostBars() {
         const boostCounter = document.querySelector("#ui-boost-counter");
@@ -5679,11 +5786,33 @@ class KxsClientHUD {
             value: change,
         });
     }
+    updateCounterCorners() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.kxsClient.gridSystem.updateCounterCorners();
+            });
+        }
+        else {
+            setTimeout(() => {
+                this.kxsClient.gridSystem.updateCounterCorners();
+            }, 100);
+        }
+    }
     updateCountersDraggableState() {
         var _a;
+        const countersVisibility = {
+            fps: this.kxsClient.isFpsVisible,
+            ping: this.kxsClient.isPingVisible,
+            kills: this.kxsClient.isKillsVisible,
+        };
+        Object.entries(countersVisibility).forEach(([name, visible]) => {
+            const label = name.charAt(0).toUpperCase() + name.slice(1);
+            const initialText = name === "fps" ? "60" : name === "ping" ? "45ms" : "0";
+            this.toggleCounter(name, visible, label, initialText);
+        });
         const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.getMenuVisibility()) || false;
-        const counters = ['fps', 'kills', 'ping'];
-        counters.forEach(name => {
+        const counterNames = ['fps', 'kills', 'ping'];
+        counterNames.forEach(name => {
             const counter = document.getElementById(`${name}Counter`);
             if (counter) {
                 // Mise à jour des propriétés de draggabilité
@@ -5693,6 +5822,7 @@ class KxsClientHUD {
                 counter.style.resize = isMenuOpen ? 'both' : 'none';
             }
         });
+        this.updateCounterCorners();
     }
     updateHealthAnimations() {
         const currentTime = performance.now();
@@ -7723,6 +7853,9 @@ class KxsClient {
             element.style.left = `${snapped.x}px`;
             element.style.top = `${snapped.y}px`;
         }
+        setTimeout(() => {
+            this.gridSystem.updateCounterCorners();
+        }, 100);
     }
     getKills() {
         const killElement = document.querySelector(".ui-player-kills.js-ui-player-kills");
