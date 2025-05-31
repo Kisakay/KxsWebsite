@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.19
+// @version      2.1.20
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2156,7 +2156,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.19"};
+const package_namespaceObject = {"rE":"2.1.20"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -4096,7 +4096,10 @@ class PingTest {
         }, 100); // Vérifie toutes les 100ms
     }
     setServerFromDOM() {
-        const { region, url } = this.detectSelectedServer();
+        const selectedServer = this.detectSelectedServer();
+        if (!selectedServer)
+            return;
+        const { region, url } = selectedServer;
         this.region = region;
         this.url = `wss://${url}/ptc`;
         this.start();
@@ -4117,14 +4120,17 @@ class PingTest {
         ];
         const selectedServer = servers.find((s) => s.region.toUpperCase() === region.toUpperCase());
         if (!selectedServer)
-            throw new Error("Aucun serveur correspondant trouvé");
+            return undefined;
         return selectedServer;
     }
     attachRegionChangeListener() {
         const teamSelectElement = document.getElementById("team-server-select");
         const mainSelectElement = document.getElementById("server-select-main");
         const onChange = () => {
-            const { region } = this.detectSelectedServer();
+            const selectedServer = this.detectSelectedServer();
+            if (!selectedServer)
+                return;
+            const { region } = selectedServer;
             if (region !== this.region) {
                 this.restart();
             }
