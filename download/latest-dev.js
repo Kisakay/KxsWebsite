@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.23
+// @version      2.1.24
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2230,7 +2230,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.23"};
+const package_namespaceObject = {"rE":"2.1.24"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -3042,6 +3042,18 @@ class KxsClientSecondaryMenu {
                     }
                 }
             ]
+        });
+        this.addOption(MECHANIC, {
+            label: "Background Music",
+            value: this.kxsClient.soundLibrary.background_sound_url,
+            type: "input",
+            icon: '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M15 1H4V9H3C1.34315 9 0 10.3431 0 12C0 13.6569 1.34315 15 3 15C4.65685 15 6 13.6569 6 12V5H13V9H12C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12V1Z" fill="#000000"></path> </g></svg>',
+            category: "MECHANIC",
+            placeholder: background_song,
+            onChange: (value) => {
+                this.kxsClient.soundLibrary.background_sound_url = value;
+                this.kxsClient.updateLocalStorage();
+            },
         });
         this.addOption(HUD, {
             label: "Clean Main Menu",
@@ -9805,7 +9817,7 @@ else if (window.location.pathname === "/") {
     /*
         - Avoiding intercepting another page as the root page
     */
-    intercept("audio/ambient/menu_music_01.mp3", background_song);
+    intercept("audio/ambient/menu_music_01.mp3", kxs_settings.get("soundLibrary.background_sound_url") || background_song);
     if (kxs_settings.get("isKxsClientLogoEnable") === true) {
         intercept('img/survev_logo_full.png', full_logo);
     }
