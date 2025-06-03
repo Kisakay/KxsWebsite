@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.22
+// @version      2.1.23
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2230,7 +2230,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.22"};
+const package_namespaceObject = {"rE":"2.1.23"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -9811,7 +9811,6 @@ else if (window.location.pathname === "/") {
     }
     ;
     survev_settings.set("language", "en");
-    const kxsClient = new KxsClient();
     const loadingScreen = new LoadingScreen(kxs_logo);
     loadingScreen.show();
     const backgroundElement = document.getElementById("background");
@@ -9842,10 +9841,11 @@ else if (window.location.pathname === "/") {
         favicon.rel = 'icon';
         favicon.href = kxs_logo;
     }
+    const kxsClient = new KxsClient();
     document.head.appendChild(favicon);
     document.title = "KxsClient";
     const uiStatsLogo = document.querySelector('#ui-stats-logo');
-    if (uiStatsLogo) {
+    if (uiStatsLogo && kxs_settings.get("isKxsClientLogoEnable") === true) {
         uiStatsLogo.style.backgroundImage = `url('${full_logo}')`;
     }
     const newChangelogUrl = config_namespaceObject.base_url;
