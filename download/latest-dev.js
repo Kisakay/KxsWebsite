@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.21
+// @version      2.1.22
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -20,13 +20,10 @@
 // ==/UserScript==
 ;
 /******/ (() => { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 123:
 /***/ ((module) => {
-
-
 
 const numeric = /^[0-9]+$/
 const compareIdentifiers = (a, b) => {
@@ -55,10 +52,246 @@ module.exports = {
 
 /***/ }),
 
+/***/ 229:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+var __webpack_unused_export__;
+
+__webpack_unused_export__ = ({ value: true });
+exports.A = void 0;
+;
+class SimplifiedSteganoDB {
+    data;
+    options;
+    database;
+    constructor(options) {
+        this.database = options?.database || "stegano.db";
+        this.data = {};
+        this.fetchDataFromFile();
+    }
+    read() { return localStorage.getItem(this.database) || this.data; }
+    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
+    setNestedProperty = (object, key, value) => {
+        const properties = key.split('.');
+        let currentObject = object;
+        for (let i = 0; i < properties.length - 1; i++) {
+            const property = properties[i];
+            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
+                currentObject[property] = {};
+            }
+            currentObject = currentObject[property];
+        }
+        currentObject[properties[properties.length - 1]] = value;
+    };
+    getNestedProperty = (object, key) => {
+        const properties = key.split('.');
+        let index = 0;
+        for (; index < properties.length; ++index) {
+            object = object && object[properties[index]];
+        }
+        return object;
+    };
+    fetchDataFromFile() {
+        try {
+            const content = this.read();
+            this.data = JSON.parse(content);
+        }
+        catch (error) {
+            this.data = {};
+        }
+    }
+    updateNestedProperty(key, operation, value) {
+        const [id, ...rest] = key.split('.');
+        const nestedPath = rest.join('.');
+        if (!this.data[id] && operation !== 'get') {
+            this.data[id] = nestedPath ? {} : undefined;
+        }
+        if (this.data[id] === undefined && operation === 'get') {
+            return undefined;
+        }
+        switch (operation) {
+            case 'get':
+                return nestedPath ? this.getNestedProperty(this.data[id], nestedPath) : this.data[id];
+            case 'set':
+                if (nestedPath) {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        this.data[id] = {};
+                    }
+                    this.setNestedProperty(this.data[id], nestedPath, value);
+                }
+                else {
+                    this.data[id] = value;
+                }
+                this.write();
+                break;
+            case 'add':
+                if (!nestedPath) {
+                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) + value;
+                }
+                else {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        this.data[id] = {};
+                    }
+                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
+                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
+                        throw new TypeError('The existing value is not a number.');
+                    }
+                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
+                }
+                this.write();
+                break;
+            case 'sub':
+                if (!nestedPath) {
+                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) - value;
+                }
+                else {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        this.data[id] = {};
+                    }
+                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
+                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
+                        throw new TypeError('The existing value is not a number.');
+                    }
+                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
+                }
+                this.write();
+                break;
+            case 'delete':
+                if (nestedPath) {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        return;
+                    }
+                    const properties = nestedPath.split('.');
+                    let currentObject = this.data[id];
+                    for (let i = 0; i < properties.length - 1; i++) {
+                        const property = properties[i];
+                        if (!currentObject[property]) {
+                            return;
+                        }
+                        currentObject = currentObject[property];
+                    }
+                    delete currentObject[properties[properties.length - 1]];
+                }
+                else {
+                    delete this.data[id];
+                }
+                this.write();
+                break;
+            case 'pull':
+                const existingArray = nestedPath ?
+                    this.getNestedProperty(this.data[id], nestedPath) :
+                    this.data[id];
+                if (!Array.isArray(existingArray)) {
+                    throw new Error('The stored value is not an array');
+                }
+                const newArray = existingArray.filter((item) => item !== value);
+                if (nestedPath) {
+                    this.setNestedProperty(this.data[id], nestedPath, newArray);
+                }
+                else {
+                    this.data[id] = newArray;
+                }
+                this.write();
+                break;
+        }
+    }
+    get(key) {
+        return this.updateNestedProperty(key, 'get');
+    }
+    set(key, value) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        this.updateNestedProperty(key, 'set', value);
+    }
+    pull(key, value) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        this.updateNestedProperty(key, 'pull', value);
+    }
+    add(key, count) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (isNaN(count)) {
+            throw new SyntaxError("The value is NaN.");
+        }
+        this.updateNestedProperty(key, 'add', count);
+    }
+    sub(key, count) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (isNaN(count)) {
+            throw new SyntaxError("The value is NaN.");
+        }
+        this.updateNestedProperty(key, 'sub', count);
+    }
+    delete(key) {
+        this.updateNestedProperty(key, 'delete');
+    }
+    cache(key, value, time) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null ou contain a space.");
+        }
+        if (!time || isNaN(time)) {
+            throw new SyntaxError("The time needs to be a number. (ms)");
+        }
+        this.updateNestedProperty(key, 'set', value);
+        setTimeout(() => {
+            this.updateNestedProperty(key, 'delete');
+        }, time);
+    }
+    push(key, element) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        const [id, ...rest] = key.split('.');
+        const nestedPath = rest.join('.');
+        if (!this.data[id]) {
+            this.data[id] = nestedPath ? {} : [];
+        }
+        if (nestedPath) {
+            const existingArray = this.getNestedProperty(this.data[id], nestedPath);
+            if (!existingArray) {
+                this.setNestedProperty(this.data[id], nestedPath, [element]);
+            }
+            else if (!Array.isArray(existingArray)) {
+                throw new Error('The stored value is not an array');
+            }
+            else {
+                existingArray.push(element);
+                this.setNestedProperty(this.data[id], nestedPath, existingArray);
+            }
+        }
+        else {
+            if (!Array.isArray(this.data[id])) {
+                this.data[id] = [];
+            }
+            this.data[id].push(element);
+        }
+        this.write();
+    }
+    has(key) {
+        return Boolean(this.get(key));
+    }
+    deleteAll() {
+        this.data = {};
+        this.write();
+    }
+    all() {
+        return this.data;
+    }
+}
+exports.A = SimplifiedSteganoDB;
+
+
+/***/ }),
+
 /***/ 272:
 /***/ ((module) => {
-
-
 
 const debug = (
   typeof process === 'object' &&
@@ -76,8 +309,6 @@ module.exports = debug
 /***/ 560:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-
-
 const SemVer = __webpack_require__(908)
 const compare = (a, b, loose) =>
   new SemVer(a, loose).compare(new SemVer(b, loose))
@@ -90,8 +321,6 @@ module.exports = compare
 /***/ 580:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-
-
 const compare = __webpack_require__(560)
 const gt = (a, b, loose) => compare(a, b, loose) > 0
 module.exports = gt
@@ -101,8 +330,6 @@ module.exports = gt
 
 /***/ 587:
 /***/ ((module) => {
-
-
 
 // parse out just the options we care about
 const looseOption = Object.freeze({ loose: true })
@@ -123,272 +350,10 @@ module.exports = parseOptions
 
 /***/ }),
 
-/***/ 718:
-/***/ ((module, exports, __webpack_require__) => {
-
-
-
-const {
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
-  MAX_LENGTH,
-} = __webpack_require__(874)
-const debug = __webpack_require__(272)
-exports = module.exports = {}
-
-// The actual regexps go on exports.re
-const re = exports.re = []
-const safeRe = exports.safeRe = []
-const src = exports.src = []
-const safeSrc = exports.safeSrc = []
-const t = exports.t = {}
-let R = 0
-
-const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
-
-// Replace some greedy regex tokens to prevent regex dos issues. These regex are
-// used internally via the safeRe object since all inputs in this library get
-// normalized first to trim and collapse all extra whitespace. The original
-// regexes are exported for userland consumption and lower level usage. A
-// future breaking change could export the safer regex only with a note that
-// all input should have extra whitespace removed.
-const safeRegexReplacements = [
-  ['\\s', 1],
-  ['\\d', MAX_LENGTH],
-  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
-]
-
-const makeSafeRegex = (value) => {
-  for (const [token, max] of safeRegexReplacements) {
-    value = value
-      .split(`${token}*`).join(`${token}{0,${max}}`)
-      .split(`${token}+`).join(`${token}{1,${max}}`)
-  }
-  return value
-}
-
-const createToken = (name, value, isGlobal) => {
-  const safe = makeSafeRegex(value)
-  const index = R++
-  debug(name, index, value)
-  t[name] = index
-  src[index] = value
-  safeSrc[index] = safe
-  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
-  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
-}
-
-// The following Regular Expressions can be used for tokenizing,
-// validating, and parsing SemVer version strings.
-
-// ## Numeric Identifier
-// A single `0`, or a non-zero digit followed by zero or more digits.
-
-createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
-
-// ## Non-numeric Identifier
-// Zero or more digits, followed by a letter or hyphen, and then zero or
-// more letters, digits, or hyphens.
-
-createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
-
-// ## Main Version
-// Three dot-separated numeric identifiers.
-
-createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` +
-                   `(${src[t.NUMERICIDENTIFIER]})\\.` +
-                   `(${src[t.NUMERICIDENTIFIER]})`)
-
-createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
-                        `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
-                        `(${src[t.NUMERICIDENTIFIERLOOSE]})`)
-
-// ## Pre-release Version Identifier
-// A numeric identifier, or a non-numeric identifier.
-// Non-numberic identifiers include numberic identifiers but can be longer.
-// Therefore non-numberic identifiers must go first.
-
-createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NONNUMERICIDENTIFIER]
-}|${src[t.NUMERICIDENTIFIER]})`)
-
-createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NONNUMERICIDENTIFIER]
-}|${src[t.NUMERICIDENTIFIERLOOSE]})`)
-
-// ## Pre-release Version
-// Hyphen, followed by one or more dot-separated pre-release version
-// identifiers.
-
-createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]
-}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`)
-
-createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
-}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`)
-
-// ## Build Metadata Identifier
-// Any combination of digits, letters, or hyphens.
-
-createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
-
-// ## Build Metadata
-// Plus sign, followed by one or more period-separated build metadata
-// identifiers.
-
-createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]
-}(?:\\.${src[t.BUILDIDENTIFIER]})*))`)
-
-// ## Full Version String
-// A main version, followed optionally by a pre-release version and
-// build metadata.
-
-// Note that the only major, minor, patch, and pre-release sections of
-// the version string are capturing groups.  The build metadata is not a
-// capturing group, because it should not ever be used in version
-// comparison.
-
-createToken('FULLPLAIN', `v?${src[t.MAINVERSION]
-}${src[t.PRERELEASE]}?${
-  src[t.BUILD]}?`)
-
-createToken('FULL', `^${src[t.FULLPLAIN]}$`)
-
-// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-// common in the npm registry.
-createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]
-}${src[t.PRERELEASELOOSE]}?${
-  src[t.BUILD]}?`)
-
-createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
-
-createToken('GTLT', '((?:<|>)?=?)')
-
-// Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifer, meaning "any version"
-// Only the first item is strictly required.
-createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
-createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
-
-createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:${src[t.PRERELEASE]})?${
-                     src[t.BUILD]}?` +
-                   `)?)?`)
-
-createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:${src[t.PRERELEASELOOSE]})?${
-                          src[t.BUILD]}?` +
-                        `)?)?`)
-
-createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`)
-createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`)
-
-// Coercion.
-// Extract anything that could conceivably be a part of a valid semver
-createToken('COERCEPLAIN', `${'(^|[^\\d])' +
-              '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` +
-              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
-              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`)
-createToken('COERCE', `${src[t.COERCEPLAIN]}(?:$|[^\\d])`)
-createToken('COERCEFULL', src[t.COERCEPLAIN] +
-              `(?:${src[t.PRERELEASE]})?` +
-              `(?:${src[t.BUILD]})?` +
-              `(?:$|[^\\d])`)
-createToken('COERCERTL', src[t.COERCE], true)
-createToken('COERCERTLFULL', src[t.COERCEFULL], true)
-
-// Tilde ranges.
-// Meaning is "reasonably at or greater than"
-createToken('LONETILDE', '(?:~>?)')
-
-createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true)
-exports.tildeTrimReplace = '$1~'
-
-createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`)
-createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`)
-
-// Caret ranges.
-// Meaning is "at least and backwards compatible with"
-createToken('LONECARET', '(?:\\^)')
-
-createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true)
-exports.caretTrimReplace = '$1^'
-
-createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`)
-createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`)
-
-// A simple gt/lt/eq thing, or just "" to indicate "any version"
-createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`)
-createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`)
-
-// An expression to strip any whitespace between the gtlt and the thing
-// it modifies, so that `> 1.2.3` ==> `>1.2.3`
-createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]
-}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true)
-exports.comparatorTrimReplace = '$1$2$3'
-
-// Something like `1.2.3 - 1.2.4`
-// Note that these all use the loose form, because they'll be
-// checked against either the strict or loose comparator form
-// later.
-createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` +
-                   `\\s+-\\s+` +
-                   `(${src[t.XRANGEPLAIN]})` +
-                   `\\s*$`)
-
-createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` +
-                        `\\s+-\\s+` +
-                        `(${src[t.XRANGEPLAINLOOSE]})` +
-                        `\\s*$`)
-
-// Star ranges basically just allow anything at all.
-createToken('STAR', '(<|>)?=?\\s*\\*')
-// >=0.0.0 is like a star
-createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
-createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
-
-
-/***/ }),
-
-/***/ 746:
-/***/ (() => {
-
-
-// --- HOOK GLOBAL WEBSOCKET POUR INTERCEPTION gameId & PTC monitoring ---
-(function () {
-    const OriginalWebSocket = window.WebSocket;
-    function HookedWebSocket(url, protocols) {
-        const ws = protocols !== undefined
-            ? new OriginalWebSocket(url, protocols)
-            : new OriginalWebSocket(url);
-        if (typeof url === "string" && url.includes("gameId=")) {
-            const gameId = url.split("gameId=")[1];
-            globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
-        }
-        return ws;
-    }
-    // Copie le prototype
-    HookedWebSocket.prototype = OriginalWebSocket.prototype;
-    // Copie les propriétés statiques (CONNECTING, OPEN, etc.)
-    Object.defineProperties(HookedWebSocket, {
-        CONNECTING: { value: OriginalWebSocket.CONNECTING, writable: false },
-        OPEN: { value: OriginalWebSocket.OPEN, writable: false },
-        CLOSING: { value: OriginalWebSocket.CLOSING, writable: false },
-        CLOSED: { value: OriginalWebSocket.CLOSED, writable: false },
-    });
-    // Remplace le constructeur global
-    window.WebSocket = HookedWebSocket;
-})();
-
-
-/***/ }),
-
-/***/ 814:
+/***/ 686:
 /***/ ((__unused_webpack_module, exports) => {
 
+"use strict";
 var __webpack_unused_export__;
 
 __webpack_unused_export__ = ({ value: true });
@@ -629,247 +594,268 @@ exports.w = SteganoDB;
 
 /***/ }),
 
-/***/ 837:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 718:
+/***/ ((module, exports, __webpack_require__) => {
 
-var __webpack_unused_export__;
+const {
+  MAX_SAFE_COMPONENT_LENGTH,
+  MAX_SAFE_BUILD_LENGTH,
+  MAX_LENGTH,
+} = __webpack_require__(874)
+const debug = __webpack_require__(272)
+exports = module.exports = {}
 
-__webpack_unused_export__ = ({ value: true });
-exports.A = void 0;
-;
-class SimplifiedSteganoDB {
-    data;
-    options;
-    database;
-    constructor(options) {
-        this.database = options?.database || "stegano.db";
-        this.data = {};
-        this.fetchDataFromFile();
-    }
-    read() { return localStorage.getItem(this.database) || this.data; }
-    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
-    setNestedProperty = (object, key, value) => {
-        const properties = key.split('.');
-        let currentObject = object;
-        for (let i = 0; i < properties.length - 1; i++) {
-            const property = properties[i];
-            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
-                currentObject[property] = {};
-            }
-            currentObject = currentObject[property];
-        }
-        currentObject[properties[properties.length - 1]] = value;
-    };
-    getNestedProperty = (object, key) => {
-        const properties = key.split('.');
-        let index = 0;
-        for (; index < properties.length; ++index) {
-            object = object && object[properties[index]];
-        }
-        return object;
-    };
-    fetchDataFromFile() {
-        try {
-            const content = this.read();
-            this.data = JSON.parse(content);
-        }
-        catch (error) {
-            this.data = {};
-        }
-    }
-    updateNestedProperty(key, operation, value) {
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        if (!this.data[id] && operation !== 'get') {
-            this.data[id] = nestedPath ? {} : undefined;
-        }
-        if (this.data[id] === undefined && operation === 'get') {
-            return undefined;
-        }
-        switch (operation) {
-            case 'get':
-                return nestedPath ? this.getNestedProperty(this.data[id], nestedPath) : this.data[id];
-            case 'set':
-                if (nestedPath) {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, value);
-                }
-                else {
-                    this.data[id] = value;
-                }
-                this.write();
-                break;
-            case 'add':
-                if (!nestedPath) {
-                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) + value;
-                }
-                else {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
-                }
-                this.write();
-                break;
-            case 'sub':
-                if (!nestedPath) {
-                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) - value;
-                }
-                else {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
-                }
-                this.write();
-                break;
-            case 'delete':
-                if (nestedPath) {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        return;
-                    }
-                    const properties = nestedPath.split('.');
-                    let currentObject = this.data[id];
-                    for (let i = 0; i < properties.length - 1; i++) {
-                        const property = properties[i];
-                        if (!currentObject[property]) {
-                            return;
-                        }
-                        currentObject = currentObject[property];
-                    }
-                    delete currentObject[properties[properties.length - 1]];
-                }
-                else {
-                    delete this.data[id];
-                }
-                this.write();
-                break;
-            case 'pull':
-                const existingArray = nestedPath ?
-                    this.getNestedProperty(this.data[id], nestedPath) :
-                    this.data[id];
-                if (!Array.isArray(existingArray)) {
-                    throw new Error('The stored value is not an array');
-                }
-                const newArray = existingArray.filter((item) => item !== value);
-                if (nestedPath) {
-                    this.setNestedProperty(this.data[id], nestedPath, newArray);
-                }
-                else {
-                    this.data[id] = newArray;
-                }
-                this.write();
-                break;
-        }
-    }
-    get(key) {
-        return this.updateNestedProperty(key, 'get');
-    }
-    set(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'set', value);
-    }
-    pull(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'pull', value);
-    }
-    add(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'add', count);
-    }
-    sub(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'sub', count);
-    }
-    delete(key) {
-        this.updateNestedProperty(key, 'delete');
-    }
-    cache(key, value, time) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null ou contain a space.");
-        }
-        if (!time || isNaN(time)) {
-            throw new SyntaxError("The time needs to be a number. (ms)");
-        }
-        this.updateNestedProperty(key, 'set', value);
-        setTimeout(() => {
-            this.updateNestedProperty(key, 'delete');
-        }, time);
-    }
-    push(key, element) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        if (!this.data[id]) {
-            this.data[id] = nestedPath ? {} : [];
-        }
-        if (nestedPath) {
-            const existingArray = this.getNestedProperty(this.data[id], nestedPath);
-            if (!existingArray) {
-                this.setNestedProperty(this.data[id], nestedPath, [element]);
-            }
-            else if (!Array.isArray(existingArray)) {
-                throw new Error('The stored value is not an array');
-            }
-            else {
-                existingArray.push(element);
-                this.setNestedProperty(this.data[id], nestedPath, existingArray);
-            }
-        }
-        else {
-            if (!Array.isArray(this.data[id])) {
-                this.data[id] = [];
-            }
-            this.data[id].push(element);
-        }
-        this.write();
-    }
-    has(key) {
-        return Boolean(this.get(key));
-    }
-    deleteAll() {
-        this.data = {};
-        this.write();
-    }
-    all() {
-        return this.data;
-    }
+// The actual regexps go on exports.re
+const re = exports.re = []
+const safeRe = exports.safeRe = []
+const src = exports.src = []
+const safeSrc = exports.safeSrc = []
+const t = exports.t = {}
+let R = 0
+
+const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
+
+// Replace some greedy regex tokens to prevent regex dos issues. These regex are
+// used internally via the safeRe object since all inputs in this library get
+// normalized first to trim and collapse all extra whitespace. The original
+// regexes are exported for userland consumption and lower level usage. A
+// future breaking change could export the safer regex only with a note that
+// all input should have extra whitespace removed.
+const safeRegexReplacements = [
+  ['\\s', 1],
+  ['\\d', MAX_LENGTH],
+  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
+]
+
+const makeSafeRegex = (value) => {
+  for (const [token, max] of safeRegexReplacements) {
+    value = value
+      .split(`${token}*`).join(`${token}{0,${max}}`)
+      .split(`${token}+`).join(`${token}{1,${max}}`)
+  }
+  return value
 }
-exports.A = SimplifiedSteganoDB;
+
+const createToken = (name, value, isGlobal) => {
+  const safe = makeSafeRegex(value)
+  const index = R++
+  debug(name, index, value)
+  t[name] = index
+  src[index] = value
+  safeSrc[index] = safe
+  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
+  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
+}
+
+// The following Regular Expressions can be used for tokenizing,
+// validating, and parsing SemVer version strings.
+
+// ## Numeric Identifier
+// A single `0`, or a non-zero digit followed by zero or more digits.
+
+createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
+createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
+
+// ## Non-numeric Identifier
+// Zero or more digits, followed by a letter or hyphen, and then zero or
+// more letters, digits, or hyphens.
+
+createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
+
+// ## Main Version
+// Three dot-separated numeric identifiers.
+
+createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` +
+                   `(${src[t.NUMERICIDENTIFIER]})\\.` +
+                   `(${src[t.NUMERICIDENTIFIER]})`)
+
+createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
+                        `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
+                        `(${src[t.NUMERICIDENTIFIERLOOSE]})`)
+
+// ## Pre-release Version Identifier
+// A numeric identifier, or a non-numeric identifier.
+
+createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]
+}|${src[t.NONNUMERICIDENTIFIER]})`)
+
+createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]
+}|${src[t.NONNUMERICIDENTIFIER]})`)
+
+// ## Pre-release Version
+// Hyphen, followed by one or more dot-separated pre-release version
+// identifiers.
+
+createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]
+}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`)
+
+createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
+}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`)
+
+// ## Build Metadata Identifier
+// Any combination of digits, letters, or hyphens.
+
+createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
+
+// ## Build Metadata
+// Plus sign, followed by one or more period-separated build metadata
+// identifiers.
+
+createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]
+}(?:\\.${src[t.BUILDIDENTIFIER]})*))`)
+
+// ## Full Version String
+// A main version, followed optionally by a pre-release version and
+// build metadata.
+
+// Note that the only major, minor, patch, and pre-release sections of
+// the version string are capturing groups.  The build metadata is not a
+// capturing group, because it should not ever be used in version
+// comparison.
+
+createToken('FULLPLAIN', `v?${src[t.MAINVERSION]
+}${src[t.PRERELEASE]}?${
+  src[t.BUILD]}?`)
+
+createToken('FULL', `^${src[t.FULLPLAIN]}$`)
+
+// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
+// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
+// common in the npm registry.
+createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]
+}${src[t.PRERELEASELOOSE]}?${
+  src[t.BUILD]}?`)
+
+createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
+
+createToken('GTLT', '((?:<|>)?=?)')
+
+// Something like "2.*" or "1.2.x".
+// Note that "x.x" is a valid xRange identifer, meaning "any version"
+// Only the first item is strictly required.
+createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
+createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
+
+createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:${src[t.PRERELEASE]})?${
+                     src[t.BUILD]}?` +
+                   `)?)?`)
+
+createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:${src[t.PRERELEASELOOSE]})?${
+                          src[t.BUILD]}?` +
+                        `)?)?`)
+
+createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`)
+createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`)
+
+// Coercion.
+// Extract anything that could conceivably be a part of a valid semver
+createToken('COERCEPLAIN', `${'(^|[^\\d])' +
+              '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` +
+              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
+              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`)
+createToken('COERCE', `${src[t.COERCEPLAIN]}(?:$|[^\\d])`)
+createToken('COERCEFULL', src[t.COERCEPLAIN] +
+              `(?:${src[t.PRERELEASE]})?` +
+              `(?:${src[t.BUILD]})?` +
+              `(?:$|[^\\d])`)
+createToken('COERCERTL', src[t.COERCE], true)
+createToken('COERCERTLFULL', src[t.COERCEFULL], true)
+
+// Tilde ranges.
+// Meaning is "reasonably at or greater than"
+createToken('LONETILDE', '(?:~>?)')
+
+createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true)
+exports.tildeTrimReplace = '$1~'
+
+createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`)
+createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`)
+
+// Caret ranges.
+// Meaning is "at least and backwards compatible with"
+createToken('LONECARET', '(?:\\^)')
+
+createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true)
+exports.caretTrimReplace = '$1^'
+
+createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`)
+createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`)
+
+// A simple gt/lt/eq thing, or just "" to indicate "any version"
+createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`)
+createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`)
+
+// An expression to strip any whitespace between the gtlt and the thing
+// it modifies, so that `> 1.2.3` ==> `>1.2.3`
+createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]
+}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true)
+exports.comparatorTrimReplace = '$1$2$3'
+
+// Something like `1.2.3 - 1.2.4`
+// Note that these all use the loose form, because they'll be
+// checked against either the strict or loose comparator form
+// later.
+createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` +
+                   `\\s+-\\s+` +
+                   `(${src[t.XRANGEPLAIN]})` +
+                   `\\s*$`)
+
+createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` +
+                        `\\s+-\\s+` +
+                        `(${src[t.XRANGEPLAINLOOSE]})` +
+                        `\\s*$`)
+
+// Star ranges basically just allow anything at all.
+createToken('STAR', '(<|>)?=?\\s*\\*')
+// >=0.0.0 is like a star
+createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
+createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
+
+
+/***/ }),
+
+/***/ 746:
+/***/ (() => {
+
+"use strict";
+
+// --- HOOK GLOBAL WEBSOCKET POUR INTERCEPTION gameId & PTC monitoring ---
+(function () {
+    const OriginalWebSocket = window.WebSocket;
+    function HookedWebSocket(url, protocols) {
+        const ws = protocols !== undefined
+            ? new OriginalWebSocket(url, protocols)
+            : new OriginalWebSocket(url);
+        if (typeof url === "string" && url.includes("gameId=")) {
+            const gameId = url.split("gameId=")[1];
+            globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
+        }
+        return ws;
+    }
+    // Copie le prototype
+    HookedWebSocket.prototype = OriginalWebSocket.prototype;
+    // Copie les propriétés statiques (CONNECTING, OPEN, etc.)
+    Object.defineProperties(HookedWebSocket, {
+        CONNECTING: { value: OriginalWebSocket.CONNECTING, writable: false },
+        OPEN: { value: OriginalWebSocket.OPEN, writable: false },
+        CLOSING: { value: OriginalWebSocket.CLOSING, writable: false },
+        CLOSED: { value: OriginalWebSocket.CLOSED, writable: false },
+    });
+    // Remplace le constructeur global
+    window.WebSocket = HookedWebSocket;
+})();
 
 
 /***/ }),
 
 /***/ 874:
 /***/ ((module) => {
-
-
 
 // Note: this is the semver.org version of the spec that it implements
 // Not necessarily the package version of this code.
@@ -913,11 +899,9 @@ module.exports = {
 /***/ 908:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-
-
 const debug = __webpack_require__(272)
 const { MAX_LENGTH, MAX_SAFE_INTEGER } = __webpack_require__(874)
-const { safeRe: re, t } = __webpack_require__(718)
+const { safeRe: re, safeSrc: src, t } = __webpack_require__(718)
 
 const parseOptions = __webpack_require__(587)
 const { compareIdentifiers } = __webpack_require__(123)
@@ -1099,7 +1083,8 @@ class SemVer {
       }
       // Avoid an invalid semver results
       if (identifier) {
-        const match = `-${identifier}`.match(this.options.loose ? re[t.PRERELEASELOOSE] : re[t.PRERELEASE])
+        const r = new RegExp(`^${this.options.loose ? src[t.PRERELEASELOOSE] : src[t.PRERELEASE]}$`)
+        const match = `-${identifier}`.match(r)
         if (!match || match[1] !== identifier) {
           throw new Error(`invalid identifier: ${identifier}`)
         }
@@ -1294,11 +1279,14 @@ module.exports = SemVer
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+(() => {
+"use strict";
 
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
-// EXTERNAL MODULE: ./node_modules/stegano.db/lib/simplified_browser.js
-var simplified_browser = __webpack_require__(837);
+// EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/simplified_browser.js
+var simplified_browser = __webpack_require__(229);
 ;// ./config.json
 const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://resurviv.biz/*","*://leia-uwu.github.io/survev/*","*://survev.leia-is.gay/*","*://survivx.org","*://kxs.rip/*"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
@@ -2242,7 +2230,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.21"};
+const package_namespaceObject = {"rE":"2.1.22"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -3138,7 +3126,10 @@ class KxsClientSecondaryMenu {
         });
         this.addOption(HUD, {
             label: "Focus Mode",
-            value: "Hold Left CTRL for 1 seconds to toggle Focus Mode.\nWhen enabled, the HUD will dim and notifications will appear.",
+            value: (() => {
+                const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+                return `Press ${isMac ? 'Command+F (⌘+F)' : 'Ctrl+F'} to toggle Focus Mode.\nWhen enabled, the HUD will dim and notifications will appear.`;
+            })(),
             category: "HUD",
             type: "info",
             icon: '<svg version="1.1" id="Uploaded to svgrepo.com" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M30.146,28.561l-1.586,1.586c-0.292,0.292-0.676,0.438-1.061,0.438s-0.768-0.146-1.061-0.438 l-4.293-4.293l-2.232,2.232c-0.391,0.391-0.902,0.586-1.414,0.586s-1.024-0.195-1.414-0.586l-0.172-0.172 c-0.781-0.781-0.781-2.047,0-2.828l8.172-8.172c0.391-0.391,0.902-0.586,1.414-0.586s1.024,0.195,1.414,0.586l0.172,0.172 c0.781,0.781,0.781,2.047,0,2.828l-2.232,2.232l4.293,4.293C30.731,27.024,30.731,27.976,30.146,28.561z M22.341,18.244 l-4.097,4.097L3.479,13.656C2.567,13.12,2,12.128,2,11.07V3c0-0.551,0.449-1,1-1h8.07c1.058,0,2.049,0.567,2.586,1.479 L22.341,18.244z M19.354,19.354c0.195-0.195,0.195-0.512,0-0.707l-15.5-15.5c-0.195-0.195-0.512-0.195-0.707,0s-0.195,0.512,0,0.707 l15.5,15.5C18.744,19.451,18.872,19.5,19,19.5S19.256,19.451,19.354,19.354z" fill="#000000"></path> </g></svg>',
@@ -4449,19 +4440,27 @@ class KxsClientHUD {
         });
     }
     setupCtrlFocusModeListener() {
+        // Déterminer la plateforme une seule fois à l'initialisation
+        const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+        // Utiliser un flag pour suivre l'état des touches
+        let modifierKeyPressed = false;
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'ControlLeft' && !this.ctrlFocusTimer) {
-                this.ctrlFocusTimer = window.setTimeout(() => {
-                    this.kxsClient.isFocusModeEnabled = !this.kxsClient.isFocusModeEnabled;
-                    this.kxsClient.hud.toggleFocusMode();
-                    this.kxsClient.nm.showNotification("Focus mode toggled", "info", 1200);
-                }, 1000);
+            // Détecter si la touche modificatrice est pressée (Command sur macOS, Ctrl sur Windows/Linux)
+            if ((isMac && e.key === 'Meta') || (!isMac && e.key === 'Control')) {
+                modifierKeyPressed = true;
+            }
+            // Activer le mode focus seulement si F est pressé pendant que la touche modificatrice est déjà enfoncée
+            if (modifierKeyPressed && e.code === 'KeyF') {
+                e.preventDefault(); // Empêcher le comportement par défaut (recherche)
+                this.kxsClient.isFocusModeEnabled = !this.kxsClient.isFocusModeEnabled;
+                this.kxsClient.hud.toggleFocusMode();
+                this.kxsClient.nm.showNotification("Focus mode toggled", "info", 1200);
             }
         });
+        // Réinitialiser le flag quand la touche modificatrice est relâchée
         document.addEventListener('keyup', (e) => {
-            if (e.code === 'ControlLeft' && this.ctrlFocusTimer) {
-                clearTimeout(this.ctrlFocusTimer);
-                this.ctrlFocusTimer = null;
+            if ((isMac && e.key === 'Meta') || (!isMac && e.key === 'Control')) {
+                modifierKeyPressed = false;
             }
         });
     }
@@ -5874,8 +5873,8 @@ class Logger {
 }
 
 
-// EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser.js
-var browser = __webpack_require__(814);
+// EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/browser.js
+var browser = __webpack_require__(686);
 ;// ./src/HUD/HistoryManager.ts
 var HistoryManager_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -9866,6 +9865,8 @@ else if (window.location.pathname === "/") {
         loadingScreen.hide();
     }, 1400);
 }
+
+})();
 
 /******/ })()
 ;
