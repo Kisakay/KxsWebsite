@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.24
+// @version      2.1.25
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -20,10 +20,13 @@
 // ==/UserScript==
 ;
 /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 123:
 /***/ ((module) => {
+
+
 
 const numeric = /^[0-9]+$/
 const compareIdentifiers = (a, b) => {
@@ -55,7 +58,6 @@ module.exports = {
 /***/ 229:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 var __webpack_unused_export__;
 
 __webpack_unused_export__ = ({ value: true });
@@ -293,6 +295,8 @@ exports.A = SimplifiedSteganoDB;
 /***/ 272:
 /***/ ((module) => {
 
+
+
 const debug = (
   typeof process === 'object' &&
   process.env &&
@@ -309,6 +313,8 @@ module.exports = debug
 /***/ 560:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+
+
 const SemVer = __webpack_require__(908)
 const compare = (a, b, loose) =>
   new SemVer(a, loose).compare(new SemVer(b, loose))
@@ -321,6 +327,8 @@ module.exports = compare
 /***/ 580:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+
+
 const compare = __webpack_require__(560)
 const gt = (a, b, loose) => compare(a, b, loose) > 0
 module.exports = gt
@@ -330,6 +338,8 @@ module.exports = gt
 
 /***/ 587:
 /***/ ((module) => {
+
+
 
 // parse out just the options we care about
 const looseOption = Object.freeze({ loose: true })
@@ -353,7 +363,6 @@ module.exports = parseOptions
 /***/ 686:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 var __webpack_unused_export__;
 
 __webpack_unused_export__ = ({ value: true });
@@ -597,6 +606,8 @@ exports.w = SteganoDB;
 /***/ 718:
 /***/ ((module, exports, __webpack_require__) => {
 
+
+
 const {
   MAX_SAFE_COMPONENT_LENGTH,
   MAX_SAFE_BUILD_LENGTH,
@@ -675,12 +686,14 @@ createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
 
 // ## Pre-release Version Identifier
 // A numeric identifier, or a non-numeric identifier.
+// Non-numberic identifiers include numberic identifiers but can be longer.
+// Therefore non-numberic identifiers must go first.
 
-createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]
-}|${src[t.NONNUMERICIDENTIFIER]})`)
+createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NONNUMERICIDENTIFIER]
+}|${src[t.NUMERICIDENTIFIER]})`)
 
-createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]
-}|${src[t.NONNUMERICIDENTIFIER]})`)
+createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NONNUMERICIDENTIFIER]
+}|${src[t.NUMERICIDENTIFIERLOOSE]})`)
 
 // ## Pre-release Version
 // Hyphen, followed by one or more dot-separated pre-release version
@@ -823,7 +836,6 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
 /***/ 746:
 /***/ (() => {
 
-"use strict";
 
 // --- HOOK GLOBAL WEBSOCKET POUR INTERCEPTION gameId & PTC monitoring ---
 (function () {
@@ -856,6 +868,8 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
 
 /***/ 874:
 /***/ ((module) => {
+
+
 
 // Note: this is the semver.org version of the spec that it implements
 // Not necessarily the package version of this code.
@@ -899,9 +913,11 @@ module.exports = {
 /***/ 908:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+
+
 const debug = __webpack_require__(272)
 const { MAX_LENGTH, MAX_SAFE_INTEGER } = __webpack_require__(874)
-const { safeRe: re, safeSrc: src, t } = __webpack_require__(718)
+const { safeRe: re, t } = __webpack_require__(718)
 
 const parseOptions = __webpack_require__(587)
 const { compareIdentifiers } = __webpack_require__(123)
@@ -1083,8 +1099,7 @@ class SemVer {
       }
       // Avoid an invalid semver results
       if (identifier) {
-        const r = new RegExp(`^${this.options.loose ? src[t.PRERELEASELOOSE] : src[t.PRERELEASE]}$`)
-        const match = `-${identifier}`.match(r)
+        const match = `-${identifier}`.match(this.options.loose ? re[t.PRERELEASELOOSE] : re[t.PRERELEASE])
         if (!match || match[1] !== identifier) {
           throw new Error(`invalid identifier: ${identifier}`)
         }
@@ -1279,9 +1294,6 @@ module.exports = SemVer
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
-(() => {
-"use strict";
 
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
@@ -1304,6 +1316,20 @@ const survev_settings = new simplified_browser/* SimplifiedSteganoDB */.A({
 const kxs_settings = new simplified_browser/* SimplifiedSteganoDB */.A({
     database: "userSettings"
 });
+
+;// ./src/UTILS/favicon.ts
+function setFavicon(url) {
+    // Remove existing favicons
+    const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
+    existingFavicons.forEach(favicon => favicon.remove());
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.href = url;
+    // Modern browsers generally pick the best icon format,
+    // so explicitly setting type might not be necessary unless specific formats are used.
+    // link.type = 'image/png'; // Or 'image/x-icon' for .ico files
+    document.head.appendChild(link);
+}
 
 ;// ./src/MECHANIC/intercept.ts
 function intercept(link, targetUrl) {
@@ -2230,7 +2256,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.24"};
+const package_namespaceObject = {"rE":"2.1.25"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -3138,15 +3164,37 @@ class KxsClientSecondaryMenu {
         });
         this.addOption(HUD, {
             label: "Focus Mode",
-            value: (() => {
-                const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-                return `Press ${isMac ? 'Command+F (⌘+F)' : 'Ctrl+F'} to toggle Focus Mode.\nWhen enabled, the HUD will dim and notifications will appear.`;
-            })(),
+            value: true,
             category: "HUD",
-            type: "info",
-            icon: '<svg version="1.1" id="Uploaded to svgrepo.com" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M30.146,28.561l-1.586,1.586c-0.292,0.292-0.676,0.438-1.061,0.438s-0.768-0.146-1.061-0.438 l-4.293-4.293l-2.232,2.232c-0.391,0.391-0.902,0.586-1.414,0.586s-1.024-0.195-1.414-0.586l-0.172-0.172 c-0.781-0.781-0.781-2.047,0-2.828l8.172-8.172c0.391-0.391,0.902-0.586,1.414-0.586s1.024,0.195,1.414,0.586l0.172,0.172 c0.781,0.781,0.781,2.047,0,2.828l-2.232,2.232l4.293,4.293C30.731,27.024,30.731,27.976,30.146,28.561z M22.341,18.244 l-4.097,4.097L3.479,13.656C2.567,13.12,2,12.128,2,11.07V3c0-0.551,0.449-1,1-1h8.07c1.058,0,2.049,0.567,2.586,1.479 L22.341,18.244z M19.354,19.354c0.195-0.195,0.195-0.512,0-0.707l-15.5-15.5c-0.195-0.195-0.512-0.195-0.707,0s-0.195,0.512,0,0.707 l15.5,15.5C18.744,19.451,18.872,19.5,19,19.5S19.256,19.451,19.354,19.354z" fill="#000000"></path> </g></svg>',
-            onChange: () => {
-            }
+            type: "sub",
+            icon: '<svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 569.16 569.16" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M513.217,216.366c-18.427,0-31.318-4.568-34.492-12.218c-3.17-7.647,2.702-19.982,15.704-32.999l33.109-33.109 l6.493-6.493l-6.493-6.49l-83.474-83.44l-6.49-6.49l-6.49,6.49l-33.079,33.082c-14.422,14.419-24.076,16.573-28.547,16.573 c-3.295,0-5.915-1.083-8.24-3.415c-3.151-3.161-8.434-11.5-8.391-31.864c0-0.386-0.021-0.768-0.067-1.147V9.18V0h-9.18H225.599 h-9.18v9.18v46.931c-0.024,8.229-1.3,35.166-16.741,35.166c-4.464,0-14.104-2.154-28.519-16.576l-33.103-33.085l-6.49-6.487 l-6.49,6.49l-83.44,83.44l-6.487,6.487l6.484,6.49l33.082,33.112c13.018,13.011,18.896,25.343,15.729,32.996 c-3.17,7.65-16.046,12.222-34.446,12.222H9.18H0v9.18V343.58v9.18h9.18h46.815c18.396,0,31.273,4.568,34.443,12.219 c3.173,7.656-2.705,20.004-15.722,33.025l-33.079,33.08l-6.49,6.49l6.49,6.492l83.44,83.475l6.493,6.496l6.494-6.496 l33.097-33.113c14.407-14.4,24.049-16.551,28.51-16.551c15.45,0,16.726,26.918,16.75,35.168v46.936v9.18h9.18h117.984h9.18v-9.18 v-45.662c0.046-0.377,0.067-0.752,0.067-1.135c-0.042-20.373,5.239-28.713,8.391-31.871c2.329-2.334,4.951-3.42,8.25-3.42 c4.471,0,14.125,2.148,28.544,16.539l33.069,33.104l6.49,6.498l6.493-6.496l83.474-83.471l6.493-6.492l-6.496-6.494 l-33.112-33.082c-12.999-13.023-18.871-25.373-15.698-33.023c3.174-7.648,16.065-12.215,34.489-12.215h46.761h9.18v-9.18V225.546 v-9.18h-9.18H513.217z M413.1,284.58c0,70.867-57.653,128.52-128.52,128.52c-70.867,0-128.52-57.652-128.52-128.52 c0-70.867,57.653-128.52,128.52-128.52C355.446,156.06,413.1,213.713,413.1,284.58z"></path> </g> </g> </g></svg>',
+            fields: [
+                {
+                    label: "Enable",
+                    value: this.kxsClient.isFocusModeEnabled,
+                    type: "toggle",
+                    category: "HUD",
+                    icon: '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M11 3C13.7614 3 16 5.23858 16 8C16 10.7614 13.7614 13 11 13H5C2.23858 13 0 10.7614 0 8C0 5.23858 2.23858 3 5 3H11ZM11 5C12.6569 5 14 6.34315 14 8C14 9.65685 12.6569 11 11 11C9.34315 11 8 9.65685 8 8C8 6.34315 9.34315 5 11 5Z" fill="#000000"></path> </g></svg>',
+                    onChange: (value) => {
+                        this.kxsClient.isFocusModeEnabled = !this.kxsClient.isFocusModeEnabled;
+                        if (!this.kxsClient.isFocusModeEnabled) {
+                            this.kxsClient.currentFocusModeState = false;
+                            this.kxsClient.hud.toggleFocusMode();
+                        }
+                        this.kxsClient.updateLocalStorage();
+                    },
+                },
+                {
+                    label: "Focus Mode",
+                    value: (() => {
+                        const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+                        return `Press ${isMac ? 'Command+F (⌘+F)' : 'Ctrl+F'} to toggle Focus Mode.\nWhen enabled, the HUD will dim and notifications will appear.`;
+                    })(),
+                    category: "HUD",
+                    type: "info",
+                    icon: '<svg version="1.1" id="Uploaded to svgrepo.com" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M30.146,28.561l-1.586,1.586c-0.292,0.292-0.676,0.438-1.061,0.438s-0.768-0.146-1.061-0.438 l-4.293-4.293l-2.232,2.232c-0.391,0.391-0.902,0.586-1.414,0.586s-1.024-0.195-1.414-0.586l-0.172-0.172 c-0.781-0.781-0.781-2.047,0-2.828l8.172-8.172c0.391-0.391,0.902-0.586,1.414-0.586s1.024,0.195,1.414,0.586l0.172,0.172 c0.781,0.781,0.781,2.047,0,2.828l-2.232,2.232l4.293,4.293C30.731,27.024,30.731,27.976,30.146,28.561z M22.341,18.244 l-4.097,4.097L3.479,13.656C2.567,13.12,2,12.128,2,11.07V3c0-0.551,0.449-1,1-1h8.07c1.058,0,2.049,0.567,2.586,1.479 L22.341,18.244z M19.354,19.354c0.195-0.195,0.195-0.512,0-0.707l-15.5-15.5c-0.195-0.195-0.512-0.195-0.707,0s-0.195,0.512,0,0.707 l15.5,15.5C18.744,19.451,18.872,19.5,19,19.5S19.256,19.451,19.354,19.354z" fill="#000000"></path> </g></svg>',
+                }
+            ],
         });
         this.addOption(HUD, {
             label: "Health Bar Indicator",
@@ -4462,9 +4510,9 @@ class KxsClientHUD {
                 modifierKeyPressed = true;
             }
             // Activer le mode focus seulement si F est pressé pendant que la touche modificatrice est déjà enfoncée
-            if (modifierKeyPressed && e.code === 'KeyF') {
+            if (modifierKeyPressed && e.code === 'KeyF' && this.kxsClient.isFocusModeEnabled) {
                 e.preventDefault(); // Empêcher le comportement par défaut (recherche)
-                this.kxsClient.isFocusModeEnabled = !this.kxsClient.isFocusModeEnabled;
+                this.kxsClient.currentFocusModeState = !this.kxsClient.currentFocusModeState;
                 this.kxsClient.hud.toggleFocusMode();
                 this.kxsClient.nm.showNotification("Focus mode toggled", "info", 1200);
             }
@@ -4642,7 +4690,7 @@ class KxsClientHUD {
         });
     }
     toggleFocusMode() {
-        if (this.kxsClient.isFocusModeEnabled) {
+        if (this.kxsClient.currentFocusModeState) {
             this.observeHudOpacity(0.05);
         }
         else {
@@ -7286,10 +7334,11 @@ class KxsClient {
         this.isGunBorderChromatic = false;
         this.isKxsChatEnabled = true;
         this.isVoiceChatEnabled = false;
-        this.isFocusModeEnabled = false;
         this.isHealBarIndicatorEnabled = true;
         this.brightness = 50;
         this.isKxsClientLogoEnable = true;
+        this.isFocusModeEnabled = true;
+        this.currentFocusModeState = false;
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -7536,7 +7585,8 @@ class KxsClient {
             kxsNetworkSettings: this.kxsNetworkSettings,
             isHealBarIndicatorEnabled: this.isHealBarIndicatorEnabled,
             brightness: this.brightness,
-            isKxsClientLogoEnable: this.isKxsClientLogoEnable
+            isKxsClientLogoEnable: this.isKxsClientLogoEnable,
+            isFocusModeEnabled: this.isFocusModeEnabled
         }));
     }
     ;
@@ -7915,7 +7965,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -7946,6 +7996,7 @@ class KxsClient {
             this.isDeathSoundEnabled = (_z = savedSettings.isDeathSoundEnabled) !== null && _z !== void 0 ? _z : this.isDeathSoundEnabled;
             this.brightness = (_0 = savedSettings.brightness) !== null && _0 !== void 0 ? _0 : this.brightness;
             this.isKxsClientLogoEnable = (_1 = savedSettings.isKxsClientLogoEnable) !== null && _1 !== void 0 ? _1 : this.isKxsClientLogoEnable;
+            this.isFocusModeEnabled = (_2 = savedSettings.isFocusModeEnabled) !== null && _2 !== void 0 ? _2 : this.isFocusModeEnabled;
             // Apply brightness setting
             const brightnessValue = this.brightness / 50;
             document.documentElement.style.filter = `brightness(${brightnessValue})`;
@@ -9807,6 +9858,7 @@ class EasterEgg {
 
 
 
+
 if (window.location.href === "https://kxs.rip/") {
     /*
         - Injecting Easter Egg
@@ -9828,33 +9880,8 @@ else if (window.location.pathname === "/") {
     const backgroundElement = document.getElementById("background");
     if (backgroundElement)
         backgroundElement.style.backgroundImage = `url("${background_image}")`;
-    const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
-    existingFavicons.forEach(favicon => favicon.remove());
-    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-    const isFirefox = /Firefox/.test(navigator.userAgent);
-    const favicon = document.createElement('link');
-    if (isFirefox) {
-        favicon.rel = 'icon';
-        favicon.type = 'image/png';
-        favicon.href = kxs_logo;
-    }
-    else if (isChrome) {
-        favicon.rel = 'shortcut icon';
-        favicon.href = kxs_logo;
-        const link = document.createElement('link');
-        link.rel = 'icon';
-        link.href = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFdwI2QJIiywAAAABJRU5ErkJggg==';
-        document.head.appendChild(link);
-        setTimeout(() => {
-            link.href = kxs_logo;
-        }, 50);
-    }
-    else {
-        favicon.rel = 'icon';
-        favicon.href = kxs_logo;
-    }
+    setFavicon(kxs_logo);
     const kxsClient = new KxsClient();
-    document.head.appendChild(favicon);
     document.title = "KxsClient";
     const uiStatsLogo = document.querySelector('#ui-stats-logo');
     if (uiStatsLogo && kxs_settings.get("isKxsClientLogoEnable") === true) {
@@ -9877,8 +9904,6 @@ else if (window.location.pathname === "/") {
         loadingScreen.hide();
     }, 1400);
 }
-
-})();
 
 /******/ })()
 ;
