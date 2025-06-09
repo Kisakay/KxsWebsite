@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.1.25
+// @version      2.2.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1350,14 +1350,506 @@ function intercept(link, targetUrl) {
 }
 
 
+;// ./src/HUD/DesignSystem.ts
+/**
+ * KxsClient Modern Design System
+ * Implements a modern glassmorphism UI design with blur effects
+ */
+class DesignSystem {
+    /**
+     * Injects required fonts and animations into the document
+     */
+    static injectFonts() {
+        // Inject fonts
+        const fontLinks = [
+            'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+            'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap'
+        ];
+        fontLinks.forEach(href => {
+            if (!document.querySelector(`link[href="${href}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                document.head.appendChild(link);
+            }
+        });
+        // Inject animations if not already injected
+        if (!document.getElementById('kxs-design-system-animations')) {
+            const animationStyle = document.createElement('style');
+            animationStyle.id = 'kxs-design-system-animations';
+            animationStyle.textContent = `
+				@keyframes pulse {
+					0% { transform: scale(1); }
+					50% { transform: scale(1.05); }
+					100% { transform: scale(1); }
+				}
+			`;
+            document.head.appendChild(animationStyle);
+        }
+    }
+    /**
+     * Creates a glassmorphism element
+     * @param type Glass effect type
+     * @param additionalStyles Additional CSS styles
+     * @returns CSS style object
+     */
+    static createGlassStyle(type, additionalStyles = {}) {
+        const glass = this.glass[type];
+        return Object.assign({ backgroundColor: glass.background, backdropFilter: `blur(${glass.blur})`, WebkitBackdropFilter: `blur(${glass.blur})`, border: glass.border, boxShadow: glass.shadow, borderRadius: this.radius.lg }, additionalStyles);
+    }
+    /**
+     * Applies glassmorphism styles to an HTML element
+     * @param element HTML element to style
+     * @param type Glass effect type
+     * @param additionalStyles Additional CSS styles
+     */
+    static applyGlassEffect(element, type, additionalStyles = {}) {
+        const styles = this.createGlassStyle(type, additionalStyles);
+        Object.assign(element.style, styles);
+    }
+    /**
+     * Creates a modern button with glassmorphism effect
+     * @param text Button text
+     * @param onClick Click handler
+     * @param variant Button variant
+     * @returns HTMLButtonElement
+     */
+    static createButton(text, onClick, variant = 'primary') {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.addEventListener('click', onClick);
+        // Base styles
+        Object.assign(button.style, {
+            padding: `${this.spacing.sm} ${this.spacing.md}`,
+            borderRadius: this.radius.md,
+            fontFamily: this.fonts.primary,
+            fontSize: this.fonts.sizes.base,
+            fontWeight: '500',
+            color: this.colors.light,
+            backgroundColor: this.colors[variant],
+            border: 'none',
+            cursor: 'pointer',
+            transition: `all ${this.animation.normal} ease`,
+            outline: 'none',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        });
+        // Hover effect
+        button.addEventListener('mouseenter', () => {
+            button.style.transform = 'translateY(-2px)';
+            button.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+        });
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = 'translateY(0)';
+            button.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+        });
+        // Active effect
+        button.addEventListener('mousedown', () => {
+            button.style.transform = 'translateY(1px)';
+            button.style.boxShadow = '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06)';
+        });
+        return button;
+    }
+    /**
+     * Creates a modern card with glassmorphism effect
+     * @param content HTML content for the card
+     * @param type Glass effect type
+     * @returns HTMLDivElement
+     */
+    static createCard(content, type = 'medium') {
+        const card = document.createElement('div');
+        card.innerHTML = content;
+        this.applyGlassEffect(card, type, {
+            padding: this.spacing.lg,
+            margin: this.spacing.md,
+        });
+        return card;
+    }
+    /**
+     * Creates a modern slider element with fire theme
+     * @param min Minimum value
+     * @param max Maximum value
+     * @param value Initial value
+     * @param onChange Change handler
+     * @param showValue Whether to show value display
+     * @returns HTMLDivElement containing the slider
+     */
+    static createSliderElement(min, max, value, onChange, showValue = true) {
+        // Container principal sans fond
+        const container = document.createElement('div');
+        Object.assign(container.style, {
+            width: '100%',
+            fontFamily: this.fonts.primary,
+            position: 'relative',
+            background: 'transparent',
+        });
+        // Input range invisible pour la fonctionnalité
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = min.toString();
+        slider.max = max.toString();
+        slider.value = value.toString();
+        slider.step = '1';
+        // Wrapper pour le slider visuel
+        const sliderWrapper = document.createElement('div');
+        Object.assign(sliderWrapper.style, {
+            position: 'relative',
+            height: '32px',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            overflow: 'visible',
+            padding: '0 16px',
+            boxSizing: 'border-box',
+        });
+        // Track de base avec effet glassmorphism
+        const track = document.createElement('div');
+        Object.assign(track.style, {
+            position: 'absolute',
+            top: '50%',
+            left: '0',
+            right: '0',
+            height: '8px',
+            transform: 'translateY(-50%)',
+            borderRadius: this.radius.full,
+            background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.8) 100%)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(255, 255, 255, 0.1)',
+        });
+        // Barre de progression avec gradient moderne
+        const progressFill = document.createElement('div');
+        const progressWidth = ((value - min) / (max - min)) * 100;
+        Object.assign(progressFill.style, {
+            position: 'absolute',
+            top: '50%',
+            left: '0',
+            height: '8px',
+            width: `${progressWidth}%`,
+            transform: 'translateY(-50%)',
+            borderRadius: this.radius.full,
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(147, 51, 234, 0.9) 50%, rgba(236, 72, 153, 0.8) 100%)',
+            boxShadow: '0 0 16px rgba(59, 130, 246, 0.4), 0 0 8px rgba(147, 51, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease',
+            overflow: 'hidden',
+        });
+        // Effet de brillance animé sur la barre de progression
+        const shine = document.createElement('div');
+        Object.assign(shine.style, {
+            position: 'absolute',
+            top: '0',
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+            animation: 'sliderShine 2s ease-in-out infinite',
+        });
+        progressFill.appendChild(shine);
+        // Ajout de l'animation CSS pour l'effet de brillance
+        if (!document.querySelector('#slider-shine-animation')) {
+            const style = document.createElement('style');
+            style.id = 'slider-shine-animation';
+            style.textContent = `
+				@keyframes sliderShine {
+					0% { left: -100%; }
+					50% { left: 100%; }
+					100% { left: 100%; }
+				}
+			`;
+            document.head.appendChild(style);
+        }
+        // Assemblage du track
+        sliderWrapper.appendChild(track);
+        sliderWrapper.appendChild(progressFill);
+        // Input invisible pour la fonctionnalité
+        Object.assign(slider.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '32px',
+            opacity: '0',
+            margin: '0',
+            cursor: 'pointer',
+            zIndex: '3',
+        });
+        // Thumb personnalisé avec glassmorphism
+        const thumb = document.createElement('div');
+        const thumbPosition = ((value - min) / (max - min)) * 100;
+        Object.assign(thumb.style, {
+            position: 'absolute',
+            top: '50%',
+            left: `${thumbPosition}%`,
+            width: '18px',
+            height: '18px',
+            transform: 'translate(-50%, -50%)',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
+            backdropFilter: 'blur(10px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(10px) saturate(180%)',
+            border: '1px solid rgba(59, 130, 246, 0.6)',
+            boxShadow: '0 3px 12px rgba(59, 130, 246, 0.25), 0 1px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+            cursor: 'grab',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: '2',
+        });
+        // Point central du thumb
+        const thumbCenter = document.createElement('div');
+        Object.assign(thumbCenter.style, {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '6px',
+            height: '6px',
+            transform: 'translate(-50%, -50%)',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(147, 51, 234, 0.8))',
+            boxShadow: '0 0 6px rgba(59, 130, 246, 0.5)',
+        });
+        thumb.appendChild(thumbCenter);
+        // Affichage de la valeur avec style moderne
+        let valueDisplay = null;
+        if (showValue) {
+            valueDisplay = document.createElement('div');
+            valueDisplay.textContent = value.toString();
+            Object.assign(valueDisplay.style, {
+                position: 'absolute',
+                bottom: '-40px',
+                left: `${thumbPosition}%`,
+                transform: 'translateX(-50%)',
+                fontFamily: this.fonts.primary,
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#ffffff',
+                background: 'transparent',
+                padding: '4px 8px',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                zIndex: '4',
+            });
+            sliderWrapper.appendChild(valueDisplay);
+        }
+        // Labels min/max avec style amélioré
+        const labelsContainer = document.createElement('div');
+        Object.assign(labelsContainer.style, {
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '12px',
+            fontSize: '11px',
+            fontWeight: '500',
+            color: 'rgba(255, 255, 255, 0.8)',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+        });
+        const minLabel = document.createElement('div');
+        minLabel.textContent = min.toString();
+        const maxLabel = document.createElement('div');
+        maxLabel.textContent = max.toString();
+        labelsContainer.appendChild(minLabel);
+        labelsContainer.appendChild(maxLabel);
+        // Gestion des événements avec animations fluides
+        slider.addEventListener('input', () => {
+            const newValue = parseInt(slider.value);
+            const percentage = ((newValue - min) / (max - min)) * 100;
+            // Animation du thumb
+            thumb.style.left = `${percentage}%`;
+            // Animation de la barre de progression
+            progressFill.style.width = `${percentage}%`;
+            // Mise à jour de l'affichage de la valeur
+            if (valueDisplay) {
+                valueDisplay.textContent = newValue.toString();
+                valueDisplay.style.left = `${percentage}%`;
+            }
+            // Callback
+            onChange(newValue);
+        });
+        // Effets de survol et d'interaction
+        slider.addEventListener('mousedown', () => {
+            thumb.style.cursor = 'grabbing';
+            thumb.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            thumb.style.boxShadow = '0 5px 16px rgba(59, 130, 246, 0.35), 0 2px 10px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9)';
+            progressFill.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5), 0 0 12px rgba(147, 51, 234, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+        });
+        document.addEventListener('mouseup', () => {
+            thumb.style.cursor = 'grab';
+            thumb.style.transform = 'translate(-50%, -50%) scale(1)';
+            thumb.style.boxShadow = '0 3px 12px rgba(59, 130, 246, 0.25), 0 1px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)';
+            progressFill.style.boxShadow = '0 0 16px rgba(59, 130, 246, 0.4), 0 0 8px rgba(147, 51, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+        });
+        // Effet de survol
+        sliderWrapper.addEventListener('mouseenter', () => {
+            if (thumb.style.cursor !== 'grabbing') {
+                thumb.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                thumb.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.85)';
+            }
+        });
+        sliderWrapper.addEventListener('mouseleave', () => {
+            if (thumb.style.cursor !== 'grabbing') {
+                thumb.style.transform = 'translate(-50%, -50%) scale(1)';
+                thumb.style.boxShadow = '0 3px 12px rgba(59, 130, 246, 0.25), 0 1px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)';
+            }
+        });
+        // Assemblage final
+        sliderWrapper.appendChild(slider);
+        sliderWrapper.appendChild(thumb);
+        container.appendChild(sliderWrapper);
+        container.appendChild(labelsContainer);
+        return container;
+    }
+    /**
+     * Creates a modern notification with glassmorphism effect
+     * @param message Notification message
+     * @param type Notification type
+     * @param duration Duration in ms
+     * @returns HTMLDivElement
+     */
+    static createNotification(message, type, duration = 3000) {
+        const notification = document.createElement('div');
+        // Apply glassmorphism effect
+        this.applyGlassEffect(notification, 'medium', {
+            padding: `${this.spacing.md} ${this.spacing.lg}`,
+            margin: this.spacing.md,
+            borderLeft: `4px solid ${this.colors[type]}`,
+            color: this.colors.light,
+            fontFamily: this.fonts.primary,
+            fontSize: this.fonts.sizes.sm,
+            position: 'relative',
+            animation: `fadeInRight ${this.animation.normal} forwards`,
+            maxWidth: '300px',
+            boxSizing: 'border-box',
+        });
+        notification.textContent = message;
+        // Create and add animation styles if they don't exist
+        if (!document.getElementById('kxs-notification-animations')) {
+            const style = document.createElement('style');
+            style.id = 'kxs-notification-animations';
+            style.textContent = `
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes fadeOut {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
+      `;
+            document.head.appendChild(style);
+        }
+        // Auto-remove after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                notification.style.animation = `fadeOut ${this.animation.normal} forwards`;
+                // Use event listener for animation end instead of setTimeout
+                notification.addEventListener('animationend', function onAnimationEnd() {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                    notification.removeEventListener('animationend', onAnimationEnd);
+                }, { once: true });
+            }, duration);
+        }
+        return notification;
+    }
+}
+// Color palette
+DesignSystem.colors = {
+    primary: 'rgba(59, 130, 246, 0.9)', // Blue
+    secondary: 'rgba(139, 92, 246, 0.9)', // Purple
+    accent: 'rgba(236, 72, 153, 0.9)', // Pink
+    dark: 'rgba(17, 24, 39, 0.8)', // Dark background
+    light: 'rgba(255, 255, 255, 0.9)', // Light text
+    success: 'rgba(16, 185, 129, 0.9)', // Green
+    warning: 'rgba(245, 158, 11, 0.9)', // Orange
+    danger: 'rgba(239, 68, 68, 0.9)', // Red
+    info: 'rgba(59, 130, 246, 0.9)', // Blue
+};
+// Glassmorphism effects
+DesignSystem.glass = {
+    light: {
+        background: 'rgba(255, 255, 255, 0.1)',
+        blur: '10px',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        shadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+    },
+    medium: {
+        background: 'rgba(255, 255, 255, 0.15)',
+        blur: '15px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        shadow: '0 8px 32px 0 rgba(31, 38, 135, 0.4)',
+    },
+    dark: {
+        background: 'rgba(17, 24, 39, 0.75)',
+        blur: '20px',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        shadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+    },
+};
+// Font settings
+DesignSystem.fonts = {
+    primary: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    secondary: '"Cinzel", serif',
+    sizes: {
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.125rem',
+        xl: '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '1.875rem',
+        '4xl': '2.25rem',
+    }
+};
+// Border radius
+DesignSystem.radius = {
+    sm: '0.25rem',
+    md: '0.5rem',
+    lg: '1rem',
+    xl: '1.5rem',
+    full: '9999px',
+};
+// Spacing
+DesignSystem.spacing = {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+};
+// Animation durations
+DesignSystem.animation = {
+    fast: '0.15s',
+    normal: '0.3s',
+    slow: '0.5s',
+    pulse: 'pulse',
+};
+// Z-index layers
+DesignSystem.layers = {
+    base: 1,
+    menu: 10,
+    modal: 20,
+    tooltip: 30,
+    notification: 40,
+};
+
 ;// ./src/HUD/MOD/HealthWarning.ts
+
 class HealthWarning {
     constructor(kxsClient) {
         this.isDraggable = false;
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
         this.POSITION_KEY = 'lowHpWarning';
-        this.menuCheckInterval = null;
+        this.mouseMoveThrottle = false;
         this.warningElement = null;
         this.kxsClient = kxsClient;
         this.createWarningElement();
@@ -1368,27 +1860,29 @@ class HealthWarning {
     createWarningElement() {
         const warning = document.createElement("div");
         const uiTopLeft = document.getElementById("ui-top-left");
-        warning.style.cssText = `
-            position: fixed;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #ff0000;
-            border-radius: 5px;
-            padding: 10px 15px;
-            color: #ff0000;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            z-index: 9999;
-            display: none;
-            backdrop-filter: blur(5px);
-            pointer-events: none;
-            transition: border-color 0.3s ease;
-        `;
+        // Apply enhanced glassmorphism effect using DesignSystem
+        DesignSystem.applyGlassEffect(warning, 'medium', {
+            position: 'fixed',
+            border: '2px solid rgba(255, 0, 0, 0.8)',
+            padding: DesignSystem.spacing.md + ' ' + DesignSystem.spacing.lg,
+            color: '#ff4444',
+            fontFamily: DesignSystem.fonts.primary,
+            fontSize: DesignSystem.fonts.sizes.base,
+            fontWeight: '600',
+            zIndex: DesignSystem.layers.notification.toString(),
+            display: 'none',
+            pointerEvents: 'none',
+            transition: `all ${DesignSystem.animation.normal} ease`,
+            boxShadow: '0 8px 32px rgba(255, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2)',
+            textShadow: '0 0 10px rgba(255, 0, 0, 0.5)'
+        });
         const content = document.createElement("div");
-        content.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        `;
+        Object.assign(content.style, {
+            display: 'flex',
+            alignItems: 'center',
+            gap: DesignSystem.spacing.sm,
+            filter: 'drop-shadow(0 0 8px rgba(255, 0, 0, 0.4))'
+        });
         const icon = document.createElement("div");
         icon.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1546,14 +2040,21 @@ class HealthWarning {
         }
     }
     handleMouseMove(event) {
-        if (!this.isDragging || !this.warningElement)
+        if (!this.isDragging || !this.warningElement || this.mouseMoveThrottle)
             return;
-        // Calculate new position
-        const newX = event.clientX - this.dragOffset.x;
-        const newY = event.clientY - this.dragOffset.y;
-        // Update element position
-        this.warningElement.style.left = `${newX}px`;
-        this.warningElement.style.top = `${newY}px`;
+        // Optimized: throttle mousemove for better performance
+        this.mouseMoveThrottle = true;
+        requestAnimationFrame(() => {
+            // Calculate new position
+            const newX = event.clientX - this.dragOffset.x;
+            const newY = event.clientY - this.dragOffset.y;
+            // Update element position
+            if (this.warningElement) {
+                this.warningElement.style.left = `${newX}px`;
+                this.warningElement.style.top = `${newY}px`;
+            }
+            this.mouseMoveThrottle = false;
+        });
     }
     handleMouseUp() {
         if (this.isDragging && this.warningElement) {
@@ -1567,10 +2068,13 @@ class HealthWarning {
         }
     }
     startMenuCheckInterval() {
-        // Créer un intervalle qui vérifie régulièrement l'état du menu RSHIFT
-        this.menuCheckInterval = window.setInterval(() => {
+        // Écouter directement les événements RSHIFT pour une réaction immédiate
+        this.setupRShiftListener();
+    }
+    setupRShiftListener() {
+        // Fonction pour vérifier et mettre à jour l'état du mode placement
+        const checkMenuState = () => {
             var _a;
-            // Vérifier si le menu secondaire est ouvert
             const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.isOpen) || false;
             // Si le menu est ouvert et que nous ne sommes pas en mode placement, activer le mode placement
             if (isMenuOpen && this.kxsClient.isHealthWarningEnabled && !this.isDraggable) {
@@ -1580,7 +2084,29 @@ class HealthWarning {
             else if (!isMenuOpen && this.isDraggable) {
                 this.disableDragging();
             }
-        }, 100); // Vérifier toutes les 100ms
+        };
+        // S'abonner aux notifications de changement d'état du menu
+        if (!this.kxsClient.secondaryMenu.onMenuToggle) {
+            this.kxsClient.secondaryMenu.onMenuToggle = [];
+        }
+        this.kxsClient.secondaryMenu.onMenuToggle.push(checkMenuState);
+        // Vérifier l'état initial
+        checkMenuState();
+    }
+    destroy() {
+        var _a;
+        // Supprimer le callback du menu secondaire
+        if ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.onMenuToggle) {
+            const index = this.kxsClient.secondaryMenu.onMenuToggle.findIndex(callback => callback.toString().includes('checkMenuState'));
+            if (index !== -1) {
+                this.kxsClient.secondaryMenu.onMenuToggle.splice(index, 1);
+            }
+        }
+        // Supprimer l'élément du DOM
+        if (this.warningElement) {
+            this.warningElement.remove();
+            this.warningElement = null;
+        }
     }
 }
 
@@ -1824,82 +2350,6 @@ class GridSystem {
             delete this.counterElements[id];
         }
     }
-    areElementsAdjacent(element1, element2) {
-        const rect1 = element1.getBoundingClientRect();
-        const rect2 = element2.getBoundingClientRect();
-        const tolerance = 5;
-        const isLeftAdjacent = Math.abs((rect1.left + rect1.width) - rect2.left) < tolerance;
-        const isRightAdjacent = Math.abs((rect2.left + rect2.width) - rect1.left) < tolerance;
-        const isTopAdjacent = Math.abs((rect1.top + rect1.height) - rect2.top) < tolerance;
-        const isBottomAdjacent = Math.abs((rect2.top + rect2.height) - rect1.top) < tolerance;
-        const overlapVertically = (rect1.top < rect2.bottom && rect1.bottom > rect2.top) ||
-            (rect2.top < rect1.bottom && rect2.bottom > rect1.top);
-        const overlapHorizontally = (rect1.left < rect2.right && rect1.right > rect2.left) ||
-            (rect2.left < rect1.right && rect2.right > rect1.left);
-        let position = "";
-        if (isLeftAdjacent && overlapVertically)
-            position = "left";
-        else if (isRightAdjacent && overlapVertically)
-            position = "right";
-        else if (isTopAdjacent && overlapHorizontally)
-            position = "top";
-        else if (isBottomAdjacent && overlapHorizontally)
-            position = "bottom";
-        return {
-            isAdjacent: (isLeftAdjacent || isRightAdjacent) && overlapVertically ||
-                (isTopAdjacent || isBottomAdjacent) && overlapHorizontally,
-            position
-        };
-    }
-    updateCounterCorners() {
-        const counterIds = Object.keys(this.counterElements);
-        counterIds.forEach(id => {
-            const container = this.counterElements[id];
-            const counter = container.querySelector('div');
-            if (counter) {
-                counter.style.borderRadius = '5px';
-            }
-        });
-        for (let i = 0; i < counterIds.length; i++) {
-            for (let j = i + 1; j < counterIds.length; j++) {
-                const container1 = this.counterElements[counterIds[i]];
-                const container2 = this.counterElements[counterIds[j]];
-                const counter1 = container1.querySelector('div');
-                const counter2 = container2.querySelector('div');
-                if (counter1 && counter2) {
-                    const { isAdjacent, position } = this.areElementsAdjacent(container1, container2);
-                    if (isAdjacent) {
-                        switch (position) {
-                            case "left":
-                                counter1.style.borderTopRightRadius = '0';
-                                counter1.style.borderBottomRightRadius = '0';
-                                counter2.style.borderTopLeftRadius = '0';
-                                counter2.style.borderBottomLeftRadius = '0';
-                                break;
-                            case "right":
-                                counter1.style.borderTopLeftRadius = '0';
-                                counter1.style.borderBottomLeftRadius = '0';
-                                counter2.style.borderTopRightRadius = '0';
-                                counter2.style.borderBottomRightRadius = '0';
-                                break;
-                            case "top":
-                                counter1.style.borderBottomLeftRadius = '0';
-                                counter1.style.borderBottomRightRadius = '0';
-                                counter2.style.borderTopLeftRadius = '0';
-                                counter2.style.borderTopRightRadius = '0';
-                                break;
-                            case "bottom":
-                                counter1.style.borderTopLeftRadius = '0';
-                                counter1.style.borderTopRightRadius = '0';
-                                counter2.style.borderBottomLeftRadius = '0';
-                                counter2.style.borderBottomRightRadius = '0';
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-    }
     snapToGrid(element, x, y) {
         const rect = element.getBoundingClientRect();
         const elementWidth = rect.width;
@@ -1938,7 +2388,6 @@ class GridSystem {
                 snappedY = screenEdges.middle;
             }
         }
-        setTimeout(() => this.updateCounterCorners(), 10);
         return { x: snappedX, y: snappedY };
     }
     highlightNearestGridLine(x, y) {
@@ -2256,7 +2705,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.1.25"};
+const package_namespaceObject = {"rE":"2.2.1"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2534,6 +2983,7 @@ class DiscordWebSocket {
 
 
 ;// ./src/HUD/MOD/NotificationManager.ts
+
 class NotificationManager {
     constructor() {
         this.notifications = [];
@@ -2612,23 +3062,21 @@ class NotificationManager {
     }
     showNotification(message, type, duration = 5000) {
         const notification = document.createElement("div");
-        // Base styles
-        Object.assign(notification.style, {
+        // Apply glassmorphism effect using DesignSystem
+        DesignSystem.applyGlassEffect(notification, 'light', {
             position: "fixed",
             top: "20px",
             left: "20px",
-            padding: "12px 20px",
-            backgroundColor: "#333333",
+            padding: DesignSystem.spacing.md + " " + DesignSystem.spacing.lg,
             color: "white",
-            zIndex: "9999",
+            zIndex: DesignSystem.layers.notification.toString(),
             minWidth: "200px",
-            borderRadius: "4px",
             display: "flex",
             alignItems: "center",
-            gap: "10px",
+            gap: DesignSystem.spacing.sm,
             transform: "translateX(-120%)",
             opacity: "0",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+            fontFamily: DesignSystem.fonts.primary
         });
         // Create icon
         const icon = document.createElement("div");
@@ -2647,11 +3095,14 @@ class NotificationManager {
         const messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.flex = "1";
-        // Create progress bar
+        // Create progress bar with glass morphism style
         const progressBar = document.createElement("div");
         Object.assign(progressBar.style, {
             height: "4px",
-            backgroundColor: "#e6f3ff",
+            background: "rgba(255, 255, 255, 0.3)",
+            backdropFilter: "blur(5px)",
+            webkitBackdropFilter: "blur(5px)",
+            borderRadius: `0 0 ${DesignSystem.radius.lg} ${DesignSystem.radius.lg}`,
             width: "100%",
             position: "absolute",
             bottom: "0",
@@ -2671,13 +3122,14 @@ class NotificationManager {
             notification.style.transition = "all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)";
             notification.style.animation = "slideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards";
         });
-        // Exit animation and cleanup
+        // Exit animation and cleanup (optimized)
         setTimeout(() => {
             notification.style.animation = "slideOut 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards";
-            setTimeout(() => {
+            // Use event listener for animation end instead of setTimeout
+            notification.addEventListener('animationend', () => {
                 this.removeNotification(notification);
                 notification.remove();
-            }, 500);
+            }, { once: true });
         }, duration);
     }
 }
@@ -2686,12 +3138,15 @@ class NotificationManager {
 ;// ./src/HUD/ClientSecondaryMenu.ts
 
 
+
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "MISC"];
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
         this.searchTerm = '';
         // Fonction pour fermer un sous-menu
         this.closeSubMenu = () => { };
+        // Callbacks pour notifier les changements d'état du menu
+        this.onMenuToggle = [];
         this.shiftListener = (event) => {
             if (event.key === "Shift" && event.location == 2) {
                 this.clearMenu();
@@ -2702,11 +3157,14 @@ class KxsClientSecondaryMenu {
         };
         this.mouseMoveListener = (e) => {
             if (this.isDragging) {
-                const x = e.clientX - this.dragOffset.x;
-                const y = e.clientY - this.dragOffset.y;
-                this.menu.style.transform = 'none';
-                this.menu.style.left = `${x}px`;
-                this.menu.style.top = `${y}px`;
+                // Optimized: use requestAnimationFrame for smooth dragging
+                requestAnimationFrame(() => {
+                    const x = e.clientX - this.dragOffset.x;
+                    const y = e.clientY - this.dragOffset.y;
+                    this.menu.style.transform = 'none';
+                    this.menu.style.left = `${x}px`;
+                    this.menu.style.top = `${y}px`;
+                });
             }
         };
         this.mouseUpListener = () => {
@@ -2746,40 +3204,55 @@ class KxsClientSecondaryMenu {
         // Nous ne gérons pas mousedown et mouseup ici car ils sont gérés dans addDragListeners()
     }
     applyMenuStyles() {
-        // Styles par défaut (desktop/tablette)
-        const defaultStyles = {
-            backgroundColor: "rgba(17, 24, 39, 0.95)",
-            padding: "20px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.8)",
-            zIndex: "10001",
-            width: "800px",
-            fontFamily: "'Segoe UI', Arial, sans-serif",
-            color: "#fff",
-            maxHeight: "80vh",
-            overflowY: "auto",
-            overflowX: "hidden", // Prevent horizontal scrolling
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        // Injecter les polices et animations du DesignSystem
+        DesignSystem.injectFonts();
+        // Appliquer le style glassmorphism du DesignSystem avec dimensions réduites
+        DesignSystem.applyGlassEffect(this.menu, 'dark', {
             position: "fixed",
-            top: "10%",
             left: "50%",
-            transform: "translateX(-50%)",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: isMobile ? "85%" : "55%",
+            maxWidth: "650px",
+            maxHeight: "70vh",
+            color: "#fff",
+            padding: isMobile ? "10px" : "18px",
+            zIndex: "10000",
             display: "none",
-            boxSizing: "border-box", // Include padding in width calculation
-        };
-        // Styles réduits pour mobile
-        const mobileStyles = {
-            padding: "6px",
-            borderRadius: "7px",
-            width: "78vw",
-            maxWidth: "84vw",
-            fontSize: "10px",
-            maxHeight: "60vh",
-            top: "4%",
-            left: "50%",
-        };
-        Object.assign(this.menu.style, defaultStyles);
-        if (this.kxsClient.isMobile && this.kxsClient.isMobile()) {
-            Object.assign(this.menu.style, mobileStyles);
+            flexDirection: "column",
+            fontFamily: DesignSystem.fonts.primary,
+            cursor: "grab",
+            userSelect: "none",
+            overflow: "hidden",
+            boxSizing: "border-box",
+            transition: `all ${DesignSystem.animation.normal} ease`,
+            // Effet glassmorphism optimisé pour les performances
+            backgroundColor: "rgba(15, 23, 42, 0.85)",
+            backdropFilter: "blur(12px) saturate(150%)",
+            WebkitBackdropFilter: "blur(12px) saturate(150%)",
+            willChange: "transform, opacity",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            borderRadius: "14px",
+            boxShadow: "0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08)"
+        });
+        // Styles réduits pour mobile avec glassmorphism optimisé
+        if (isMobile) {
+            Object.assign(this.menu.style, {
+                padding: "8px",
+                borderRadius: "12px",
+                width: "75vw",
+                maxWidth: "80vw",
+                fontSize: "11px",
+                maxHeight: "65vh",
+                top: "5%",
+                // Glassmorphism mobile optimisé pour les performances
+                backdropFilter: "blur(10px) saturate(140%)",
+                WebkitBackdropFilter: "blur(10px) saturate(140%)",
+                willChange: "transform, opacity",
+                backgroundColor: "rgba(15, 23, 42, 0.9)",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+            });
         }
     }
     blockMousePropagation(element, preventDefault = true) {
@@ -2917,8 +3390,8 @@ class KxsClientSecondaryMenu {
                     // L'utilisateur a cliqué sur un autre champ de texte, ne pas reprendre le focus
                     return;
                 }
-                // Pour les autres cas, seulement si aucun autre élément n'a le focus
-                setTimeout(() => {
+                // Pour les autres cas, seulement si aucun autre élément n'a le focus (optimized)
+                requestAnimationFrame(() => {
                     const activeElement = document.activeElement;
                     if (this.isClientMenuVisible &&
                         activeElement &&
@@ -2927,7 +3400,7 @@ class KxsClientSecondaryMenu {
                         activeElement.tagName !== 'TEXTAREA') {
                         searchInput.focus();
                     }
-                }, 100);
+                });
             });
         }
         this.menu.appendChild(header);
@@ -3569,31 +4042,122 @@ class KxsClientSecondaryMenu {
         return section;
     }
     createToggleButton(option) {
+        // Créer le bouton principal
         const btn = document.createElement("button");
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
-        Object.assign(btn.style, {
-            width: "100%",
-            padding: isMobile ? "2px 0px" : "8px",
-            height: isMobile ? "24px" : "auto",
-            background: option.value ? "#059669" : "#DC2626",
-            border: "none",
-            borderRadius: isMobile ? "3px" : "6px",
-            color: "white",
-            cursor: "pointer",
-            transition: "background 0.2s",
-            fontSize: isMobile ? "9px" : "14px",
-            fontWeight: "bold",
-            minHeight: isMobile ? "20px" : "unset",
-            letterSpacing: isMobile ? "0.5px" : "1px"
+        // Créer l'indicateur (point vert/rouge)
+        const indicator = document.createElement("div");
+        // Appliquer le style de base au bouton avec glassmorphism moderne
+        btn.style.width = "100%";
+        btn.style.padding = isMobile ? "8px 14px" : "12px 18px";
+        btn.style.height = isMobile ? "32px" : "42px";
+        btn.style.background = "linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.08) 100%)";
+        btn.style.backdropFilter = "blur(16px) saturate(180%)";
+        btn.style['-webkit-backdrop-filter'] = "blur(16px) saturate(180%)";
+        btn.style.border = "1px solid rgba(255, 255, 255, 0.18)";
+        btn.style.borderRadius = "12px";
+        btn.style.color = "#ffffff";
+        btn.style.cursor = "pointer";
+        btn.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        btn.style.fontSize = isMobile ? "11px" : "14px";
+        btn.style.fontWeight = "500";
+        btn.style.letterSpacing = "0.3px";
+        btn.style.fontFamily = "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        btn.style.position = "relative";
+        btn.style.display = "flex";
+        btn.style.alignItems = "center";
+        btn.style.justifyContent = "space-between";
+        btn.style.textAlign = "left";
+        btn.style.boxShadow = "0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+        btn.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.3)";
+        btn.style.overflow = "hidden";
+        // Appliquer le style à l'indicateur avec effet glassmorphism
+        indicator.style.width = isMobile ? "10px" : "12px";
+        indicator.style.height = isMobile ? "10px" : "12px";
+        indicator.style.borderRadius = "50%";
+        indicator.style.marginLeft = "12px";
+        indicator.style.flexShrink = "0";
+        indicator.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        indicator.style.border = "2px solid rgba(255, 255, 255, 0.2)";
+        indicator.style.backdropFilter = "blur(8px)";
+        indicator.style['-webkit-backdrop-filter'] = "blur(8px)";
+        // Créer un conteneur pour le texte
+        const textSpan = document.createElement("span");
+        textSpan.style.flexGrow = "1";
+        // Fonction pour mettre à jour l'apparence du bouton
+        const updateButtonState = () => {
+            const isEnabled = option.value;
+            // Mettre à jour le texte
+            textSpan.textContent = isEnabled ? "ENABLED" : "DISABLED";
+            // Mettre à jour le style du bouton avec glassmorphism
+            btn.style.background = isEnabled ?
+                "linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(34, 197, 94, 0.12) 100%)" :
+                "linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.12) 100%)";
+            btn.style.border = isEnabled ?
+                "1px solid rgba(74, 222, 128, 0.3)" :
+                "1px solid rgba(248, 113, 113, 0.3)";
+            btn.style.boxShadow = isEnabled ?
+                "0 4px 16px rgba(74, 222, 128, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)" :
+                "0 4px 16px rgba(248, 113, 113, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+            // Mettre à jour l'indicateur avec effet glassmorphism
+            indicator.style.background = isEnabled ?
+                "radial-gradient(circle, #4ade80 0%, #22c55e 100%)" :
+                "radial-gradient(circle, #f87171 0%, #ef4444 100%)";
+            indicator.style.boxShadow = isEnabled ?
+                "0 0 12px rgba(74, 222, 128, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)" :
+                "0 0 12px rgba(248, 113, 113, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)";
+        };
+        // Ajouter les éléments au DOM
+        btn.appendChild(textSpan);
+        btn.appendChild(indicator);
+        // Définir l'état initial
+        updateButtonState();
+        // Gérer les événements de survol avec glassmorphism amélioré
+        btn.addEventListener("mouseenter", () => {
+            const isEnabled = option.value;
+            btn.style.transform = "translateY(-3px) scale(1.02)";
+            btn.style.backdropFilter = "blur(20px) saturate(200%)";
+            btn.style['-webkit-backdrop-filter'] = "blur(20px) saturate(200%)";
+            btn.style.boxShadow = isEnabled ?
+                "0 8px 24px rgba(74, 222, 128, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(74, 222, 128, 0.2)" :
+                "0 8px 24px rgba(248, 113, 113, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(248, 113, 113, 0.2)";
+            btn.style.border = isEnabled ?
+                "1px solid rgba(74, 222, 128, 0.4)" :
+                "1px solid rgba(248, 113, 113, 0.4)";
         });
-        btn.textContent = option.value ? "ENABLED" : "DISABLED";
-        btn.addEventListener("click", () => {
-            var _a;
+        btn.addEventListener("mouseleave", () => {
+            const isEnabled = option.value;
+            btn.style.transform = "translateY(0) scale(1)";
+            btn.style.backdropFilter = "blur(16px) saturate(180%)";
+            btn.style['-webkit-backdrop-filter'] = "blur(16px) saturate(180%)";
+            btn.style.boxShadow = isEnabled ?
+                "0 4px 16px rgba(74, 222, 128, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)" :
+                "0 4px 16px rgba(248, 113, 113, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+            btn.style.border = isEnabled ?
+                "1px solid rgba(74, 222, 128, 0.3)" :
+                "1px solid rgba(248, 113, 113, 0.3)";
+        });
+        // Gérer le clic
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Inverser la valeur
             const newValue = !option.value;
             option.value = newValue;
-            btn.textContent = newValue ? "ENABLED" : "DISABLED";
-            btn.style.background = newValue ? "#059669" : "#DC2626";
-            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, newValue);
+            // Mettre à jour l'apparence
+            updateButtonState();
+            // Ajouter une animation de pulsation (optimized)
+            btn.style.animation = `${DesignSystem.animation.pulse} 0.5s ease`;
+            // Use event listener for animation end instead of setTimeout
+            btn.addEventListener('animationend', function onAnimationEnd() {
+                btn.style.animation = '';
+                btn.removeEventListener('animationend', onAnimationEnd);
+            }, { once: true });
+            // Appeler le gestionnaire onChange
+            if (option.onChange) {
+                option.onChange(newValue);
+            }
+            return false;
         });
         this.blockMousePropagation(btn);
         return btn;
@@ -3601,22 +4165,90 @@ class KxsClientSecondaryMenu {
     createClickButton(option) {
         const btn = document.createElement("button");
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
-        Object.assign(btn.style, {
-            width: "100%",
-            padding: isMobile ? "2px 0px" : "8px",
-            height: isMobile ? "24px" : "auto",
-            background: "#3B82F6",
-            border: "none",
-            borderRadius: "6px",
-            color: "white",
-            cursor: "pointer",
-            transition: "background 0.2s",
-            fontSize: "14px",
-            fontWeight: "bold"
-        });
+        // Appliquer un style glassmorphism moderne
+        btn.style.width = "100%";
+        btn.style.padding = isMobile ? "6px 8px" : "10px 12px";
+        btn.style.height = isMobile ? "32px" : "auto";
+        btn.style.minHeight = isMobile ? "32px" : "40px";
+        btn.style.background = "linear-gradient(135deg, rgba(66, 135, 245, 0.15) 0%, rgba(59, 118, 217, 0.12) 100%)";
+        btn.style.backdropFilter = "blur(16px) saturate(180%)";
+        btn.style['-webkit-backdrop-filter'] = "blur(16px) saturate(180%)";
+        btn.style.border = "1px solid rgba(66, 135, 245, 0.25)";
+        btn.style.borderRadius = "12px";
+        btn.style.color = "#ffffff";
+        btn.style.cursor = "pointer";
+        btn.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        btn.style.fontSize = isMobile ? "11px" : "13px";
+        btn.style.fontWeight = "500";
+        btn.style.letterSpacing = "0.2px";
+        btn.style.fontFamily = "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        btn.style.boxShadow = "0 4px 16px rgba(66, 135, 245, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+        btn.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.3)";
+        btn.style.position = "relative";
+        btn.style.overflow = "hidden";
+        btn.style.whiteSpace = "nowrap";
+        btn.style.textOverflow = "ellipsis";
+        btn.style.display = "flex";
+        btn.style.alignItems = "center";
+        btn.style.justifyContent = "center";
+        btn.style.textAlign = "center";
         btn.textContent = option.label;
+        // Ajouter les effets hover modernes
+        btn.addEventListener("mouseenter", () => {
+            btn.style.transform = "translateY(-3px) scale(1.02)";
+            btn.style.backdropFilter = "blur(20px) saturate(200%)";
+            btn.style['-webkit-backdrop-filter'] = "blur(20px) saturate(200%)";
+            btn.style.boxShadow = "0 8px 24px rgba(66, 135, 245, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(66, 135, 245, 0.2)";
+            btn.style.border = "1px solid rgba(66, 135, 245, 0.35)";
+        });
+        btn.addEventListener("mouseleave", () => {
+            btn.style.transform = "translateY(0) scale(1)";
+            btn.style.backdropFilter = "blur(16px) saturate(180%)";
+            btn.style['-webkit-backdrop-filter'] = "blur(16px) saturate(180%)";
+            btn.style.boxShadow = "0 4px 16px rgba(66, 135, 245, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+            btn.style.border = "1px solid rgba(66, 135, 245, 0.25)";
+        });
+        // Ajouter l'effet actif
+        btn.addEventListener("mousedown", () => {
+            btn.style.transform = "translateY(-1px) scale(0.98)";
+            btn.style.boxShadow = "0 2px 8px rgba(66, 135, 245, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+        });
         btn.addEventListener("click", () => {
             var _a;
+            // Add ripple effect for feedback
+            const ripple = document.createElement("span");
+            Object.assign(ripple.style, {
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "rgba(255, 255, 255, 0.3)",
+                borderRadius: "50%",
+                width: "0",
+                height: "0",
+                animation: "ripple 0.6s linear",
+                zIndex: "1"
+            });
+            // Add ripple animation if it doesn't exist
+            if (!document.getElementById("kxs-ripple-animation")) {
+                const style = document.createElement("style");
+                style.id = "kxs-ripple-animation";
+                style.textContent = `
+					@keyframes ripple {
+						to {
+							width: 200px;
+							height: 200px;
+							opacity: 0;
+						}
+					}
+				`;
+                document.head.appendChild(style);
+            }
+            btn.appendChild(ripple);
+            // Use event listener for animation end instead of setTimeout
+            ripple.addEventListener('animationend', () => {
+                ripple.remove();
+            }, { once: true });
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, true);
         });
         this.blockMousePropagation(btn);
@@ -3647,31 +4279,71 @@ class KxsClientSecondaryMenu {
         }, true); // true = phase de capture
     }
     createInputElement(option) {
+        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        // Create container for input with label effect
+        const container = document.createElement("div");
+        Object.assign(container.style, {
+            position: "relative",
+            width: "100%",
+            margin: "4px 0"
+        });
+        // Create the input element
         const input = document.createElement("input");
         input.type = "text";
         input.value = String(option.value);
         if (option.placeholder) {
             input.placeholder = option.placeholder;
         }
-        Object.assign(input.style, {
+        // Apply glassmorphism effect to input
+        DesignSystem.applyGlassEffect(input, 'dark', {
             width: "100%",
-            padding: "8px",
-            background: "rgba(55, 65, 81, 0.8)",
-            border: "none",
+            padding: isMobile ? "6px 8px" : "8px 10px",
+            background: "rgba(17, 24, 39, 0.7)",
             borderRadius: "6px",
-            color: "#FFAE00",
-            fontSize: "14px"
+            color: "#FFAE00", // Gold color
+            fontSize: isMobile ? "12px" : "14px",
+            fontFamily: DesignSystem.fonts.primary,
+            boxSizing: "border-box",
+            border: "1px solid rgba(255, 174, 0, 0.3)",
+            transition: `all ${DesignSystem.animation.normal} ease`,
+            outline: "none"
+        });
+        // Add focus effects
+        input.addEventListener("focus", () => {
+            input.style.boxShadow = "0 0 0 2px rgba(255, 174, 0, 0.2)";
+            input.style.border = "1px solid rgba(255, 174, 0, 0.5)";
+        });
+        input.addEventListener("blur", () => {
+            input.style.boxShadow = "none";
+            input.style.border = "1px solid rgba(255, 174, 0, 0.3)";
         });
         input.addEventListener("change", () => {
             var _a;
             option.value = input.value;
             (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, input.value);
+            // Visual feedback on change (optimized)
+            input.style.animation = "glow 0.5s ease";
+            // Use event listener for animation end instead of setTimeout
+            input.addEventListener('animationend', function onAnimationEnd() {
+                input.style.animation = "";
+                input.removeEventListener('animationend', onAnimationEnd);
+            }, { once: true });
         });
-        // Empêcher la propagation des touches de texte vers la page web
-        // mais permettre l'interaction avec l'input
+        // Add glow animation if it doesn't exist
+        if (!document.getElementById("kxs-input-animations")) {
+            const style = document.createElement("style");
+            style.id = "kxs-input-animations";
+            style.textContent = `
+				@keyframes glow {
+					0% { box-shadow: 0 0 0 0 rgba(255, 174, 0, 0.4); }
+					50% { box-shadow: 0 0 10px 3px rgba(255, 174, 0, 0.4); }
+					100% { box-shadow: 0 0 0 0 rgba(255, 174, 0, 0.4); }
+				}
+			`;
+            document.head.appendChild(style);
+        }
+        // Prevent key propagation to the game
         input.addEventListener("keydown", (e) => {
-            // Ne pas arrêter la propagation des touches de navigation (flèches, tab, etc.)
-            // qui sont nécessaires pour naviguer dans le champ de texte
             e.stopPropagation();
         });
         input.addEventListener("keyup", (e) => {
@@ -3681,167 +4353,27 @@ class KxsClientSecondaryMenu {
             e.stopPropagation();
         });
         this.blockMousePropagation(input);
-        return input;
+        container.appendChild(input);
+        return container;
     }
     createSliderElement(option) {
-        const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
-        const container = document.createElement("div");
-        Object.assign(container.style, {
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            marginTop: isMobile ? "3px" : "5px",
-        });
-        // Conteneur pour le slider et la valeur
-        const sliderContainer = document.createElement("div");
-        Object.assign(sliderContainer.style, {
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            gap: isMobile ? "8px" : "12px",
-        });
-        // Wrapper du slider pour gérer la couleur de fond
-        const sliderWrapper = document.createElement("div");
-        Object.assign(sliderWrapper.style, {
-            position: "relative",
-            width: "100%",
-            height: isMobile ? "10px" : "12px",
-            background: "rgba(30, 35, 45, 0.5)",
-            borderRadius: "6px",
-            overflow: "hidden",
-            border: "1px solid rgba(59, 130, 246, 0.25)",
-        });
-        // Barre de progression bleue
-        const progressBar = document.createElement("div");
-        Object.assign(progressBar.style, {
-            position: "absolute",
-            left: "0",
-            top: "0",
-            height: "100%",
-            width: `${((Number(option.value) - (option.min || 0)) / ((option.max || 100) - (option.min || 0))) * 100}%`,
-            background: "#3B82F6", // Couleur bleue pleine
-            borderRadius: "6px 0 0 6px", // Arrondi uniquement à gauche
-            transition: "width 0.1s ease-out",
-        });
-        // Créer le slider
-        const slider = document.createElement("input");
-        slider.type = "range";
-        slider.min = String(option.min || 0);
-        slider.max = String(option.max || 100);
-        slider.step = String(option.step || 1);
-        slider.value = String(option.value);
-        slider.className = "kxs-minimal-slider";
-        Object.assign(slider.style, {
-            position: "absolute",
-            left: "0",
-            top: "0",
-            width: "100%",
-            height: "100%",
-            margin: "0",
-            appearance: "none",
-            background: "transparent", // Transparent pour voir la barre de progression
-            cursor: "pointer",
-            outline: "none",
-            border: "none",
-            zIndex: "2", // Au-dessus de la barre de progression
-        });
-        // Valeur actuelle avec style simple
-        const valueDisplay = document.createElement("div");
-        valueDisplay.textContent = String(option.value);
-        Object.assign(valueDisplay.style, {
-            minWidth: isMobile ? "28px" : "36px",
-            textAlign: "center",
-            color: "#ffffff",
-            fontSize: isMobile ? "11px" : "13px",
-            fontFamily: "'Segoe UI', Arial, sans-serif",
-            background: "rgba(59, 130, 246, 0.1)",
-            padding: isMobile ? "2px 4px" : "3px 6px",
-            borderRadius: "4px",
-            border: "1px solid rgba(59, 130, 246, 0.3)",
-            transition: "all 0.15s ease-out",
-        });
-        // Styles personnalisés pour le curseur du slider uniquement
-        const sliderStyles = `
-			/* Style du curseur */
-			.kxs-minimal-slider::-webkit-slider-thumb {
-				appearance: none;
-				width: ${isMobile ? "14px" : "16px"};
-				height: ${isMobile ? "14px" : "16px"};
-				border-radius: 50%;
-				background: linear-gradient(135deg, #4f8bf9, #3B82F6);
-				cursor: pointer;
-				border: none;
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-				transition: background 0.2s, transform 0.1s;
-				z-index: 3;
-			}
-
-			.kxs-minimal-slider::-moz-range-thumb {
-				width: ${isMobile ? "14px" : "16px"};
-				height: ${isMobile ? "14px" : "16px"};
-				border-radius: 50%;
-				background: linear-gradient(135deg, #4f8bf9, #3B82F6);
-				cursor: pointer;
-				border: none;
-				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-				transition: background 0.2s, transform 0.1s;
-				z-index: 3;
-			}
-
-			/* Masquer la piste par défaut */
-			.kxs-minimal-slider::-webkit-slider-runnable-track {
-				background: transparent;
-				height: 100%;
-			}
-			
-			.kxs-minimal-slider::-moz-range-track {
-				background: transparent;
-				height: 100%;
-			}
-
-			/* Effets au survol */
-			.kxs-minimal-slider:hover::-webkit-slider-thumb {
-				background: linear-gradient(135deg, #5a93fa, #4289f7);
-				transform: scale(1.05);
-			}
-
-			.kxs-minimal-slider:hover::-moz-range-thumb {
-				background: linear-gradient(135deg, #5a93fa, #4289f7);
-				transform: scale(1.05);
-			}
-		`;
-        // Ajouter les styles personnalisés
-        const style = document.createElement("style");
-        style.textContent = sliderStyles;
-        document.head.appendChild(style);
-        // Ajouter les gestionnaires d'événements
-        slider.addEventListener("input", () => {
+        // Create the slider using DesignSystem with proper event handling
+        const sliderElement = DesignSystem.createSliderElement(option.min || 0, option.max || 100, Number(option.value), (newValue) => {
             var _a;
-            // Mettre à jour la valeur affichée
-            valueDisplay.textContent = slider.value;
-            // Mettre à jour la largeur de la barre de progression
-            const percentage = ((Number(slider.value) - (option.min || 0)) / ((option.max || 100) - (option.min || 0))) * 100;
-            progressBar.style.width = `${percentage}%`;
-            // Mettre à jour la valeur de l'option
-            option.value = Number(slider.value);
-            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, Number(slider.value));
-            // Effet visuel sur la valeur
-            valueDisplay.style.background = "rgba(59, 130, 246, 0.25)";
-            setTimeout(() => {
-                valueDisplay.style.background = "rgba(59, 130, 246, 0.1)";
-            }, 150);
+            option.value = newValue;
+            (_a = option.onChange) === null || _a === void 0 ? void 0 : _a.call(option, newValue);
+        }, true);
+        // Prevent mouse events from propagating to the game
+        const sliderInput = sliderElement.querySelector("input");
+        if (sliderInput) {
+            this.blockMousePropagation(sliderInput, false);
+        }
+        // Apply consistent styling
+        Object.assign(sliderElement.style, {
+            width: "100%",
+            margin: "5px 0"
         });
-        // Empêcher les événements de se propager vers le jeu
-        slider.addEventListener("mousedown", (e) => e.stopPropagation());
-        slider.addEventListener("mouseup", (e) => e.stopPropagation());
-        this.blockMousePropagation(slider, false);
-        // Assembler tous les éléments
-        sliderWrapper.appendChild(progressBar);
-        sliderWrapper.appendChild(slider);
-        sliderContainer.appendChild(sliderWrapper);
-        sliderContainer.appendChild(valueDisplay);
-        container.appendChild(sliderContainer);
-        return container;
+        return sliderElement;
     }
     createInfoElement(option) {
         const info = document.createElement("div");
@@ -3863,23 +4395,56 @@ class KxsClientSecondaryMenu {
     createSubButton(option) {
         const btn = document.createElement("button");
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
-        // Styles pour le bouton de sous-menu (gris par défaut)
-        Object.assign(btn.style, {
+        // Apply modern glassmorphism effect
+        DesignSystem.applyGlassEffect(btn, 'dark', {
             width: "100%",
-            padding: isMobile ? "2px 0px" : "8px",
-            height: isMobile ? "24px" : "auto",
-            background: "#6B7280", // Couleur grise par défaut
-            border: "none",
-            borderRadius: isMobile ? "3px" : "6px",
-            color: "white",
+            padding: isMobile ? "6px 8px" : "12px 16px",
+            height: isMobile ? "32px" : "auto",
+            background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 100%)",
+            backdropFilter: "blur(12px) saturate(180%)",
+            WebkitBackdropFilter: "blur(12px) saturate(180%)",
+            border: "1px solid rgba(59, 130, 246, 0.3)",
+            borderRadius: isMobile ? "8px" : "12px",
+            color: "#ffffff",
             cursor: "pointer",
-            transition: "background 0.2s",
-            fontSize: isMobile ? "9px" : "14px",
-            fontWeight: "bold",
-            minHeight: isMobile ? "20px" : "unset",
-            letterSpacing: isMobile ? "0.5px" : "1px"
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            fontSize: isMobile ? "11px" : "14px",
+            fontWeight: "600",
+            letterSpacing: "0.5px",
+            fontFamily: DesignSystem.fonts.primary,
+            boxShadow: "0 4px 16px rgba(59, 130, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+            textShadow: "0 1px 2px rgba(0, 0, 0, 0.3)",
+            position: "relative",
+            overflow: "hidden"
         });
-        btn.textContent = "CONFIGURE";
+        // Add a subtle icon to indicate configuration
+        btn.innerHTML = `<span style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+			<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				<path d="M19.4 15C19.2669 15.3016 19.2272 15.6362 19.286 15.9606C19.3448 16.285 19.4995 16.5843 19.73 16.82L19.79 16.88C19.976 17.0657 20.1235 17.2863 20.2241 17.5291C20.3248 17.7719 20.3766 18.0322 20.3766 18.295C20.3766 18.5578 20.3248 18.8181 20.2241 19.0609C20.1235 19.3037 19.976 19.5243 19.79 19.71C19.6043 19.896 19.3837 20.0435 19.1409 20.1441C18.8981 20.2448 18.6378 20.2966 18.375 20.2966C18.1122 20.2966 17.8519 20.2448 17.6091 20.1441C17.3663 20.0435 17.1457 19.896 16.96 19.71L16.9 19.65C16.6643 19.4195 16.365 19.2648 16.0406 19.206C15.7162 19.1472 15.3816 19.1869 15.08 19.32C14.7842 19.4468 14.532 19.6572 14.3543 19.9255C14.1766 20.1938 14.0813 20.5082 14.08 20.83V21C14.08 21.5304 13.8693 22.0391 13.4942 22.4142C13.1191 22.7893 12.6104 23 12.08 23C11.5496 23 11.0409 22.7893 10.6658 22.4142C10.2907 22.0391 10.08 21.5304 10.08 21V20.91C10.0723 20.579 9.96512 20.258 9.77251 19.9887C9.5799 19.7194 9.31074 19.5143 9 19.4C8.69838 19.2669 8.36381 19.2272 8.03941 19.286C7.71502 19.3448 7.41568 19.4995 7.18 19.73L7.12 19.79C6.93425 19.976 6.71368 20.1235 6.47088 20.2241C6.22808 20.3248 5.96783 20.3766 5.705 20.3766C5.44217 20.3766 5.18192 20.3248 4.93912 20.2241C4.69632 20.1235 4.47575 19.976 4.29 19.79C4.10405 19.6043 3.95653 19.3837 3.85588 19.1409C3.75523 18.8981 3.70343 18.6378 3.70343 18.375C3.70343 18.1122 3.75523 17.8519 3.85588 17.6091C3.95653 17.3663 4.10405 17.1457 4.29 16.96L4.35 16.9C4.58054 16.6643 4.73519 16.365 4.794 16.0406C4.85282 15.7162 4.81312 15.3816 4.68 15.08C4.55324 14.7842 4.34276 14.532 4.07447 14.3543C3.80618 14.1766 3.49179 14.0813 3.17 14.08H3C2.46957 14.08 1.96086 13.8693 1.58579 13.4942C1.21071 13.1191 1 12.6104 1 12.08C1 11.5496 1.21071 11.0409 1.58579 10.6658C1.96086 10.2907 2.46957 10.08 3 10.08H3.09C3.42099 10.0723 3.742 9.96512 4.0113 9.77251C4.28059 9.5799 4.48572 9.31074 4.6 9C4.73312 8.69838 4.77282 8.36381 4.714 8.03941C4.65519 7.71502 4.50054 7.41568 4.27 7.18L4.21 7.12C4.02405 6.93425 3.87653 6.71368 3.77588 6.47088C3.67523 6.22808 3.62343 5.96783 3.62343 5.705C3.62343 5.44217 3.67523 5.18192 3.77588 4.93912C3.87653 4.69632 4.02405 4.47575 4.21 4.29C4.39575 4.10405 4.61632 3.95653 4.85912 3.85588C5.10192 3.75523 5.36217 3.70343 5.625 3.70343C5.88783 3.70343 6.14808 3.75523 6.39088 3.85588C6.63368 3.95653 6.85425 4.10405 7.04 4.29L7.1 4.35C7.33568 4.58054 7.63502 4.73519 7.95941 4.794C8.28381 4.85282 8.61838 4.81312 8.92 4.68H9C9.29577 4.55324 9.54802 4.34276 9.72569 4.07447C9.90337 3.80618 9.99872 3.49179 10 3.17V3C10 2.46957 10.2107 1.96086 10.5858 1.58579C10.9609 1.21071 11.4696 1 12 1C12.5304 1 13.0391 1.21071 13.4142 1.58579C13.7893 1.96086 14 2.46957 14 3V3.09C14.0013 3.41179 14.0966 3.72618 14.2743 3.99447C14.452 4.26276 14.7042 4.47324 15 4.6C15.3016 4.73312 15.6362 4.77282 15.9606 4.714C16.285 4.65519 16.5843 4.50054 16.82 4.27L16.88 4.21C17.0657 4.02405 17.2863 3.87653 17.5291 3.77588C17.7719 3.67523 18.0322 3.62343 18.295 3.62343C18.5578 3.62343 18.8181 3.67523 19.0609 3.77588C19.3037 3.87653 19.5243 4.02405 19.71 4.21C19.896 4.39575 20.0435 4.61632 20.1441 4.85912C20.2448 5.10192 20.2966 5.36217 20.2966 5.625C20.2966 5.88783 20.2448 6.14808 20.1441 6.39088C20.0435 6.63368 19.896 6.85425 19.71 7.04L19.65 7.1C19.4195 7.33568 19.2648 7.63502 19.206 7.95941C19.1472 8.28381 19.1869 8.61838 19.32 8.92V9C19.4468 9.29577 19.6572 9.54802 19.9255 9.72569C20.1938 9.90337 20.5082 9.99872 20.83 10H21C21.5304 10 22.0391 10.2107 22.4142 10.5858C22.7893 10.9609 23 11.4696 23 12C23 12.5304 22.7893 13.0391 22.4142 13.4142C22.0391 13.7893 21.5304 14 21 14H20.91C20.5882 14.0013 20.2738 14.0966 20.0055 14.2743C19.7372 14.452 19.5268 14.7042 19.4 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
+			CONFIGURE
+		</span>`;
+        // Add sophisticated hover effects
+        btn.addEventListener("mouseenter", () => {
+            btn.style.transform = "translateY(-2px) scale(1.02)";
+            btn.style.backdropFilter = "blur(16px) saturate(200%)";
+            btn.style.setProperty('-webkit-backdrop-filter', 'blur(16px) saturate(200%)');
+            btn.style.boxShadow = "0 8px 24px rgba(59, 130, 246, 0.35), 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+            btn.style.border = "1px solid rgba(59, 130, 246, 0.5)";
+        });
+        btn.addEventListener("mouseleave", () => {
+            btn.style.transform = "translateY(0) scale(1)";
+            btn.style.backdropFilter = "blur(12px) saturate(180%)";
+            btn.style.backdropFilter = "blur(12px) saturate(180%)";
+            btn.style.boxShadow = "0 4px 16px rgba(59, 130, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+            btn.style.border = "1px solid rgba(59, 130, 246, 0.3)";
+        });
+        // Add active effect
+        btn.addEventListener("mousedown", () => {
+            btn.style.transform = "translateY(0) scale(0.98)";
+            btn.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)";
+        });
         // Variables pour le sous-menu
         let subMenuContainer = null;
         // Sauvegarde des éléments originaux à masquer/afficher
@@ -4104,13 +4669,19 @@ class KxsClientSecondaryMenu {
                 this.menu.style.cursor = "grabbing";
             }
         });
+        // Optimized: use throttled mousemove for better performance
+        let mouseMoveThrottle = false;
         document.addEventListener('mousemove', (e) => {
-            if (this.isDragging) {
-                const x = e.clientX - this.dragOffset.x;
-                const y = e.clientY - this.dragOffset.y;
-                this.menu.style.transform = 'none';
-                this.menu.style.left = `${x}px`;
-                this.menu.style.top = `${y}px`;
+            if (this.isDragging && !mouseMoveThrottle) {
+                mouseMoveThrottle = true;
+                requestAnimationFrame(() => {
+                    const x = e.clientX - this.dragOffset.x;
+                    const y = e.clientY - this.dragOffset.y;
+                    this.menu.style.transform = 'none';
+                    this.menu.style.left = `${x}px`;
+                    this.menu.style.top = `${y}px`;
+                    mouseMoveThrottle = false;
+                });
             }
         });
         document.addEventListener('mouseup', (e) => {
@@ -4139,6 +4710,15 @@ class KxsClientSecondaryMenu {
         if (this.isClientMenuVisible) {
             this.filterOptions();
         }
+        // Notifier immédiatement tous les callbacks enregistrés
+        this.onMenuToggle.forEach(callback => {
+            try {
+                callback();
+            }
+            catch (error) {
+                console.error('Erreur lors de l\'exécution du callback onMenuToggle:', error);
+            }
+        });
     }
     destroy() {
         // Remove global event listeners
@@ -4418,6 +4998,7 @@ class PingTest {
 
 ;// ./src/HUD/ClientHUD.ts
 
+
 class KxsClientHUD {
     constructor(kxsClient) {
         this.healthAnimations = [];
@@ -4492,12 +5073,6 @@ class KxsClientHUD {
             this.loadCustomCrosshair();
         }
         this.setupCtrlFocusModeListener();
-        window.addEventListener('load', () => {
-            this.updateCounterCorners();
-        });
-        window.addEventListener('resize', () => {
-            this.updateCounterCorners();
-        });
     }
     setupCtrlFocusModeListener() {
         // Déterminer la plateforme une seule fois à l'initialisation
@@ -4874,10 +5449,13 @@ class KxsClientHUD {
     escapeMenu() {
         const customStylesMobile = `
     .ui-game-menu-desktop {
-        background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 4px !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+        background: rgba(30, 35, 50, 0.15) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        will-change: transform, opacity !important;
+        border: 1px solid rgba(60, 70, 90, 0.3) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(80, 90, 110, 0.2) !important;
         padding: 2px 2px !important;
         max-width: 45vw !important;
         width: 45vw !important;
@@ -4925,12 +5503,14 @@ class KxsClientHUD {
 `;
         const customStylesDesktop = `
 .ui-game-menu-desktop {
-	background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%) !important;
-	border: 1px solid rgba(255, 255, 255, 0.1) !important;
-	border-radius: 12px !important;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+	background: rgba(25, 30, 45, 0.12) !important;
+	backdrop-filter: blur(12px) !important;
+	-webkit-backdrop-filter: blur(12px) !important;
+	will-change: transform, opacity !important;
+	border: 1px solid rgba(55, 65, 85, 0.25) !important;
+	border-radius: 20px !important;
+	box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(75, 85, 105, 0.2), 0 0 0 1px rgba(45, 55, 75, 0.1) !important;
 	padding: 20px !important;
-	backdrop-filter: blur(10px) !important;
 	max-width: 350px !important;
 	/* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
 	margin: auto !important;
@@ -4964,17 +5544,17 @@ class KxsClientHUD {
 	border-radius: 10px !important;
 }
 .ui-game-menu-desktop::-webkit-scrollbar-thumb {
-	background-color: #4287f5 !important;
+	background-color: #7f8c8d !important;
 	border-radius: 10px !important;
 	border: 2px solid rgba(25, 25, 35, 0.5) !important;
 }
 .ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
-	background-color: #5a9eff !important;
+	background-color: #95a5a6 !important;
 }
 
 .ui-game-menu-desktop {
 	scrollbar-width: thin !important;
-	scrollbar-color: #4287f5 rgba(25, 25, 35, 0.5) !important;
+	scrollbar-color: #7f8c8d rgba(25, 25, 35, 0.5) !important;
 }
 
 .kxs-header {
@@ -4982,8 +5562,13 @@ class KxsClientHUD {
 	align-items: center;
 	justify-content: flex-start;
 	margin-bottom: 20px;
-	padding: 10px;
-	border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+	padding: 15px;
+	border-bottom: 1px solid rgba(55, 65, 85, 0.2);
+	background: rgba(20, 25, 40, 0.08);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border-radius: 12px;
+	box-shadow: inset 0 1px 0 rgba(70, 80, 100, 0.15);
 }
 
 .kxs-logo {
@@ -4998,77 +5583,163 @@ class KxsClientHUD {
 	font-weight: 700;
 	color: #ffffff;
 	text-transform: uppercase;
-	text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+	text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(70, 80, 120, 0.4);
 	font-family: 'Arial', sans-serif;
 	letter-spacing: 2px;
+	filter: drop-shadow(0 0 10px rgba(60, 70, 100, 0.3));
 }
 
 .kxs-title span {
-	color: #4287f5;
+	color: #6b7db0;
 }
 	
 
 .btn-game-menu {
-	background: linear-gradient(135deg, rgba(66, 135, 245, 0.1) 0%, rgba(66, 135, 245, 0.2) 100%) !important;
-	border: 1px solid rgba(66, 135, 245, 0.3) !important;
-	border-radius: 8px !important;
+	background: linear-gradient(135deg, rgba(45, 55, 75, 0.15) 0%, rgba(35, 45, 65, 0.25) 100%) !important;
+	backdrop-filter: blur(16px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.18) !important;
+	border-radius: 14px !important;
 	color: #ffffff !important;
-	transition: all 0.3s ease !important;
-	margin: 5px 0 !important;
-	padding: 12px !important;
-	font-weight: 600 !important;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	margin: 8px 0 !important;
+	padding: 14px 18px !important;
+	font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+	font-weight: 500 !important;
+	font-size: 14px !important;
+	letter-spacing: 0.3px !important;
 	width: 100% !important;
 	text-align: center !important;
 	display: block !important;
 	box-sizing: border-box !important;
-	line-height: 15px !important;
+	line-height: 1.4 !important;
+	position: relative !important;
+	overflow: hidden !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.btn-game-menu::before {
+	content: '' !important;
+	position: absolute !important;
+	top: 0 !important;
+	left: -100% !important;
+	width: 100% !important;
+	height: 100% !important;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent) !important;
+	transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	z-index: 1 !important;
+}
+
+.btn-game-menu:hover::before {
+	left: 100% !important;
 }
 
 .btn-game-menu:hover {
-	background: linear-gradient(135deg, rgba(66, 135, 245, 0.2) 0%, rgba(66, 135, 245, 0.3) 100%) !important;
-	transform: translateY(-2px) !important;
-	box-shadow: 0 4px 12px rgba(66, 135, 245, 0.2) !important;
+	background: linear-gradient(135deg, rgba(55, 65, 85, 0.25) 0%, rgba(45, 55, 75, 0.35) 100%) !important;
+	transform: translateY(-3px) scale(1.02) !important;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+	border-color: rgba(255, 255, 255, 0.25) !important;
+	backdrop-filter: blur(10px) saturate(150%) !important;
+	-webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+	will-change: transform !important;
 }
 
 .slider-container {
-	background: rgba(66, 135, 245, 0.1) !important;
-	border-radius: 8px !important;
-	padding: 10px 15px !important;
-	margin: 10px 0 !important;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
+	backdrop-filter: blur(10px) saturate(150%) !important;
+	-webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+	will-change: transform, opacity !important;
+	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	border-radius: 16px !important;
+	padding: 16px 20px !important;
+	margin: 12px 0 !important;
 	width: 100% !important;
 	box-sizing: border-box !important;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+	position: relative !important;
+	overflow: hidden !important;
+}
+
+.slider-container::before {
+	content: '' !important;
+	position: absolute !important;
+	top: 0 !important;
+	left: -100% !important;
+	width: 100% !important;
+	height: 100% !important;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent) !important;
+	animation: containerShine 6s ease-in-out infinite !important;
+	will-change: transform !important;
+	z-index: 0 !important;
+}
+
+@keyframes containerShine {
+	0% { left: -100%; }
+	50% { left: 100%; }
+	100% { left: 100%; }
 }
 
 .slider-text {
 	color: #ffffff !important;
-	font-size: 14px !important;
-	margin-bottom: 8px !important;
+	font-size: 15px !important;
+	font-weight: 600 !important;
+	margin-bottom: 12px !important;
 	text-align: center !important;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+	letter-spacing: 0.5px !important;
+	position: relative !important;
+	z-index: 1 !important;
 }
 
 .slider {
 	-webkit-appearance: none !important;
 	width: 100% !important;
-	height: 6px !important;
-	border-radius: 3px !important;
-	background: rgba(66, 135, 245, 0.3) !important;
+	height: 8px !important;
+	border-radius: 12px !important;
+	background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.8) 100%) !important;
 	outline: none !important;
-	margin: 10px 0 !important;
+	margin: 12px 0 !important;
+	backdrop-filter: blur(8px) !important;
+	-webkit-backdrop-filter: blur(8px) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+	position: relative !important;
+	z-index: 1 !important;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.slider:hover {
+	background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 1) 100%) !important;
+	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(255, 255, 255, 0.15), 0 0 16px rgba(59, 130, 246, 0.2) !important;
 }
 
 .slider::-webkit-slider-thumb {
 	-webkit-appearance: none !important;
-	width: 16px !important;
-	height: 16px !important;
+	width: 24px !important;
+	height: 24px !important;
 	border-radius: 50% !important;
-	background: #4287f5 !important;
-	cursor: pointer !important;
-	transition: all 0.3s ease !important;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%) !important;
+	backdrop-filter: blur(12px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+	border: 2px solid rgba(59, 130, 246, 0.6) !important;
+	cursor: grab !important;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+	position: relative !important;
 }
 
 .slider::-webkit-slider-thumb:hover {
-	transform: scale(1.2) !important;
-	box-shadow: 0 0 10px rgba(66, 135, 245, 0.5) !important;
+	transform: scale(1.1) !important;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+	box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4), 0 3px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
+	border: 2px solid rgba(59, 130, 246, 0.8) !important;
+}
+
+.slider::-webkit-slider-thumb:active {
+	cursor: grabbing !important;
+	transform: scale(1.05) !important;
+	box-shadow: 0 3px 12px rgba(59, 130, 246, 0.5), 0 1px 6px rgba(0, 0, 0, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .btns-game-double-row {
@@ -5159,9 +5830,19 @@ class KxsClientHUD {
                     if (!killfeedText.hasAttribute('data-glint')) {
                         killfeedText.setAttribute('data-glint', 'true');
                         element.style.opacity = '1';
-                        setTimeout(() => {
-                            element.style.opacity = '0';
-                        }, 5000);
+                        // Use CSS transition instead of setTimeout for better performance
+                        element.style.transition = 'opacity 0.3s ease';
+                        // Schedule fade out using requestAnimationFrame with delay
+                        const startTime = performance.now();
+                        const fadeOut = (currentTime) => {
+                            if (currentTime - startTime >= 5000) {
+                                element.style.opacity = '0';
+                            }
+                            else {
+                                requestAnimationFrame(fadeOut);
+                            }
+                        };
+                        requestAnimationFrame(fadeOut);
                     }
                 }
                 else {
@@ -5243,7 +5924,8 @@ class KxsClientHUD {
             background-size: 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: glint 3s linear infinite;
+            animation: glint 6s linear infinite;
+			will-change: background-position;
         }
   
         @keyframes glint {
@@ -5344,6 +6026,9 @@ class KxsClientHUD {
         const delta = now - this.kxsClient.lastFrameTime;
         this.frameCount++;
         if (delta >= 1000) {
+            const previousFps = this.fps;
+            const previousKills = this.kills;
+            const previousPing = this.pingManager ? this.pingManager.getPingResult().ping : 0;
             this.fps = Math.round((this.frameCount * 1000) / delta);
             this.frameCount = 0;
             this.kxsClient.lastFrameTime = now;
@@ -5360,16 +6045,56 @@ class KxsClientHUD {
             }
             // Met à jour les valeurs des compteurs visibles
             if (this.kxsClient.isFpsVisible && this.kxsClient.counters.fps) {
-                this.kxsClient.counters.fps.textContent = `FPS: ${this.fps}`;
+                const valueElement = this.kxsClient.counters.fps.querySelector('span:last-child');
+                if (valueElement) {
+                    valueElement.textContent = `${this.fps}`;
+                    // Add a visual pulse effect when value changes (fixed logic)
+                    if (this.fps !== previousFps) {
+                        valueElement.style.animation = 'none';
+                        requestAnimationFrame(() => {
+                            valueElement.style.animation = `${DesignSystem.animation.pulse} 0.5s ease`;
+                        });
+                    }
+                }
             }
             if (this.kxsClient.isKillsVisible && this.kxsClient.counters.kills) {
-                this.kxsClient.counters.kills.textContent = `Kills: ${this.kills}`;
+                const valueElement = this.kxsClient.counters.kills.querySelector('span:last-child');
+                if (valueElement) {
+                    valueElement.textContent = `${this.kills}`;
+                    // Add a visual pulse effect when value changes (fixed logic)
+                    if (this.kills !== previousKills) {
+                        valueElement.style.animation = 'none';
+                        requestAnimationFrame(() => {
+                            valueElement.style.animation = `${DesignSystem.animation.pulse} 0.5s ease`;
+                        });
+                    }
+                }
             }
             if (this.kxsClient.isPingVisible &&
                 this.kxsClient.counters.ping &&
                 this.pingManager) {
                 const result = this.pingManager.getPingResult();
-                this.kxsClient.counters.ping.textContent = `PING: ${result.ping} ms`;
+                const valueElement = this.kxsClient.counters.ping.querySelector('span:last-child');
+                if (valueElement) {
+                    valueElement.textContent = `${result.ping} ms`;
+                    // Add a visual pulse effect when value changes (fixed logic)
+                    if (result.ping !== previousPing) {
+                        valueElement.style.animation = 'none';
+                        requestAnimationFrame(() => {
+                            valueElement.style.animation = `${DesignSystem.animation.pulse} 0.5s ease`;
+                        });
+                    }
+                    // Change color based on ping value
+                    if (result.ping < 50) {
+                        valueElement.style.color = DesignSystem.colors.success;
+                    }
+                    else if (result.ping < 100) {
+                        valueElement.style.color = DesignSystem.colors.warning;
+                    }
+                    else {
+                        valueElement.style.color = DesignSystem.colors.danger;
+                    }
+                }
             }
         }
         if (this.kxsClient.animationFrameCallback) {
@@ -5381,45 +6106,81 @@ class KxsClientHUD {
         (_a = this.kxsClient.kill_leader) === null || _a === void 0 ? void 0 : _a.update(this.kills);
     }
     initCounter(name, label, initialText) {
+        // Ensure design system fonts are loaded
+        DesignSystem.injectFonts();
         // Vérifier si le compteur existe déjà et le supprimer si c'est le cas
         this.removeCounter(name);
         const counter = document.createElement("div");
         counter.id = `${name}Counter`;
         const counterContainer = document.createElement("div");
         counterContainer.id = `${name}CounterContainer`;
+        counterContainer.dataset.counterName = name;
         Object.assign(counterContainer.style, {
             position: "absolute",
             left: `${this.kxsClient.defaultPositions[name].left}px`,
             top: `${this.kxsClient.defaultPositions[name].top}px`,
             zIndex: "10000",
+            transition: `all ${DesignSystem.animation.normal} ease`,
         });
-        Object.assign(counter.style, {
-            color: "white",
-            backgroundColor: "rgba(0, 0, 0, 0.2)",
-            borderRadius: "5px",
-            fontFamily: "Arial, sans-serif",
-            padding: "5px 10px",
-            pointerEvents: "none",
-            cursor: "default",
-            width: `${this.kxsClient.defaultSizes[name].width}px`,
-            height: `${this.kxsClient.defaultSizes[name].height}px`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            resize: "both",
-            overflow: "hidden",
-        });
-        counter.textContent = `${label}: ${initialText}`;
+        // Apply simple white glassmorphism effect to counter
+        counter.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
+        counter.style.backdropFilter = "blur(8px)";
+        // Apply webkit prefix for Safari compatibility
+        counter.style['-webkit-backdrop-filter'] = "blur(8px)";
+        counter.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+        counter.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+        counter.style.borderRadius = "8px";
+        counter.style.color = "#ffffff";
+        counter.style.fontFamily = DesignSystem.fonts.secondary;
+        counter.style.fontWeight = "500";
+        counter.style.padding = "8px 12px";
+        counter.style.pointerEvents = "none";
+        counter.style.cursor = "default";
+        counter.style.width = `${this.kxsClient.defaultSizes[name].width}px`;
+        counter.style.height = `${this.kxsClient.defaultSizes[name].height}px`;
+        counter.style.display = "flex";
+        counter.style.alignItems = "center";
+        counter.style.justifyContent = "center";
+        counter.style.textAlign = "center";
+        counter.style.resize = "both";
+        counter.style.overflow = "hidden";
+        counter.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
+        counter.style.transition = `all ${DesignSystem.animation.normal} ease`;
+        // Create a label element with clean styling
+        const labelElement = document.createElement("span");
+        labelElement.style.fontWeight = "600";
+        labelElement.style.marginRight = "6px";
+        labelElement.style.color = "#ffffff";
+        labelElement.textContent = `${label}:`;
+        // Create a value element with clean styling
+        const valueElement = document.createElement("span");
+        valueElement.style.fontWeight = "500";
+        valueElement.textContent = initialText;
+        // Clear counter and append new elements
+        counter.innerHTML = "";
+        counter.appendChild(labelElement);
+        counter.appendChild(valueElement);
         counterContainer.appendChild(counter);
         const uiTopLeft = document.getElementById("ui-top-left");
         if (uiTopLeft) {
             uiTopLeft.appendChild(counterContainer);
         }
+        // Setup drag events to check for counter merging
+        this.setupCounterDragEvents(counterContainer);
+        // Add subtle hover effect
+        counterContainer.addEventListener("mouseenter", () => {
+            counter.style.transform = "scale(1.05)";
+            counter.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.3)";
+        });
+        counterContainer.addEventListener("mouseleave", () => {
+            counter.style.transform = "scale(1)";
+            counter.style.boxShadow = DesignSystem.glass.dark.shadow;
+        });
         const adjustFontSize = () => {
             const { width, height } = counter.getBoundingClientRect();
             const size = Math.min(width, height) * 0.4;
-            counter.style.fontSize = `${size}px`;
+            labelElement.style.fontSize = `${size}px`;
+            valueElement.style.fontSize = `${size}px`;
         };
         new ResizeObserver(adjustFontSize).observe(counter);
         counter.addEventListener("mousedown", (event) => {
@@ -5437,7 +6198,6 @@ class KxsClientHUD {
             counterContainer.style.left = `${x}px`;
             counterContainer.style.top = `${y}px`;
         }
-        this.updateCounterCorners();
     }
     /**
      * Supprime un compteur du DOM et de la référence dans kxsClient.counters
@@ -5455,7 +6215,6 @@ class KxsClientHUD {
             delete this.kxsClient.counters[name];
         }
         this.kxsClient.gridSystem.registerCounter(name, null);
-        this.kxsClient.gridSystem.updateCounterCorners();
     }
     /**
      * Gère l'affichage ou le masquage d'un compteur en fonction de son état
@@ -5485,19 +6244,62 @@ class KxsClientHUD {
         Object.assign(container.style, {
             left: `${this.kxsClient.defaultPositions[name].left}px`,
             top: `${this.kxsClient.defaultPositions[name].top}px`,
+            transition: `all ${DesignSystem.animation.normal} ease`,
         });
-        Object.assign(counter.style, {
-            width: `${this.kxsClient.defaultSizes[name].width}px`,
-            height: `${this.kxsClient.defaultSizes[name].height}px`,
-            fontSize: "18px",
-            borderRadius: "5px",
-        });
-        counter.textContent = `${label}: ${initialText}`;
+        // Apply simple white glassmorphism effect to counter
+        counter.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
+        counter.style.backdropFilter = "blur(8px)";
+        // Apply webkit prefix for Safari compatibility
+        counter.style['-webkit-backdrop-filter'] = "blur(8px)";
+        counter.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+        counter.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+        counter.style.borderRadius = "8px";
+        counter.style.color = "#ffffff";
+        counter.style.fontFamily = DesignSystem.fonts.secondary;
+        counter.style.fontWeight = "500";
+        counter.style.padding = "8px 12px";
+        counter.style.pointerEvents = "none";
+        counter.style.cursor = "default";
+        counter.style.width = `${this.kxsClient.defaultSizes[name].width}px`;
+        counter.style.height = `${this.kxsClient.defaultSizes[name].height}px`;
+        counter.style.display = "flex";
+        counter.style.alignItems = "center";
+        counter.style.justifyContent = "center";
+        counter.style.textAlign = "center";
+        counter.style.resize = "both";
+        counter.style.overflow = "hidden";
+        counter.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
+        counter.style.transition = `all ${DesignSystem.animation.normal} ease`;
+        // Reset the counter value
+        const labelElement = counter.querySelector('span:first-child');
+        const valueElement = counter.querySelector('span:last-child');
+        if (labelElement && valueElement) {
+            labelElement.textContent = `${label}:`;
+            valueElement.textContent = initialText;
+            // Ensure label styling is consistent
+            labelElement.style.fontWeight = "600";
+            labelElement.style.marginRight = "6px";
+            labelElement.style.color = "#ffffff";
+            // Ensure value styling is consistent
+            valueElement.style.fontWeight = "500";
+        }
+        else {
+            // Fallback if the spans don't exist
+            counter.innerHTML = "";
+            // Create new label and value elements
+            const newLabelElement = document.createElement("span");
+            newLabelElement.style.fontWeight = "700";
+            newLabelElement.style.marginRight = DesignSystem.spacing.sm;
+            newLabelElement.style.color = DesignSystem.colors.primary;
+            newLabelElement.textContent = `${label}:`;
+            const newValueElement = document.createElement("span");
+            newValueElement.style.fontWeight = "500";
+            newValueElement.textContent = initialText;
+            counter.appendChild(newLabelElement);
+            counter.appendChild(newValueElement);
+        }
         // Clear the saved position for this counter only
         localStorage.removeItem(`${name}CounterPosition`);
-        setTimeout(() => {
-            this.kxsClient.gridSystem.updateCounterCorners();
-        }, 50);
     }
     updateBoostBars() {
         const boostCounter = document.querySelector("#ui-boost-counter");
@@ -5668,7 +6470,8 @@ class KxsClientHUD {
 .kxs-chromatic-border {
 	border: 3px solid transparent !important;
 	border-image: linear-gradient(120deg, #ff004c, #fffa00, #00ff90, #004cff, #ff004c) 1;
-	animation: kxs-rainbow 3s linear infinite, kxs-glint 2s ease-in-out infinite, kxs-bg-rainbow 8s linear infinite;
+	animation: kxs-rainbow 6s linear infinite, kxs-glint 4s ease-in-out infinite, kxs-bg-rainbow 12s linear infinite;
+	will-change: border-image, background-position;
 	border-radius: 8px !important;
 	background: linear-gradient(270deg, #ff004c, #fffa00, #00ff90, #004cff, #ff004c);
 	background-size: 1200% 1200%;
@@ -5845,18 +6648,6 @@ class KxsClientHUD {
             value: change,
         });
     }
-    updateCounterCorners() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.kxsClient.gridSystem.updateCounterCorners();
-            });
-        }
-        else {
-            setTimeout(() => {
-                this.kxsClient.gridSystem.updateCounterCorners();
-            }, 100);
-        }
-    }
     updateCountersDraggableState() {
         var _a;
         const countersVisibility = {
@@ -5881,7 +6672,6 @@ class KxsClientHUD {
                 counter.style.resize = isMenuOpen ? 'both' : 'none';
             }
         });
-        this.updateCounterCorners();
     }
     updateHealthAnimations() {
         const currentTime = performance.now();
@@ -5903,6 +6693,26 @@ class KxsClientHUD {
                 animation.element.remove();
                 return false;
             }
+        });
+    }
+    // Setup drag events for counters to detect when they move
+    setupCounterDragEvents(counterContainer) {
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        counterContainer.addEventListener("mousedown", (e) => {
+            // Only handle left mouse button
+            if (e.button !== 0)
+                return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const upHandler = () => {
+                isDragging = false;
+                document.removeEventListener("mouseup", upHandler);
+                // Final check after drag ends
+            };
+            document.addEventListener("mouseup", upHandler);
         });
     }
 }
@@ -6250,9 +7060,10 @@ class GameHistoryMenu {
         // Add fade-in animation
         this.container.style.opacity = '0';
         this.container.style.transition = 'opacity 0.2s ease-in-out';
-        setTimeout(() => {
+        // Optimized: use requestAnimationFrame instead of setTimeout
+        requestAnimationFrame(() => {
             this.container.style.opacity = '1';
-        }, 10);
+        });
         document.body.appendChild(this.container);
     }
     hide() {
@@ -6554,9 +7365,13 @@ class KxsChat {
         chatBox.style.transform = 'translateX(-50%)';
         chatBox.style.minWidth = '260px';
         chatBox.style.maxWidth = '480px';
-        chatBox.style.background = 'rgba(30,30,40,0.80)';
+        chatBox.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
+        chatBox.style.backdropFilter = 'blur(40px) saturate(180%)';
+        chatBox.style['-webkitBackdropFilter'] = 'blur(40px) saturate(180%)';
+        chatBox.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        chatBox.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)';
         chatBox.style.color = '#fff';
-        chatBox.style.borderRadius = '10px';
+        chatBox.style.borderRadius = '15px';
         chatBox.style.padding = '7px 14px 4px 14px';
         chatBox.style.fontSize = '15px';
         chatBox.style.fontFamily = 'inherit';
@@ -6612,7 +7427,11 @@ class KxsChat {
         input.style.padding = '8px 12px';
         input.style.borderRadius = '8px';
         input.style.border = 'none';
-        input.style.background = 'rgba(40,40,50,0.95)';
+        input.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04))';
+        input.style.backdropFilter = 'blur(25px) saturate(150%)';
+        input.style['-webkit-backdrop-filter'] = 'blur(25px) saturate(150%)';
+        input.style.border = '1px solid rgba(255, 255, 255, 0.35)';
+        input.style.boxShadow = '0 4px 20px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)';
         input.style.color = '#fff';
         input.style.fontSize = '15px';
         input.style.fontFamily = 'inherit';
@@ -6928,10 +7747,14 @@ class KxsVoiceChat {
             top: '10px',
             right: '10px',
             width: '200px',
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            webkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
             color: 'white',
             padding: '10px',
-            borderRadius: '5px',
+            borderRadius: '15px',
             zIndex: '1000',
             fontFamily: 'Arial, sans-serif',
             fontSize: '14px',
@@ -7104,8 +7927,12 @@ class KxsVoiceChat {
             alignItems: 'center',
             margin: '3px 0',
             padding: '3px',
-            borderRadius: '3px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+            borderRadius: '8px',
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(5px)',
+            webkitBackdropFilter: 'blur(5px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 4px 16px 0 rgba(31, 38, 135, 0.2)'
         });
         // Status indicator
         const indicator = this.createStatusIndicator(user);
@@ -7155,10 +7982,13 @@ class KxsVoiceChat {
         muteButton.type = 'button'; // Important: specify type to prevent form submission behavior
         muteButton.textContent = user.isMuted ? 'UNMUTE' : 'MUTE';
         Object.assign(muteButton.style, {
-            backgroundColor: user.isMuted ? '#e74c3c' : '#7f8c8d',
+            backgroundColor: user.isMuted ? 'rgba(231, 76, 60, 0.8)' : 'rgba(127, 140, 141, 0.8)',
+            backdropFilter: 'blur(5px)',
+            webkitBackdropFilter: 'blur(5px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.2)',
             color: 'white',
-            border: 'none',
-            borderRadius: '3px',
+            borderRadius: '6px',
             padding: '2px 5px',
             marginLeft: '5px',
             cursor: 'pointer',
@@ -7227,10 +8057,13 @@ class KxsVoiceChat {
         muteButton.textContent = this.isLocalMuted ? 'UNMUTE' : 'MUTE';
         muteButton.id = 'kxs-voice-chat-local-mute';
         Object.assign(muteButton.style, {
-            backgroundColor: this.isLocalMuted ? '#e74c3c' : '#3498db',
+            backgroundColor: this.isLocalMuted ? 'rgba(231, 76, 60, 0.8)' : 'rgba(52, 152, 219, 0.8)',
+            backdropFilter: 'blur(5px)',
+            webkitBackdropFilter: 'blur(5px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.2)',
             color: 'white',
-            border: 'none',
-            borderRadius: '3px',
+            borderRadius: '6px',
             padding: '2px 5px',
             cursor: 'pointer',
             fontSize: '11px',
@@ -7262,7 +8095,7 @@ class KxsVoiceChat {
         if (this.localMuteButton) {
             // Définir clairement le texte et la couleur du bouton en fonction de l'état
             this.localMuteButton.textContent = this.isLocalMuted ? 'UNMUTE' : 'MUTE';
-            this.localMuteButton.style.backgroundColor = this.isLocalMuted ? '#e74c3c' : '#3498db';
+            this.localMuteButton.style.backgroundColor = this.isLocalMuted ? 'rgba(231, 76, 60, 0.8)' : 'rgba(52, 152, 219, 0.8)';
         }
         // Type de notification en fonction de si nous sommes sur error, info ou success
         const notificationType = this.isLocalMuted ? 'error' : 'success';
@@ -7368,6 +8201,7 @@ class KxsClient {
         this.discordRPC = new DiscordWebSocket(this, this.parseToken(this.discordToken));
         this.updater = new UpdateChecker(this);
         this.kill_leader = new KillLeaderTracker(this);
+        this.secondaryMenu = new KxsClientSecondaryMenu(this);
         this.healWarning = new HealthWarning(this);
         this.historyManager = new GameHistoryMenu(this);
         this.kxsNetwork = new KxsNetwork(this);
@@ -7376,7 +8210,6 @@ class KxsClient {
         this.initDeathDetection();
         this.discordRPC.connect();
         this.hud = new KxsClientHUD(this);
-        this.secondaryMenu = new KxsClientSecondaryMenu(this);
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
         this.chat = new KxsChat(this);
         this.voiceChat = new KxsVoiceChat(this, this.kxsNetwork);
@@ -7417,11 +8250,14 @@ class KxsClient {
         menu.style.position = 'absolute';
         menu.style.top = '18px';
         menu.style.left = '18px';
-        menu.style.background = 'rgba(30,30,40,0.92)';
+        menu.style.background = 'rgba(255, 255, 255, 0.1)';
+        menu.style.backdropFilter = 'blur(20px) saturate(180%)';
+        menu.style.backdropFilter = 'blur(20px) saturate(180%)';
+        menu.style.border = '1px solid rgba(255, 255, 255, 0.2)';
         menu.style.color = '#fff';
         menu.style.padding = '8px 18px';
-        menu.style.borderRadius = '12px';
-        menu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18)';
+        menu.style.borderRadius = '16px';
+        menu.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
         menu.style.fontSize = '15px';
         menu.style.zIndex = '999';
         menu.style.userSelect = 'none';
@@ -7440,11 +8276,14 @@ class KxsClient {
         userListMenu.style.top = '100%';
         userListMenu.style.left = '0';
         userListMenu.style.marginTop = '8px';
-        userListMenu.style.background = 'rgba(30,30,40,0.95)';
+        userListMenu.style.background = 'rgba(255, 255, 255, 0.08)';
+        userListMenu.style.backdropFilter = 'blur(25px) saturate(180%)';
+        userListMenu.style.backdropFilter = 'blur(25px) saturate(180%)';
+        userListMenu.style.border = '1px solid rgba(255, 255, 255, 0.15)';
         userListMenu.style.color = '#fff';
         userListMenu.style.padding = '10px';
-        userListMenu.style.borderRadius = '8px';
-        userListMenu.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+        userListMenu.style.borderRadius = '12px';
+        userListMenu.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
         userListMenu.style.fontSize = '14px';
         userListMenu.style.zIndex = '1000';
         userListMenu.style.minWidth = '180px';
@@ -7462,6 +8301,51 @@ class KxsClient {
 			@keyframes kxs-pulse {
 			  0% { box-shadow:0 0 8px #3fae2a; opacity: 1; }
 			  100% { box-shadow:0 0 16px #3fae2a; opacity: 0.6; }
+			}
+			
+			/* Glassmorphism scrollbar styles */
+			#kxs-online-users-menu {
+			  /* Firefox scrollbar */
+			  scrollbar-width: thin;
+			  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+			}
+			
+			/* Webkit browsers (Chrome, Safari, Edge) */
+			#kxs-online-users-menu::-webkit-scrollbar {
+			  width: 8px;
+			}
+			
+			#kxs-online-users-menu::-webkit-scrollbar-track {
+			  background: rgba(255, 255, 255, 0.05);
+			  border-radius: 10px;
+			  backdrop-filter: blur(10px);
+			  border: 1px solid rgba(255, 255, 255, 0.1);
+			}
+			
+			#kxs-online-users-menu::-webkit-scrollbar-thumb {
+			  background: rgba(255, 255, 255, 0.2);
+			  border-radius: 10px;
+			  backdrop-filter: blur(15px);
+			  border: 1px solid rgba(255, 255, 255, 0.3);
+			  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+			  transition: all 0.3s ease;
+			}
+			
+			#kxs-online-users-menu::-webkit-scrollbar-thumb:hover {
+			  background: rgba(255, 255, 255, 0.3);
+			  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+			  transform: scale(1.1);
+			}
+			
+			#kxs-online-users-menu::-webkit-scrollbar-thumb:active {
+			  background: rgba(255, 255, 255, 0.4);
+			  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+			}
+			
+			/* Scrollbar corner */
+			#kxs-online-users-menu::-webkit-scrollbar-corner {
+			  background: rgba(255, 255, 255, 0.05);
+			  border-radius: 10px;
 			}
 		  `;
             document.head.appendChild(style);
@@ -7490,7 +8374,8 @@ class KxsClient {
         overlay.appendChild(menu);
         this.onlineMenuElement = menu;
         this.updateOnlineMenu();
-        this.onlineMenuInterval = window.setInterval(() => this.updateOnlineMenu(), 2000);
+        // Optimisé: augmenter l'intervalle pour réduire la charge
+        this.onlineMenuInterval = window.setInterval(() => this.updateOnlineMenu(), 5000);
     }
     updateOnlineMenu() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
@@ -7513,10 +8398,10 @@ class KxsClient {
                     const users = this.kxsNetwork.getKxsUsers();
                     if (users && Array.isArray(users) && users.length > 0) {
                         let userListHTML = '';
-                        userListHTML += '<div style="text-align:center;font-weight:bold;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.2);margin-bottom:8px;">Online users</div>';
+                        userListHTML += '<div style="text-align:center;font-weight:bold;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.3);margin-bottom:8px;background:rgba(255,255,255,0.05);border-radius:6px;padding:8px;">Online users</div>';
                         users.forEach(user => {
-                            userListHTML += `<div style="padding:4px 8px;border-radius:4px;background:rgba(255,255,255,0.05);">
-							<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fae2a;margin-right:8px;"></span>
+                            userListHTML += `<div style="padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);transition:all 0.2s ease;">
+							<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fae2a;margin-right:8px;box-shadow:0 0 6px rgba(63,174,42,0.6);"></span>
 							${user}
 						</div>`;
                         });
@@ -7592,7 +8477,7 @@ class KxsClient {
     ;
     applyBrightness(value) {
         this.brightness = value;
-        const brightnessValue = value / 50; // 0 à 2, avec 1 étant la luminosité normale
+        const brightnessValue = value / 50;
         document.documentElement.style.filter = `brightness(${brightnessValue})`;
         this.updateLocalStorage();
     }
@@ -7879,24 +8764,30 @@ class KxsClient {
                 element.style.cursor = "grabbing";
             }
         });
+        // Optimized: throttle mousemove events for better performance
+        let mouseMoveThrottle = false;
         window.addEventListener("mousemove", (event) => {
-            if (isDragging) {
-                const rawX = event.clientX - dragOffset.x;
-                const rawY = event.clientY - dragOffset.y;
-                // Get snapped coordinates from grid system
-                const snapped = this.gridSystem.snapToGrid(element, rawX, rawY);
-                // Prevent moving off screen
-                const maxX = window.innerWidth - element.offsetWidth;
-                const maxY = window.innerHeight - element.offsetHeight;
-                element.style.left = `${Math.max(0, Math.min(snapped.x, maxX))}px`;
-                element.style.top = `${Math.max(0, Math.min(snapped.y, maxY))}px`;
-                // Highlight nearest grid lines while dragging
-                this.gridSystem.highlightNearestGridLine(rawX, rawY);
-                // Save position
-                localStorage.setItem(storageKey, JSON.stringify({
-                    x: parseInt(element.style.left),
-                    y: parseInt(element.style.top),
-                }));
+            if (isDragging && !mouseMoveThrottle) {
+                mouseMoveThrottle = true;
+                requestAnimationFrame(() => {
+                    const rawX = event.clientX - dragOffset.x;
+                    const rawY = event.clientY - dragOffset.y;
+                    // Get snapped coordinates from grid system
+                    const snapped = this.gridSystem.snapToGrid(element, rawX, rawY);
+                    // Prevent moving off screen
+                    const maxX = window.innerWidth - element.offsetWidth;
+                    const maxY = window.innerHeight - element.offsetHeight;
+                    element.style.left = `${Math.max(0, Math.min(snapped.x, maxX))}px`;
+                    element.style.top = `${Math.max(0, Math.min(snapped.y, maxY))}px`;
+                    // Highlight nearest grid lines while dragging
+                    this.gridSystem.highlightNearestGridLine(rawX, rawY);
+                    // Save position (throttled)
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        x: parseInt(element.style.left),
+                        y: parseInt(element.style.top),
+                    }));
+                    mouseMoveThrottle = false;
+                });
             }
         });
         window.addEventListener("mouseup", () => {
@@ -7914,9 +8805,6 @@ class KxsClient {
             element.style.left = `${snapped.x}px`;
             element.style.top = `${snapped.y}px`;
         }
-        setTimeout(() => {
-            this.gridSystem.updateCounterCorners();
-        }, 100);
     }
     getKills() {
         const killElement = document.querySelector(".ui-player-kills.js-ui-player-kills");
@@ -7998,8 +8886,7 @@ class KxsClient {
             this.isKxsClientLogoEnable = (_1 = savedSettings.isKxsClientLogoEnable) !== null && _1 !== void 0 ? _1 : this.isKxsClientLogoEnable;
             this.isFocusModeEnabled = (_2 = savedSettings.isFocusModeEnabled) !== null && _2 !== void 0 ? _2 : this.isFocusModeEnabled;
             // Apply brightness setting
-            const brightnessValue = this.brightness / 50;
-            document.documentElement.style.filter = `brightness(${brightnessValue})`;
+            this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
                 // Check if the sound value exists
                 if (savedSettings.soundLibrary.win_sound_url) {
@@ -8473,12 +9360,13 @@ class KxsClient {
         if (startMenu) {
             // Apply styles to the main container
             Object.assign(startMenu.style, {
-                background: 'linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.98) 100%)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                background: 'linear-gradient(135deg, rgba(45, 55, 70, 0.15) 0%, rgba(35, 45, 60, 0.25) 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.37)',
                 padding: '15px',
-                backdropFilter: 'blur(10px)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                webkitBackdropFilter: 'blur(16px) saturate(180%)',
                 margin: '0 auto'
             });
         }
@@ -8488,10 +9376,12 @@ class KxsClient {
                 if (button.classList.contains('btn-green')) {
                     // Boutons Play
                     Object.assign(button.style, {
-                        background: 'linear-gradient(135deg, #4287f5 0%, #3b76d9 100%)',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                        background: 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255, 255, 255, 0.18)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                        backdropFilter: 'blur(12px) saturate(180%)',
+                        webkitBackdropFilter: 'blur(12px) saturate(180%)',
                         transition: 'all 0.2s ease',
                         color: 'white',
                         fontWeight: 'bold'
@@ -8500,9 +9390,11 @@ class KxsClient {
                 else {
                     // Autres boutons
                     Object.assign(button.style, {
-                        background: 'rgba(40, 45, 60, 0.7)',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        background: 'rgba(55, 65, 80, 0.15)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        backdropFilter: 'blur(10px) saturate(180%)',
+                        webkitBackdropFilter: 'blur(10px) saturate(180%)',
                         transition: 'all 0.2s ease',
                         color: 'white'
                     });
@@ -8510,23 +9402,36 @@ class KxsClient {
                 // Hover effect for all buttons
                 button.addEventListener('mouseover', () => {
                     button.style.transform = 'translateY(-2px)';
-                    button.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
-                    button.style.filter = 'brightness(1.1)';
+                    button.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
+                    if (button.classList.contains('btn-green')) {
+                        button.style.background = 'linear-gradient(135deg, rgba(60, 75, 95, 0.3) 0%, rgba(50, 65, 85, 0.4) 100%)';
+                    }
+                    else {
+                        button.style.background = 'rgba(55, 65, 80, 0.25)';
+                    }
+                    button.style.border = '1px solid rgba(255, 255, 255, 0.25)';
                 });
                 button.addEventListener('mouseout', () => {
                     button.style.transform = 'translateY(0)';
-                    button.style.boxShadow = button.classList.contains('btn-green') ?
-                        '0 4px 12px rgba(0, 0, 0, 0.2)' : 'none';
-                    button.style.filter = 'brightness(1)';
+                    if (button.classList.contains('btn-green')) {
+                        button.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)';
+                        button.style.background = 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)';
+                    }
+                    else {
+                        button.style.boxShadow = 'none';
+                        button.style.background = 'rgba(55, 65, 80, 0.15)';
+                    }
+                    button.style.border = button.classList.contains('btn-green') ?
+                        '1px solid rgba(255, 255, 255, 0.18)' : '1px solid rgba(255, 255, 255, 0.15)';
                 });
             }
         });
         // Styliser le sélecteur de serveur
         if (serverSelect instanceof HTMLSelectElement) {
             Object.assign(serverSelect.style, {
-                background: 'rgba(30, 35, 50, 0.8)',
+                background: 'rgba(50, 60, 75, 0.8)',
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(75, 85, 100, 0.3)',
                 color: 'white',
                 padding: '8px 12px',
                 outline: 'none'
@@ -8535,41 +9440,41 @@ class KxsClient {
         // Styliser l'input du nom
         if (nameInput instanceof HTMLInputElement) {
             Object.assign(nameInput.style, {
-                background: 'rgba(30, 35, 50, 0.8)',
+                background: 'rgba(50, 60, 75, 0.8)',
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(75, 85, 100, 0.3)',
                 color: 'white',
                 padding: '8px 12px',
                 outline: 'none'
             });
             // Focus style
             nameInput.addEventListener('focus', () => {
-                nameInput.style.border = '1px solid #4287f5';
-                nameInput.style.boxShadow = '0 0 8px rgba(66, 135, 245, 0.5)';
+                nameInput.style.border = '1px solid rgba(70, 85, 105, 0.8)';
+                nameInput.style.boxShadow = '0 0 8px rgba(60, 75, 95, 0.5)';
             });
             nameInput.addEventListener('blur', () => {
-                nameInput.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                nameInput.style.border = '1px solid rgba(75, 85, 100, 0.3)';
                 nameInput.style.boxShadow = 'none';
             });
         }
         // Styliser la section d'aide
         if (helpSection) {
             Object.assign(helpSection.style, {
-                background: 'rgba(20, 25, 40, 0.7)',
+                background: 'rgba(40, 50, 65, 0.7)',
                 borderRadius: '8px',
                 padding: '15px',
                 margin: '15px 0',
                 maxHeight: '300px',
                 overflowY: 'auto',
                 scrollbarWidth: 'thin',
-                scrollbarColor: '#4287f5 rgba(25, 25, 35, 0.5)'
+                scrollbarColor: '#7f8c8d rgba(25, 25, 35, 0.5)'
             });
             // Style the help section titles
             const helpTitles = helpSection.querySelectorAll('h1');
             helpTitles.forEach(title => {
                 if (title instanceof HTMLElement) {
                     Object.assign(title.style, {
-                        color: '#4287f5',
+                        color: 'rgba(90, 105, 125, 1)',
                         fontSize: '18px',
                         marginTop: '15px',
                         marginBottom: '8px'
@@ -8596,7 +9501,7 @@ class KxsClient {
             const controlTerms = helpSection.querySelectorAll('.help-control');
             controlTerms.forEach(term => {
                 if (term instanceof HTMLElement) {
-                    term.style.color = '#4287f5'; // Bleu
+                    term.style.color = 'rgba(80, 95, 115, 1)'; // Dark blue/grey
                     term.style.fontWeight = 'bold';
                 }
             });
@@ -8707,6 +9612,7 @@ class KxsClient {
  * This module provides a loading animation with a logo and a rotating loading circle
  * that displays during the loading of game resources.
  */
+
 class LoadingScreen {
     /**
      * Creates a new instance of the loading screen
@@ -8722,22 +9628,21 @@ class LoadingScreen {
      * Initializes CSS styles for the loading screen
      */
     initializeStyles() {
-        // Styles for the main container
-        Object.assign(this.container.style, {
+        // Apply glassmorphism effect using DesignSystem
+        DesignSystem.applyGlassEffect(this.container, 'dark', {
             position: 'fixed',
             top: '0',
             left: '0',
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: '9999',
-            transition: 'opacity 0.5s ease-in-out',
+            zIndex: DesignSystem.layers.modal.toString(),
+            transition: `opacity ${DesignSystem.animation.slow} ease-in-out`,
             animation: 'fadeIn 0.5s ease-in-out',
-            backdropFilter: 'blur(5px)'
+            borderRadius: '0'
         });
     }
     /**
@@ -8851,11 +9756,12 @@ class LoadingScreen {
      */
     hide() {
         this.container.style.opacity = '0';
-        setTimeout(() => {
+        // Optimized: use event listener for transition end instead of setTimeout
+        this.container.addEventListener('transitionend', () => {
             if (this.container.parentNode) {
                 document.body.removeChild(this.container);
             }
-        }, 500); // Wait for the transition to finish before removing the element
+        }, { once: true });
     }
 }
 
@@ -9041,14 +9947,18 @@ class ServerSelector {
      * Start animations for the 3D carousel
      */
     startAnimations() {
-        // Subtle continuous movement for more 3D effect
+        // Subtle continuous movement for more 3D effect using requestAnimationFrame
         let angle = 0;
-        this.animation = window.setInterval(() => {
+        let animationId;
+        const animate = () => {
             angle += 0.005;
             if (this.serverContainer) {
                 this.serverContainer.style.transform = `rotateY(${Math.sin(angle) * 5}deg) rotateX(${Math.cos(angle) * 3}deg)`;
             }
-        }, 16);
+            animationId = requestAnimationFrame(animate);
+        };
+        // Store the animation ID for cleanup
+        this.animation = animationId = requestAnimationFrame(animate);
     }
     /**
      * Set up keyboard navigation
@@ -9245,13 +10155,13 @@ class EasterEgg {
         if (this.overlayElement && this.overlayElement.parentNode) {
             // Fade out
             this.overlayElement.style.opacity = '0';
-            // Remove after transition
-            setTimeout(() => {
+            // Remove after transition (optimized)
+            this.overlayElement.addEventListener('transitionend', () => {
                 if (this.overlayElement && this.overlayElement.parentNode) {
                     this.overlayElement.parentNode.removeChild(this.overlayElement);
                     this.overlayElement = null;
                 }
-            }, 500);
+            }, { once: true });
         }
     }
     /**
@@ -9290,7 +10200,7 @@ class EasterEgg {
         this.startAnimations();
         // Play ambient sound
         this.playAmbientSound();
-        // Display the message with sound effect
+        // Display the message with sound effect (optimized)
         setTimeout(() => {
             this.displayMessage();
             // Add server selector button after the message is displayed
@@ -9445,14 +10355,23 @@ class EasterEgg {
     animatePillars() {
         if (!this.isActive)
             return;
-        // Create a slow rotation effect for the pillars
+        // Create a slow rotation effect for the pillars using requestAnimationFrame
         let angle = 0;
-        setInterval(() => {
-            angle += 0.5;
-            this.pillars.forEach((pillar, index) => {
-                pillar.style.transform = `rotateY(${index * 60 + angle}deg) translateZ(400px)`;
-            });
-        }, 100);
+        let lastTime = 0;
+        const animate = (currentTime) => {
+            if (!this.isActive)
+                return;
+            // Throttle to ~10fps instead of 60fps for this slow animation
+            if (currentTime - lastTime >= 100) {
+                angle += 0.5;
+                this.pillars.forEach((pillar, index) => {
+                    pillar.style.transform = `rotateY(${index * 60 + angle}deg) translateZ(400px)`;
+                });
+                lastTime = currentTime;
+            }
+            requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
     }
     playAmbientSound() {
         // Play ambient sound
@@ -9574,7 +10493,7 @@ class EasterEgg {
                 this.textElement.textContent += message.charAt(i);
                 // Update page title in real-time with the current text
                 document.title = this.textElement.textContent || message;
-                // If last character and we should add a period, do it with a pause
+                // If last character and we should add a period, do it with a pause (optimized)
                 if (shouldAddPeriod) {
                     setTimeout(() => {
                         if (this.textElement && this.periodSound) {
