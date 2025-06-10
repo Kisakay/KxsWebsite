@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.1
+// @version      2.2.2
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2258,7 +2258,7 @@ class KillLeaderTracker {
                 // Ne rien faire si le kill leader n'a pas atteint le minimum requis
                 return;
             }
-            else if (this.isKillLeader()) {
+            else if (this.isKillLeader() && myKills > 0) {
                 this.showEncouragement(0);
                 this.wasKillLeader = true;
             }
@@ -2705,7 +2705,7 @@ class StatsParser {
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
 ;// ./package.json
-const package_namespaceObject = {"rE":"2.2.1"};
+const package_namespaceObject = {"rE":"2.2.2"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
