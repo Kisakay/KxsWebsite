@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.2
+// @version      2.2.3
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -14,8 +14,9 @@
 // @match        *://resurviv.biz/*
 // @match        *://leia-uwu.github.io/survev/*
 // @match        *://survev.leia-is.gay/*
-// @match        *://survivx.org
+// @match        *://survivx.org/*
 // @match        *://kxs.rip/*
+// @match        *://localhost:3000/*
 // @grant        none
 // ==/UserScript==
 ;
@@ -1300,7 +1301,7 @@ var websocket_hook = __webpack_require__(746);
 // EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/simplified_browser.js
 var simplified_browser = __webpack_require__(229);
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["*://survev.io/*","*://66.179.254.36/*","*://zurviv.io/*","*://resurviv.biz/*","*://leia-uwu.github.io/survev/*","*://survev.leia-is.gay/*","*://survivx.org","*://kxs.rip/*"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
 
 
@@ -2704,8 +2705,6 @@ class StatsParser {
 // EXTERNAL MODULE: ./node_modules/semver/functions/gt.js
 var gt = __webpack_require__(580);
 var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
-;// ./package.json
-const package_namespaceObject = {"rE":"2.2.2"};
 ;// ./src/FUNC/UpdateChecker.ts
 var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -2716,7 +2715,6 @@ var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (this
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 class UpdateChecker {
@@ -2880,13 +2878,12 @@ class UpdateChecker {
         document.body.appendChild(modal);
     }
     getCurrentScriptVersion() {
-        return package_namespaceObject.rE;
+        return this.kxsClient.pkg.version;
     }
 }
 
 
 ;// ./src/SERVER/DiscordRichPresence.ts
-
 class DiscordWebSocket {
     constructor(kxsClient, token) {
         this.ws = null;
@@ -2930,7 +2927,7 @@ class DiscordWebSocket {
                             application_id: "1321193265533550602",
                             assets: {
                                 large_image: "mp:app-icons/1321193265533550602/bccd2479ec56ed7d4e69fa2fdfb47197.png?size=512",
-                                large_text: "KxsClient v" + package_namespaceObject.rE,
+                                large_text: "KxsClient v" + this.kxsClient.pkg.version,
                             }
                         }],
                     status: 'online',
@@ -3138,7 +3135,6 @@ class NotificationManager {
 ;// ./src/HUD/ClientSecondaryMenu.ts
 
 
-
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "MISC"];
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
@@ -3147,14 +3143,6 @@ class KxsClientSecondaryMenu {
         this.closeSubMenu = () => { };
         // Callbacks pour notifier les changements d'état du menu
         this.onMenuToggle = [];
-        this.shiftListener = (event) => {
-            if (event.key === "Shift" && event.location == 2) {
-                this.clearMenu();
-                this.toggleMenuVisibility();
-                // Ensure options are displayed after loading
-                this.filterOptions();
-            }
-        };
         this.mouseMoveListener = (e) => {
             if (this.isDragging) {
                 // Optimized: use requestAnimationFrame for smooth dragging
@@ -3290,7 +3278,7 @@ class KxsClientSecondaryMenu {
                  top: ${isMobile ? -1 : -2}px;
                  margin-left: ${isMobile ? 2 : 3}px;
                  letter-spacing: 0.5px;
-               ">v${package_namespaceObject.rE}</span></span>
+               ">v${this.kxsClient.pkg.version}</span></span>
             </div>
             <div style="display: flex; gap: ${headerGap}px;">
               <button style="
@@ -4262,6 +4250,17 @@ class KxsClientSecondaryMenu {
                 this.toggleMenuVisibility();
                 // Ensure options are displayed after loading
                 this.filterOptions();
+                if (survev_settings.get("playerName") === "debug") {
+                    let _ = `✨ KxsClient's Features\n\r`;
+                    this.allOptions.forEach(x => {
+                        var _a;
+                        _ += `* [${x.category}] ${x.label} (${x.placeholder || "No description"}) - ${x.type}\n` +
+                            `${((_a = x.fields) === null || _a === void 0 ? void 0 : _a.map(x => {
+                                return `- Name: ${x.label}\n- Category: ${x.category}\n- Type: ${x.type}\n\n`;
+                            }).join("")) || "Not SubMenu Found\n"}\n`;
+                    });
+                    navigator.clipboard.writeText(_);
+                }
             }
         });
         // Gestionnaire séparé pour la touche Échap avec capture en phase de capture
@@ -4722,7 +4721,6 @@ class KxsClientSecondaryMenu {
     }
     destroy() {
         // Remove global event listeners
-        window.removeEventListener("keydown", this.shiftListener);
         document.removeEventListener('mousemove', this.mouseMoveListener);
         document.removeEventListener('mouseup', this.mouseUpListener);
         // Supprimer tous les écouteurs d'événements keydown du document
@@ -7088,21 +7086,231 @@ class GameHistoryMenu {
 }
 
 
+;// ./src/HUD/MOD/BroadcastHUD.ts
+/**
+ * BroadcastHUD - Displays broadcast messages in a glassmorphism HUD
+ * matching the online menu style from KxsClient
+ */
+class BroadcastHUD {
+    /**
+     * Get the singleton instance of BroadcastHUD
+     * @param kxsClient Reference to the KxsClient instance
+     * @returns BroadcastHUD instance
+     */
+    static getInstance(kxsClient) {
+        if (!BroadcastHUD.instance) {
+            BroadcastHUD.instance = new BroadcastHUD(kxsClient);
+        }
+        return BroadcastHUD.instance;
+    }
+    /**
+     * Private constructor to enforce singleton pattern
+     * @param kxsClient Reference to the KxsClient instance
+     */
+    constructor(kxsClient) {
+        this.currentMessage = "";
+        this.isVisible = false;
+        this.hideTimeout = null;
+        this.progressAnimation = null;
+        this.kxsClient = kxsClient;
+        this.container = document.createElement("div");
+        this.messageElement = document.createElement("div");
+        this.progressBar = document.createElement("div");
+        this.createHUD();
+    }
+    /**
+     * Create the HUD container and elements
+     */
+    createHUD() {
+        // Apply glassmorphism effect matching the online menu style
+        Object.assign(this.container.style, {
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            padding: "8px 18px 0 18px", // Remove bottom padding to accommodate progress bar
+            zIndex: "999",
+            minWidth: "280px",
+            maxWidth: "400px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            opacity: "0",
+            pointerEvents: "none",
+            transition: "all 0.3s ease",
+            transform: "translateY(-20px)",
+            background: "rgba(255, 255, 255, 0.1)",
+            backdropFilter: "blur(20px) saturate(180%)",
+            WebkitBackdropFilter: "blur(20px) saturate(180%)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "16px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+            fontSize: "15px",
+            userSelect: "none",
+            fontFamily: "inherit",
+            overflow: "hidden" // Ensure progress bar doesn't overflow
+        });
+        // Create header
+        const header = document.createElement("div");
+        Object.assign(header.style, {
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "8px",
+            width: "100%"
+        });
+        // Create notification dot (similar to online dot)
+        const dot = document.createElement("span");
+        Object.assign(dot.style, {
+            display: "inline-block",
+            width: "12px",
+            height: "12px",
+            borderRadius: "50%",
+            background: "#3fae2a",
+            marginRight: "10px",
+            boxShadow: "0 0 8px #3fae2a"
+        });
+        // Create title
+        const title = document.createElement("div");
+        title.textContent = "BROADCAST MESSAGE FROM KXS CREATOR";
+        Object.assign(title.style, {
+            fontWeight: "bold",
+            color: "#fff",
+            fontSize: "15px"
+        });
+        header.appendChild(dot);
+        header.appendChild(title);
+        // Create message element
+        Object.assign(this.messageElement.style, {
+            fontFamily: "inherit",
+            fontSize: "14px",
+            lineHeight: "1.5",
+            color: "#fff",
+            width: "100%",
+            wordBreak: "break-word"
+        });
+        // Create decorative line
+        const decorativeLine = document.createElement("div");
+        Object.assign(decorativeLine.style, {
+            height: "1px",
+            background: "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.05) 100%)",
+            width: "100%",
+            margin: "8px 0"
+        });
+        // Create progress bar
+        Object.assign(this.progressBar.style, {
+            position: "absolute",
+            bottom: "0",
+            left: "0",
+            height: "3px",
+            width: "100%",
+            background: "linear-gradient(90deg, #3fae2a, #8fef7a)",
+            transformOrigin: "left",
+            transform: "scaleX(0)"
+        });
+        // Assemble HUD
+        this.container.appendChild(header);
+        this.container.appendChild(decorativeLine);
+        this.container.appendChild(this.messageElement);
+        this.container.appendChild(this.progressBar);
+        // Add to document
+        document.body.appendChild(this.container);
+        // Create animation style for the dot
+        if (!document.getElementById('kxs-broadcast-style')) {
+            const style = document.createElement('style');
+            style.id = 'kxs-broadcast-style';
+            style.innerHTML = `
+                @keyframes kxs-broadcast-pulse {
+                    0% { box-shadow:0 0 8px #3fae2a; opacity: 1; }
+                    100% { box-shadow:0 0 16px #3fae2a; opacity: 0.6; }
+                }
+            `;
+            document.head.appendChild(style);
+            // Apply animation to dot
+            dot.style.animation = "kxs-broadcast-pulse 1s infinite alternate";
+        }
+    }
+    /**
+     * Show a broadcast message in the HUD
+     * @param message The message to display
+     * @param duration How long to show the message (ms)
+     */
+    showMessage(message, duration = 8000) {
+        if (!this.container || !this.messageElement)
+            return;
+        // Clear any existing timeout and animation
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = null;
+        }
+        if (this.progressAnimation) {
+            this.progressAnimation.cancel();
+            this.progressAnimation = null;
+        }
+        // Reset progress bar
+        this.progressBar.style.transform = "scaleX(0)";
+        // Update message
+        this.currentMessage = message;
+        this.messageElement.textContent = message;
+        // Show HUD if not already visible
+        if (!this.isVisible) {
+            this.container.style.opacity = "1";
+            this.container.style.transform = "translateY(0)";
+            this.container.style.pointerEvents = "auto";
+            this.isVisible = true;
+        }
+        else {
+            // Apply a quick pulse effect to draw attention to the new message
+            const dot = this.container.querySelector('span');
+            if (dot) {
+                dot.style.animation = "none";
+                setTimeout(() => {
+                    if (dot) {
+                        dot.style.animation = "kxs-broadcast-pulse 1s infinite alternate";
+                    }
+                }, 10);
+            }
+        }
+        // Animate progress bar
+        this.progressAnimation = this.progressBar.animate([
+            { transform: "scaleX(0)" },
+            { transform: "scaleX(1)" }
+        ], {
+            duration: duration,
+            easing: "linear",
+            fill: "forwards"
+        });
+        // Set timeout to hide the message
+        this.hideTimeout = setTimeout(() => {
+            this.hideMessage();
+        }, duration);
+    }
+    /**
+     * Hide the broadcast message HUD
+     */
+    hideMessage() {
+        if (!this.container)
+            return;
+        this.container.style.opacity = "0";
+        this.container.style.transform = "translateY(-20px)";
+        this.container.style.pointerEvents = "none";
+        this.isVisible = false;
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = null;
+        }
+        if (this.progressAnimation) {
+            this.progressAnimation.cancel();
+            this.progressAnimation = null;
+        }
+        // Reset progress bar
+        this.progressBar.style.transform = "scaleX(0)";
+    }
+}
+BroadcastHUD.instance = null;
+
 ;// ./src/NETWORK/KxsNetwork.ts
 
+
 class KxsNetwork {
-    sendGlobalChatMessage(text) {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
-            return;
-        const payload = {
-            op: 7,
-            d: {
-                user: this.getUsername(),
-                text
-            }
-        };
-        this.send(payload);
-    }
     constructor(kxsClient) {
         this.currentGamePlayers = [];
         this.ws = null;
@@ -7112,7 +7320,7 @@ class KxsNetwork {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 3;
         this.reconnectTimeout = 0;
-        this.reconnectDelay = 15000; // Initial reconnect delay of 1 second
+        this.reconnectDelay = 15000;
         this.kxsUsers = 0;
         this.privateUsername = this.generateRandomUsername();
         this.kxs_users = [];
@@ -7165,6 +7373,18 @@ class KxsNetwork {
             this.kxsClient.nm.showNotification('Failed to reconnect after multiple attempts', 'error', 2000);
         }
     }
+    sendGlobalChatMessage(text) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
+            return;
+        const payload = {
+            op: 7,
+            d: {
+                user: this.getUsername(),
+                text
+            }
+        };
+        this.send(payload);
+    }
     generateRandomUsername() {
         let char = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let username = '';
@@ -7181,7 +7401,8 @@ class KxsNetwork {
             op: 2,
             d: {
                 username: this.getUsername(),
-                isVoiceChat: this.kxsClient.isVoiceChatEnabled
+                isVoiceChat: this.kxsClient.isVoiceChatEnabled,
+                v: this.kxsClient.pkg.version
             }
         };
         this.send(payload);
@@ -7242,6 +7463,15 @@ class KxsNetwork {
                 {
                     if (d && !d.isVoiceChat && d.user) {
                         this.kxsClient.voiceChat.removeUserFromVoice(d.user);
+                    }
+                }
+                break;
+            case 87: // BROADCAST MESSAGE
+                {
+                    if (d && d.msg) {
+                        // Get the broadcast HUD instance and show the message
+                        const broadcastHUD = BroadcastHUD.getInstance(this.kxsClient);
+                        broadcastHUD.showMessage(d.msg, d.duration || 8000);
                     }
                 }
                 break;
@@ -7327,6 +7557,7 @@ class KxsChat {
         this.messagesContainer = null;
         this.chatMessages = [];
         this.chatOpen = false;
+        this.resizeObserver = null;
         this.handleKeyDown = (e) => {
             if (e.key === 'Enter' && !this.chatOpen && document.activeElement !== this.chatInput) {
                 e.preventDefault();
@@ -7336,6 +7567,18 @@ class KxsChat {
                 this.closeChatInput();
             }
         };
+        // Gestionnaire de clic sur le document pour fermer le chat quand on clique ailleurs
+        this.handleDocumentClick = (e) => {
+            // Si le chat est ouvert et qu'on clique en dehors du chat
+            if (this.chatOpen && this.chatBox && this.chatInput) {
+                // Vérifie si le clic est en dehors du chatBox
+                const target = e.target;
+                if (!this.chatBox.contains(target) && target !== this.chatInput) {
+                    // Ferme le chat si on clique ailleurs
+                    this.closeChatInput();
+                }
+            }
+        };
         this.kxsClient = kxsClient;
         this.initGlobalChat();
         // Initialize chat visibility based on the current setting
@@ -7343,6 +7586,8 @@ class KxsChat {
             this.chatBox.style.display = 'none';
             window.removeEventListener('keydown', this.handleKeyDown);
         }
+        // Ajouter un gestionnaire de clic global pour fermer le chat lorsqu'on clique ailleurs
+        document.addEventListener('mousedown', this.handleDocumentClick);
     }
     initGlobalChat() {
         const area = document.getElementById('game-touch-area');
@@ -7357,6 +7602,10 @@ class KxsChat {
         messagesContainer.style.display = 'flex';
         messagesContainer.style.flexDirection = 'column';
         messagesContainer.style.gap = '3px';
+        messagesContainer.style.flexGrow = '1'; // Prend tout l'espace disponible
+        messagesContainer.style.overflow = 'hidden'; // Masque le contenu qui dépasse au lieu d'afficher une barre de défilement
+        messagesContainer.style.minHeight = '100px'; // Hauteur minimale pour assurer l'espace
+        messagesContainer.style.maxHeight = '300px'; // Hauteur maximale pour éviter qu'il ne devienne trop grand
         chatBox.appendChild(messagesContainer);
         this.messagesContainer = messagesContainer;
         chatBox.style.position = 'absolute';
@@ -7365,6 +7614,8 @@ class KxsChat {
         chatBox.style.transform = 'translateX(-50%)';
         chatBox.style.minWidth = '260px';
         chatBox.style.maxWidth = '480px';
+        chatBox.style.minHeight = '150px'; // Hauteur minimale pour le chat box
+        chatBox.style.height = '200px'; // Hauteur par défaut
         chatBox.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
         chatBox.style.backdropFilter = 'blur(40px) saturate(180%)';
         chatBox.style['-webkitBackdropFilter'] = 'blur(40px) saturate(180%)';
@@ -7382,6 +7633,8 @@ class KxsChat {
         chatBox.style.flexDirection = 'column';
         chatBox.style.gap = '3px';
         chatBox.style.opacity = '0.5';
+        chatBox.style.resize = 'both'; // Permet à l'utilisateur de redimensionner la boîte
+        chatBox.style.overflow = 'hidden'; // Nécessaire pour le redimensionnement
         // Charger la position sauvegardée dès l'initialisation
         const savedPosition = localStorage.getItem('kxs-chat-box-position');
         if (savedPosition) {
@@ -7395,6 +7648,15 @@ class KxsChat {
         }
         area.appendChild(chatBox);
         this.chatBox = chatBox;
+        // Configurer un ResizeObserver pour détecter les changements de taille de la chatBox
+        this.resizeObserver = new ResizeObserver(() => {
+            // Quand la taille change, mettre à jour l'affichage des messages
+            this.renderMessages();
+        });
+        // Observer la chatBox pour les changements de dimensions
+        if (this.chatBox) {
+            this.resizeObserver.observe(this.chatBox);
+        }
         // Rendre la chatbox draggable UNIQUEMENT si le menu secondaire est ouvert
         const updateChatDraggable = () => {
             const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
@@ -7507,8 +7769,6 @@ class KxsChat {
         if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
             return;
         this.chatMessages.push({ user, text, isSystem: false });
-        if (this.chatMessages.length > 5)
-            this.chatMessages.shift();
         this.renderMessages();
     }
     /**
@@ -7520,9 +7780,36 @@ class KxsChat {
             return;
         // Ajouter le message système avec un marqueur spécifique isSystem = true
         this.chatMessages.push({ user: "", text, isSystem: true });
-        if (this.chatMessages.length > 5)
-            this.chatMessages.shift();
         this.renderMessages();
+    }
+    /**
+     * Calcule le nombre de messages qui peuvent s'afficher dans la division du chat
+     * @returns Le nombre de messages qui peuvent s'afficher
+     */
+    calculateVisibleMessageCount() {
+        if (!this.chatBox || !this.messagesContainer)
+            return 5; // Valeur par défaut
+        // Obtenir les dimensions réelles du conteneur de messages
+        const rect = this.messagesContainer.getBoundingClientRect();
+        const container_height = rect.height;
+        // Si la hauteur est toujours trop petite, utiliser une valeur par défaut
+        if (container_height < 50) {
+            // Utiliser la hauteur du chatBox comme base et soustraire l'espace pour l'input
+            const chat_box_height = this.chatBox.clientHeight;
+            const input_height = this.chatInput ? this.chatInput.clientHeight : 40; // Valeur par défaut si input n'est pas disponible
+            const padding = 20; // Estimation du padding total
+            const estimated_container_height = chat_box_height - input_height - padding;
+            // Estimation de la hauteur moyenne d'un message (en pixels)
+            const average_message_height = 22; // ~22px par message avec la taille de police actuelle
+            // Calcul du nombre de messages qui peuvent s'afficher
+            const visible_count = Math.max(1, Math.floor(estimated_container_height / average_message_height));
+            return visible_count;
+        }
+        // Estimation de la hauteur moyenne d'un message (en pixels)
+        const average_message_height = 22; // ~22px par message avec la taille de police actuelle
+        // Calcul du nombre de messages qui peuvent s'afficher
+        const visible_count = Math.max(1, Math.floor(container_height / average_message_height));
+        return visible_count;
     }
     /**
      * Rend les messages du chat avec leur style approprié
@@ -7530,12 +7817,17 @@ class KxsChat {
     renderMessages() {
         if (!this.messagesContainer)
             return;
-        this.messagesContainer.innerHTML = this.chatMessages.map(m => {
+        // Calcule combien de messages peuvent s'afficher
+        const visible_count = this.calculateVisibleMessageCount();
+        // Sélectionne les messages les plus récents qui peuvent s'afficher
+        const visible_messages = this.chatMessages.slice(-visible_count);
+        // Rend les messages visibles
+        this.messagesContainer.innerHTML = visible_messages.map(m => {
             if (m.isSystem) {
-                return `<span style='color:#3B82F6; font-style:italic;'>${m.text}</span>`;
+                return `<div style='color:#3B82F6; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
             }
             else {
-                return `<span><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</span>`;
+                return `<div style='margin-bottom:4px;'><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</div>`;
             }
         }).join('');
     }
@@ -7545,10 +7837,14 @@ class KxsChat {
         }
         if (this.kxsClient.isKxsChatEnabled) {
             window.addEventListener('keydown', this.handleKeyDown);
+            // S'assurer que le gestionnaire de clic est actif
+            document.addEventListener('mousedown', this.handleDocumentClick);
         }
         else {
             this.closeChatInput();
             window.removeEventListener('keydown', this.handleKeyDown);
+            // Retirer le gestionnaire de clic si le chat est désactivé
+            document.removeEventListener('mousedown', this.handleDocumentClick);
         }
         const message = this.kxsClient.isKxsChatEnabled ? 'Chat enabled' : 'Chat disabled';
         const type = this.kxsClient.isKxsChatEnabled ? 'success' : 'info';
@@ -8106,6 +8402,8 @@ class KxsVoiceChat {
 }
 
 
+;// ./package.json
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -8134,6 +8432,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
+
 class KxsClient {
     constructor() {
         this.onlineMenuElement = null;
@@ -8141,6 +8440,7 @@ class KxsClient {
         this.deathObserver = null;
         this.adBlockObserver = null;
         globalThis.kxsClient = this;
+        this.pkg = package_namespaceObject;
         this.logger = new Logger();
         this.config = config_namespaceObject;
         this.menu = document.createElement("div");
@@ -10777,7 +11077,6 @@ class EasterEgg {
 
 
 
-
 if (window.location.href === "https://kxs.rip/") {
     /*
         - Injecting Easter Egg
@@ -10813,7 +11112,7 @@ else if (window.location.pathname === "/") {
         if (links.length > 0) {
             const firstLink = links[0];
             firstLink.href = newChangelogUrl;
-            firstLink.textContent = package_namespaceObject.rE;
+            firstLink.textContent = kxsClient.pkg.version;
             while (links.length > 1) {
                 links[1].remove();
             }
