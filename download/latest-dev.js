@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.3
+// @version      2.2.4
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -17,6 +17,7 @@
 // @match        *://survivx.org/*
 // @match        *://kxs.rip/*
 // @match        *://localhost:3000/*
+// @match        *://veldreth.com/*
 // @grant        none
 // ==/UserScript==
 ;
@@ -848,6 +849,7 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
         if (typeof url === "string" && url.includes("gameId=")) {
             const gameId = url.split("gameId=")[1];
             globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
+            globalThis.kxsClient.exchangeManager.sendGameInfo(gameId);
         }
         return ws;
     }
@@ -1301,7 +1303,7 @@ var websocket_hook = __webpack_require__(746);
 // EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/simplified_browser.js
 var simplified_browser = __webpack_require__(229);
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
 
 
@@ -3133,6 +3135,15 @@ class NotificationManager {
 
 
 ;// ./src/HUD/ClientSecondaryMenu.ts
+var ClientSecondaryMenu_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 
 
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "MISC"];
@@ -3893,6 +3904,51 @@ class KxsClientSecondaryMenu {
                     fileInput.click();
                 }
             },
+        });
+        this.addOption(MISC, {
+            category: "MISC",
+            label: "Developer Options",
+            value: true,
+            icon: '<svg fill="#000000" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="m 9.095305,2.8613212 -8.0953049,1.257035 1.3073163,8.3969928 4.3242001,-0.70394 C 6.5812355,11.45944 7.7377073,8.4425562 7.9388329,7.8894612 l -2.2123815,0.351969 0.3016884,-0.905065 1.5587233,-0.251407 0.4022512,0.502814 c 0,0 0.1005628,-0.251407 0.1005628,-0.35197 L 5.927577,4.5708882 C 5.8270142,4.4200442 5.8270142,4.2189192 5.9778584,4.1183562 l 0.1005628,-0.100563 c 0.1508442,-0.100563 0.3519698,-0.100563 0.4525326,0.05028 l 1.910693,2.212382 c 0.4022512,-1.206754 0.754221,-2.262663 0.754221,-2.614633 0.050281,-0.100563 0.050281,-0.452532 -0.1005628,-0.804502 z M 3.0615374,7.8391792 4.4191351,7.5877722 4.0671653,8.4928372 3.1621002,8.6436812 3.0615374,7.8391792 Z m 2.916321,-2.564351 0.1508442,0.05028 c 0.2011256,0.05028 0.251407,0.251407 0.2011256,0.452533 L 4.8213863,9.8001542 3.9163211,11.006907 4.0168839,9.4984652 5.5253258,5.4759532 c 0.050281,-0.201125 0.251407,-0.251407 0.4525326,-0.201125 z m 5.4303906,-1.407879 c -0.201125,0.201125 -0.452532,0.854784 -0.955346,2.765477 l 0.05028,0 0.150844,0.804502 -0.402251,0.05028 c -0.05028,0.251407 -0.100563,0.502814 -0.201126,0.804503 0.854784,0.452532 0.402251,1.558723 0.35197,1.558723 -0.05028,0 -0.05028,0 -0.05028,-0.05028 0,-0.05028 0.05028,-0.201126 -0.100563,-0.251407 C 10.151214,9.4984652 9.9500887,9.4481842 9.7992445,9.3476212 9.6484004,9.9509982 9.4975562,10.654937 9.346712,11.409158 l 3.167728,-0.502814 -1.055909,-7.0896768 -0.05028,0.05028 z m -0.35197,-0.502814 c 0.201126,-0.100563 0.301689,-0.201126 0.452533,-0.201126 0.251407,0 0.402251,0.150844 0.452533,0.251407 0.100562,0.150844 0.452532,0.251407 0.603376,0.251407 0.100563,0 0.251407,-0.35197 0.35197,-0.653658 0.100563,-0.301688 0.100563,-0.653658 0.05028,-0.70394 -0.05028,-0.05028 -0.452532,-0.150844 -0.553095,-0.150844 -0.05028,0.05028 -0.150844,0.100563 -0.35197,0.100563 -0.201125,0 -0.402251,-0.150844 -0.553095,-0.301688 -0.251406,-0.251407 -0.553094,-0.35197 -0.854783,-0.452533 -0.301688,-0.100563 -0.653658,-0.100563 -0.9553462,-0.100563 -0.4525326,-0.05028 -0.9553466,-0.05028 -1.4078792,0.100563 -0.2011255,0.05028 -0.3519697,0.100563 -0.5530953,0.201126 -0.050281,0.05028 -0.2011256,0.100562 -0.251407,0.100562 -0.050281,0.05028 -0.050281,0.100563 0,0.100563 0.050281,0 0.251407,-0.05028 0.251407,-0.05028 0,0 -0.251407,0.100563 -0.251407,0.201125 0,0.05028 0.050281,0.05028 0.050281,0.05028 0,0 0.1508442,-0.05028 0.251407,-0.05028 0.2011256,0 0.5028139,-0.100562 0.7542209,-0.100562 0.3016884,0 0.6033768,0.100562 0.9050652,0.402251 0.4525325,0.553095 0.4022511,1.257035 0.4022511,1.407879 -0.1005627,1.055909 -2.4637884,7.4919278 -2.5643512,7.9444608 -0.1005628,0.452532 -0.1005628,0.703939 0.4525326,0.854783 0.5530953,0.150845 0.7542209,0 0.8547837,-0.201125 0.050281,-0.35197 1.5587234,-8.2964308 2.4637884,-9.0003698 z"></path></g></svg>',
+            type: "sub",
+            fields: [
+                {
+                    label: "Enable GameID Exchange",
+                    category: "MISC",
+                    icon: '<svg viewBox="-1 0 26 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>share</title> <desc>Created with Sketch Beta.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"> <g id="Icon-Set" sketch:type="MSLayerGroup" transform="translate(-312.000000, -726.000000)" fill="#000000"> <path d="M331,750 C329.343,750 328,748.657 328,747 C328,745.343 329.343,744 331,744 C332.657,744 334,745.343 334,747 C334,748.657 332.657,750 331,750 L331,750 Z M317,742 C315.343,742 314,740.657 314,739 C314,737.344 315.343,736 317,736 C318.657,736 320,737.344 320,739 C320,740.657 318.657,742 317,742 L317,742 Z M331,728 C332.657,728 334,729.343 334,731 C334,732.657 332.657,734 331,734 C329.343,734 328,732.657 328,731 C328,729.343 329.343,728 331,728 L331,728 Z M331,742 C329.23,742 327.685,742.925 326.796,744.312 L321.441,741.252 C321.787,740.572 322,739.814 322,739 C322,738.497 321.903,738.021 321.765,737.563 L327.336,734.38 C328.249,735.37 329.547,736 331,736 C333.762,736 336,733.762 336,731 C336,728.238 333.762,726 331,726 C328.238,726 326,728.238 326,731 C326,731.503 326.097,731.979 326.235,732.438 L320.664,735.62 C319.751,734.631 318.453,734 317,734 C314.238,734 312,736.238 312,739 C312,741.762 314.238,744 317,744 C318.14,744 319.179,743.604 320.02,742.962 L320,743 L326.055,746.46 C326.035,746.64 326,746.814 326,747 C326,749.762 328.238,752 331,752 C333.762,752 336,749.762 336,747 C336,744.238 333.762,742 331,742 L331,742 Z" id="share" sketch:type="MSShapeGroup"> </path> </g> </g> </g></svg>',
+                    type: "toggle",
+                    value: this.kxsClient.kxsDeveloperOptions.enableGameIDExchange,
+                    onChange: () => {
+                        this.kxsClient.kxsDeveloperOptions.enableGameIDExchange = !this.kxsClient.kxsDeveloperOptions.enableGameIDExchange;
+                        this.kxsClient.updateLocalStorage();
+                    }
+                },
+                {
+                    label: "Renew Exchange Key",
+                    value: true,
+                    type: "click",
+                    icon: '<svg viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>reset</title> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Combined-Shape" fill="#000000" transform="translate(74.806872, 64.000000)"> <path d="M351.859794,42.6666667 L351.859794,85.3333333 L283.193855,85.3303853 C319.271288,116.988529 341.381875,163.321355 341.339886,213.803851 C341.27474,291.98295 288.098183,360.121539 212.277591,379.179704 C136.456999,398.237869 57.3818117,363.341907 20.3580507,294.485411 C-16.6657103,225.628916 -2.17003698,140.420413 55.5397943,87.68 C63.6931909,100.652227 75.1888658,111.189929 88.8197943,118.186667 C59.4998648,141.873553 42.4797783,177.560832 42.5264609,215.253333 C43.5757012,285.194843 100.577082,341.341203 170.526461,341.333333 C234.598174,342.388718 289.235113,295.138227 297.4321,231.584253 C303.556287,184.101393 282.297007,138.84385 245.195596,112.637083 L245.193128,192 L202.526461,192 L202.526461,42.6666667 L351.859794,42.6666667 Z M127.859794,-1.42108547e-14 C151.423944,-1.42108547e-14 170.526461,19.1025173 170.526461,42.6666667 C170.526461,66.230816 151.423944,85.3333333 127.859794,85.3333333 C104.295645,85.3333333 85.1931276,66.230816 85.1931276,42.6666667 C85.1931276,19.1025173 104.295645,-1.42108547e-14 127.859794,-1.42108547e-14 Z"> </path> </g> </g> </g></svg>',
+                    category: "MISC",
+                    onChange: () => ClientSecondaryMenu_awaiter(this, void 0, void 0, function* () {
+                        const new_password = this.kxsClient.generateRandomPassword();
+                        this.kxsClient.kxsDeveloperOptions.exchange.password = new_password;
+                        this.kxsClient.updateLocalStorage();
+                        this.kxsClient.nm.showNotification("New Exchange Key Generated (pasted to clipboard)", "success", 2100);
+                        yield navigator.clipboard.writeText(new_password);
+                    })
+                },
+                {
+                    label: "Copy Exchange Key",
+                    value: this.kxsClient.kxsDeveloperOptions.exchange.password,
+                    type: "click",
+                    category: "MISC",
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M9 17.5C9 18.8807 7.88071 20 6.5 20C5.11929 20 4 18.8807 4 17.5C4 16.1193 5.11929 15 6.5 15C7.88071 15 9 16.1193 9 17.5ZM9 17.5H15.125M19 20V17.75C19 17.6119 18.8881 17.5 18.75 17.5M15.125 17.5H18.75M15.125 17.5V20M18.75 17.5Lnan nanCnan nan nan nan nan nanLnan nanCnan nan nan nan nan nanL18.75 17.5ZM5 11H19C20.1046 11 21 10.1046 21 9V6C21 4.89543 20.1046 4 19 4H5C3.89543 4 3 4.89543 3 6V9C3 10.1046 3.89543 11 5 11Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <circle cx="7.5" cy="7.5" r="1.5" fill="#000000"></circle> <circle cx="12" cy="7.5" r="1.5" fill="#000000"></circle> <circle cx="16.5" cy="7.5" r="1.5" fill="#000000"></circle> </g></svg>',
+                    onChange: () => {
+                        this.kxsClient.nm.showNotification("Exchange Key Copied to Clipboard", "success", 2100);
+                        navigator.clipboard.writeText(this.kxsClient.kxsDeveloperOptions.exchange.password);
+                    }
+                }
+            ],
         });
     }
     createOptionCard(option, container) {
@@ -8403,7 +8459,26 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.4","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
+;// ./src/SERVER/exchangeManager.ts
+
+class ExchangeManager {
+    constructor(kxsClient) {
+        this.HOST_URL = config_namespaceObject.api_url;
+        this.kxsClient = kxsClient;
+    }
+    sendGameInfo(gameId) {
+        if (!this.kxsClient.kxsDeveloperOptions.enableGameIDExchange)
+            return;
+        fetch(this.HOST_URL + "/exchange/joined/" + gameId + "/" + this.kxsClient.kxsDeveloperOptions.exchange.password, {
+            method: "GET",
+        })
+            .catch(error => {
+            console.error(error);
+        });
+    }
+}
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -8414,6 +8489,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -8472,6 +8548,12 @@ class KxsClient {
         this.isKxsClientLogoEnable = true;
         this.isFocusModeEnabled = true;
         this.currentFocusModeState = false;
+        this.kxsDeveloperOptions = {
+            enableGameIDExchange: false,
+            exchange: {
+                password: "",
+            }
+        };
         this.defaultPositions = {
             fps: { left: 20, top: 160 },
             ping: { left: 20, top: 220 },
@@ -8505,6 +8587,7 @@ class KxsClient {
         this.healWarning = new HealthWarning(this);
         this.historyManager = new GameHistoryMenu(this);
         this.kxsNetwork = new KxsNetwork(this);
+        this.exchangeManager = new ExchangeManager(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
@@ -8771,7 +8854,8 @@ class KxsClient {
             isHealBarIndicatorEnabled: this.isHealBarIndicatorEnabled,
             brightness: this.brightness,
             isKxsClientLogoEnable: this.isKxsClientLogoEnable,
-            isFocusModeEnabled: this.isFocusModeEnabled
+            isFocusModeEnabled: this.isFocusModeEnabled,
+            kxsDeveloperOptions: this.kxsDeveloperOptions
         }));
     }
     ;
@@ -9153,7 +9237,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -9185,6 +9269,7 @@ class KxsClient {
             this.brightness = (_0 = savedSettings.brightness) !== null && _0 !== void 0 ? _0 : this.brightness;
             this.isKxsClientLogoEnable = (_1 = savedSettings.isKxsClientLogoEnable) !== null && _1 !== void 0 ? _1 : this.isKxsClientLogoEnable;
             this.isFocusModeEnabled = (_2 = savedSettings.isFocusModeEnabled) !== null && _2 !== void 0 ? _2 : this.isFocusModeEnabled;
+            this.kxsDeveloperOptions = (_3 = savedSettings.kxsDeveloperOptions) !== null && _3 !== void 0 ? _3 : this.kxsDeveloperOptions;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -9902,6 +9987,14 @@ class KxsClient {
         if (floatButton) {
             floatButton.remove();
         }
+    }
+    generateRandomPassword(len) {
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+abcdefghijklmnopqrstuvwxyz";
+        let password = "";
+        for (let i = 0; i < (len || 12); i++) {
+            password += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        return password;
     }
 }
 
