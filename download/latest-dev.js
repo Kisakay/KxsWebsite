@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.4
+// @version      2.2.5
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1308,6 +1308,7 @@ const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs
 
 
 const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
+const gbl_sound = config_namespaceObject.base_url + "/assets/blacklisted.m4a";
 const kxs_logo = config_namespaceObject.base_url + "/assets/KysClientLogo.png";
 const full_logo = config_namespaceObject.base_url + "/assets/KysClient.gif";
 const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
@@ -3147,6 +3148,7 @@ var ClientSecondaryMenu_awaiter = (undefined && undefined.__awaiter) || function
 
 
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "MISC"];
+const X0 = ["Kxs Network", "Developer Options"];
 class KxsClientSecondaryMenu {
     constructor(kxsClient) {
         this.searchTerm = '';
@@ -4024,6 +4026,9 @@ class KxsClientSecondaryMenu {
                 if (this.activeCategory === 'ALL' || section.category === this.activeCategory) {
                     section.options.forEach(option => {
                         // Create a unique key for each option
+                        if ((this.kxsClient.kxsNetwork["1"] === true) && X0.includes(option.label)) {
+                            return;
+                        }
                         const optionKey = `${option.label}-${option.category}`;
                         // Check if option matches search term
                         const matchesSearch = this.searchTerm === '' ||
@@ -7380,6 +7385,7 @@ class KxsNetwork {
         this.kxsUsers = 0;
         this.privateUsername = this.generateRandomUsername();
         this.kxs_users = [];
+        this[0x1] = false;
         this.kxsClient = kxsClient;
     }
     connect() {
@@ -7410,7 +7416,7 @@ class KxsNetwork {
         };
     }
     attemptReconnect() {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        if ((this.reconnectAttempts < this.maxReconnectAttempts) && this.kxsClient.kxsNetwork["1"] === false) {
             this.reconnectAttempts++;
             // Use exponential backoff for reconnection attempts
             const delay = this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1);
@@ -7425,8 +7431,8 @@ class KxsNetwork {
             }, delay);
         }
         else {
-            this.kxsClient.logger.log('[KxsNetwork] Maximum reconnection attempts reached');
-            this.kxsClient.nm.showNotification('Failed to reconnect after multiple attempts', 'error', 2000);
+            this.kxsClient.logger.log(this[1] ? '[KxsNetwork] Blacklisted' : '[KxsNetwork] Maximum reconnection attempts reached');
+            this.kxsClient.nm.showNotification(this[1] ? 'You are blacklisted' : 'Failed to reconnect after multiple attempts', 'error', 2000);
         }
     }
     sendGlobalChatMessage(text) {
@@ -7474,6 +7480,13 @@ class KxsNetwork {
                         this.kxs_users = d.players;
                 }
                 break;
+            case 2: // Dispatch
+                {
+                    if (d === null || d === void 0 ? void 0 : d.uuid) {
+                        this.isAuthenticated = true;
+                    }
+                }
+                break;
             case 3: // Kxs user join game
                 {
                     if (d && Array.isArray(d.players)) {
@@ -7508,11 +7521,12 @@ class KxsNetwork {
                     this.identify();
                 }
                 break;
-            case 2: // Dispatch
+            case 24: // Handle gbl
                 {
-                    if (d === null || d === void 0 ? void 0 : d.uuid) {
-                        this.isAuthenticated = true;
-                    }
+                    let { error, reason, timestamp, ign } = d;
+                    if (!error || !reason || !timestamp || !ign)
+                        return;
+                    this.kxsClient.handleGBL(error, reason, timestamp, ign);
                 }
                 break;
             case 98: // VOICE CHAT UPDATE
@@ -8459,7 +8473,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.4","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.5","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -8768,6 +8782,19 @@ class KxsClient {
             const dot = this.onlineMenuElement.querySelector('#kxs-online-dot');
             const userListMenu = this.onlineMenuElement.querySelector('#kxs-online-users-menu');
             try {
+                if (this.kxsNetwork["1"] === true) {
+                    if (countEl)
+                        countEl.textContent = atob("WW91ciBpcCBoYXMgYmVlbiBiYW5uZWQgZnJvbSB1c2luZyBLeHNOZXR3b3Jr");
+                    if (dot) {
+                        dot.style.background = '#888';
+                        dot.style.boxShadow = 'none';
+                        dot.style.animation = '';
+                    }
+                    if (userListMenu) {
+                        userListMenu.innerHTML = `<div style="text-align:center;padding:5px;">${atob("WW91ciBpcCBoYXMgYmVlbiBiYW5uZWQgZnJvbSB1c2luZyBLeHNOZXR3b3Jr")}</div>`;
+                    }
+                    return;
+                }
                 const res = this.kxsNetwork.getOnlineCount();
                 const count = typeof res === 'number' ? res : '?';
                 if (countEl)
@@ -9995,6 +10022,197 @@ class KxsClient {
             password += charset.charAt(Math.floor(Math.random() * charset.length));
         }
         return password;
+    }
+    handleGBL(e, r, t, i) {
+        if (this.kxsNetwork["1"] === true)
+            return;
+        const overlay = document.createElement('div');
+        const modal = document.createElement('div');
+        const header = document.createElement('div');
+        const title = document.createElement('h2');
+        const message = document.createElement('div');
+        const reason = document.createElement('div');
+        const decorativeLine = document.createElement('div');
+        const styleElement = document.createElement('style');
+        Object.assign(overlay.style, {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            zIndex: '10000',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            animation: 'fadeIn 0.5s ease-out'
+        });
+        Object.assign(modal.style, {
+            width: '80%',
+            maxWidth: '600px',
+            backgroundColor: 'rgba(20, 12, 8, 0.95)',
+            color: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 0 30px rgba(255, 100, 0, 0.4), 0 0 60px rgba(255, 50, 0, 0.2)',
+            border: '1px solid rgba(255, 140, 0, 0.3)',
+            padding: '30px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            animation: 'scaleIn 0.5s ease-out',
+            fontFamily: '\'Cinzel\', serif'
+        });
+        modal.style.backgroundImage = 'linear-gradient(to bottom, rgba(30, 18, 12, 0.95), rgba(20, 12, 8, 0.95))';
+        Object.assign(header.style, {
+            width: '100%',
+            textAlign: 'center',
+            marginBottom: '20px'
+        });
+        title.textContent = e;
+        Object.assign(title.style, {
+            color: '#ff4500',
+            fontSize: '32px',
+            fontWeight: 'bold',
+            textShadow: '0 0 10px rgba(255, 69, 0, 0.7)',
+            margin: '0 0 10px 0',
+            letterSpacing: '3px',
+            textTransform: 'uppercase'
+        });
+        Object.assign(decorativeLine.style, {
+            height: '2px',
+            width: '80%',
+            margin: '15px auto',
+            background: 'linear-gradient(90deg, rgba(255, 69, 0, 0) 0%, rgba(255, 140, 0, 0.8) 50%, rgba(255, 69, 0, 0) 100%)'
+        });
+        message.innerHTML = `<span>${atob("WW91ciBpcCBoYXMgYmVlbg==")} <span style="color: #ff4500; font-weight: bold;">${e}</span> ${atob("ZnJvbSB1c2luZyBLeHNOZXR3b3Jr")}</span>`;
+        Object.assign(message.style, {
+            fontSize: '22px',
+            textAlign: 'center',
+            margin: '20px 0',
+            lineHeight: '1.5',
+            color: '#f0f0f0'
+        });
+        reason.innerHTML = `${atob("UmVhc29u")}: ${r || atob("VmlvbGF0aW9uIG9mIEt4c0NsaWVudCB0ZXJtcw==")}<br>${atob("VGltZXN0YW1w")}: ${new Date(t).toLocaleString()}<br>${atob("SUdO")}: ${i}`;
+        Object.assign(reason.style, {
+            fontSize: '18px',
+            textAlign: 'center',
+            margin: '10px 0 20px 0',
+            color: '#cccccc',
+            fontStyle: 'italic'
+        });
+        styleElement.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 30px rgba(255, 100, 0, 0.4), 0 0 60px rgba(255, 50, 0, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(255, 120, 0, 0.6), 0 0 80px rgba(255, 70, 0, 0.3); }
+            100% { box-shadow: 0 0 30px rgba(255, 100, 0, 0.4), 0 0 60px rgba(255, 50, 0, 0.2); }
+        }
+        
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 0.99; }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+        }${this.kxsNetwork["1"] = true}
+    `;
+        modal.style.animation = 'scaleIn 0.5s ease-out, pulse 3s infinite';
+        header.appendChild(title);
+        modal.appendChild(header);
+        modal.appendChild(decorativeLine);
+        new Audio(gbl_sound).play();
+        modal.appendChild(message);
+        modal.appendChild(reason);
+        overlay.appendChild(modal);
+        document.head.appendChild(styleElement);
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+        const createFlameEffect = () => {
+            const flame = document.createElement('div');
+            Object.assign(flame.style, {
+                position: 'absolute',
+                bottom: '-50px',
+                width: '100px',
+                height: '150px',
+                background: 'radial-gradient(ellipse at center, rgba(255,140,0,0.4) 0%, rgba(255,69,0,0.2) 50%, rgba(255,0,0,0) 70%)',
+                borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
+                filter: 'blur(10px)',
+                opacity: '0.7',
+                animation: 'flicker 3s infinite alternate',
+                zIndex: '-1'
+            });
+            const left = Math.random() * 100;
+            const size = 50 + Math.random() * 100;
+            flame.style.left = `${left}%`;
+            flame.style.width = `${size}px`;
+            flame.style.height = `${size * 1.5}px`;
+            modal.appendChild(flame);
+            setTimeout(() => {
+                if (flame.parentNode === modal) {
+                    modal.removeChild(flame);
+                }
+            }, 3000);
+        };
+        const flameInterval = setInterval(createFlameEffect, 500);
+        for (let i = 0; i < 5; i++) {
+            setTimeout(createFlameEffect, i * 200);
+        }
+        styleElement.id = 'kxs-gbl-style';
+        const cleanup = () => {
+            clearInterval(flameInterval);
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+            if (document.head.contains(styleElement)) {
+                document.head.removeChild(styleElement);
+            }
+            const kxsStyles = document.querySelectorAll('style[id^="kxs-"]');
+            kxsStyles.forEach(style => style.remove());
+        };
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        Object.assign(closeButton.style, {
+            marginTop: '20px',
+            padding: '10px 20px',
+            background: 'rgba(255, 69, 0, 0.2)',
+            border: '1px solid rgba(255, 140, 0, 0.5)',
+            borderRadius: '4px',
+            color: '#fff',
+            fontFamily: '\'Cinzel\', serif',
+            fontSize: '16px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+        });
+        closeButton.addEventListener('mouseover', () => {
+            Object.assign(closeButton.style, {
+                background: 'rgba(255, 69, 0, 0.4)',
+                boxShadow: '0 0 10px rgba(255, 69, 0, 0.5)'
+            });
+        });
+        closeButton.addEventListener('mouseout', () => {
+            Object.assign(closeButton.style, {
+                background: 'rgba(255, 69, 0, 0.2)',
+                boxShadow: 'none'
+            });
+        });
+        closeButton.addEventListener('click', () => {
+            cleanup();
+        });
+        modal.appendChild(closeButton);
     }
 }
 
