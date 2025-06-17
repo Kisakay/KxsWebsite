@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.5
+// @version      2.2.6
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -4776,7 +4776,7 @@ class KxsClientSecondaryMenu {
                 callback();
             }
             catch (error) {
-                console.error('Erreur lors de l\'exécution du callback onMenuToggle:', error);
+                return;
             }
         });
     }
@@ -6027,58 +6027,6 @@ class KxsClientHUD {
         }
         document.head.appendChild(customStyles);
     }
-    handleResize() {
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        for (const name of ['fps', 'kills', 'ping']) {
-            const counterContainer = document.getElementById(`${name}CounterContainer`);
-            if (!counterContainer)
-                continue;
-            const counter = this.kxsClient.counters[name];
-            if (!counter)
-                continue;
-            const rect = counterContainer.getBoundingClientRect();
-            const savedPosition = this.getSavedPosition(name);
-            let newPosition = this.calculateSafePosition(savedPosition, rect.width, rect.height, viewportWidth, viewportHeight);
-            this.applyPosition(counterContainer, newPosition);
-            this.savePosition(name, newPosition);
-        }
-    }
-    calculateSafePosition(currentPosition, elementWidth, elementHeight, viewportWidth, viewportHeight) {
-        let { left, top } = currentPosition;
-        if (left + elementWidth > viewportWidth) {
-            left = viewportWidth - elementWidth;
-        }
-        if (left < 0) {
-            left = 0;
-        }
-        if (top + elementHeight > viewportHeight) {
-            top = viewportHeight - elementHeight;
-        }
-        if (top < 0) {
-            top = 0;
-        }
-        return { left, top };
-    }
-    getSavedPosition(name) {
-        const savedPosition = localStorage.getItem(`${name}CounterPosition`);
-        if (savedPosition) {
-            try {
-                return JSON.parse(savedPosition);
-            }
-            catch (_a) {
-                return this.kxsClient.defaultPositions[name];
-            }
-        }
-        return this.kxsClient.defaultPositions[name];
-    }
-    applyPosition(element, position) {
-        element.style.left = `${position.left}px`;
-        element.style.top = `${position.top}px`;
-    }
-    savePosition(name, position) {
-        localStorage.setItem(`${name}CounterPosition`, JSON.stringify(position));
-    }
     startUpdateLoop() {
         var _a;
         const now = performance.now();
@@ -6195,8 +6143,6 @@ class KxsClientHUD {
         counter.style.padding = "8px 12px";
         counter.style.pointerEvents = "none";
         counter.style.cursor = "default";
-        counter.style.width = `${this.kxsClient.defaultSizes[name].width}px`;
-        counter.style.height = `${this.kxsClient.defaultSizes[name].height}px`;
         counter.style.display = "flex";
         counter.style.alignItems = "center";
         counter.style.justifyContent = "center";
@@ -6205,6 +6151,27 @@ class KxsClientHUD {
         counter.style.overflow = "hidden";
         counter.style.textShadow = "0 1px 2px rgba(0, 0, 0, 0.5)";
         counter.style.transition = `all ${DesignSystem.animation.normal} ease`;
+        // Set initial size based on default positions or the last saved size
+        const savedSize = JSON.parse(localStorage.getItem(`${name}CounterSize`) || '{}');
+        // Check if savedSize contains width/height with or without 'px' suffix
+        if (savedSize.width) {
+            // Check if width is a string or number
+            const width_is_string = typeof savedSize.width === 'string';
+            counter.style.width = width_is_string && savedSize.width.includes('px') ?
+                savedSize.width : `${savedSize.width}px`;
+        }
+        else {
+            counter.style.width = `${this.kxsClient.defaultSizes[name].width}px`;
+        }
+        if (savedSize.height) {
+            // Check if height is a string or number
+            const height_is_string = typeof savedSize.height === 'string';
+            counter.style.height = height_is_string && savedSize.height.includes('px') ?
+                savedSize.height : `${savedSize.height}px`;
+        }
+        else {
+            counter.style.height = `${this.kxsClient.defaultSizes[name].height}px`;
+        }
         // Create a label element with clean styling
         const labelElement = document.createElement("span");
         labelElement.style.fontWeight = "600";
@@ -6224,8 +6191,6 @@ class KxsClientHUD {
         if (uiTopLeft) {
             uiTopLeft.appendChild(counterContainer);
         }
-        // Setup drag events to check for counter merging
-        this.setupCounterDragEvents(counterContainer);
         // Add subtle hover effect
         counterContainer.addEventListener("mouseenter", () => {
             counter.style.transform = "scale(1.05)";
@@ -6240,6 +6205,13 @@ class KxsClientHUD {
             const size = Math.min(width, height) * 0.4;
             labelElement.style.fontSize = `${size}px`;
             valueElement.style.fontSize = `${size}px`;
+            // Store the numeric values without 'px' suffix to avoid duplication
+            const width_value = parseInt(counter.style.width) || counter.offsetWidth;
+            const height_value = parseInt(counter.style.height) || counter.offsetHeight;
+            localStorage.setItem(`${name}CounterSize`, JSON.stringify({
+                width: width_value,
+                height: height_value
+            }));
         };
         new ResizeObserver(adjustFontSize).observe(counter);
         counter.addEventListener("mousedown", (event) => {
@@ -6752,26 +6724,6 @@ class KxsClientHUD {
                 animation.element.remove();
                 return false;
             }
-        });
-    }
-    // Setup drag events for counters to detect when they move
-    setupCounterDragEvents(counterContainer) {
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        counterContainer.addEventListener("mousedown", (e) => {
-            // Only handle left mouse button
-            if (e.button !== 0)
-                return;
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            const upHandler = () => {
-                isDragging = false;
-                document.removeEventListener("mouseup", upHandler);
-                // Final check after drag ends
-            };
-            document.addEventListener("mouseup", upHandler);
         });
     }
 }
@@ -7464,7 +7416,7 @@ class KxsNetwork {
             d: {
                 username: this.getUsername(),
                 isVoiceChat: this.kxsClient.isVoiceChatEnabled,
-                v: this.kxsClient.pkg.version
+                v: "KxsClient@" + this.kxsClient.pkg.version
             }
         };
         this.send(payload);
@@ -8047,7 +7999,7 @@ class KxsVoiceChat {
             this.playAudio(floatData);
         }
         catch (error) {
-            console.error("Audio processing error:", error);
+            this.kxsClient.logger.error("Audio processing error:", error);
         }
     }
     playAudio(floatData) {
@@ -8473,7 +8425,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.5","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.6","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -8488,7 +8440,7 @@ class ExchangeManager {
             method: "GET",
         })
             .catch(error => {
-            console.error(error);
+            this.kxsClient.logger.error(error);
         });
     }
 }
@@ -10088,7 +10040,7 @@ class KxsClient {
             margin: '15px auto',
             background: 'linear-gradient(90deg, rgba(255, 69, 0, 0) 0%, rgba(255, 140, 0, 0.8) 50%, rgba(255, 69, 0, 0) 100%)'
         });
-        message.innerHTML = `<span>${atob("WW91ciBpcCBoYXMgYmVlbg==")} <span style="color: #ff4500; font-weight: bold;">${e}</span> ${atob("ZnJvbSB1c2luZyBLeHNOZXR3b3Jr")}</span>`;
+        message.innerHTML = `<span>${atob("WW91ciBpcCBoYXMgYmVlbg==")} <span style="color: #ff4500; font-weight: bold;">${atob("YmFubmVk ")}</span> ${atob("ZnJvbSB1c2luZyBLeHNOZXR3b3Jr")}</span>`;
         Object.assign(message.style, {
             fontSize: '22px',
             textAlign: 'center',
@@ -10988,9 +10940,7 @@ class EasterEgg {
         // Play ambient sound
         if (this.ambientSound) {
             this.ambientSound.volume = 0.3;
-            this.ambientSound.play().catch(err => {
-                console.error('Failed to play ambient sound:', err);
-            });
+            this.ambientSound.play().catch(err => { });
         }
     }
     /**
@@ -11019,9 +10969,7 @@ class EasterEgg {
             this.lowerAmbientVolume();
             this.buttonClickSound.currentTime = 0;
             this.buttonClickSound.volume = 0.3;
-            this.buttonClickSound.play().catch(err => {
-                console.error('Failed to play button sound:', err);
-            });
+            this.buttonClickSound.play().catch(err => { });
         }
     }
     /**
@@ -11033,9 +10981,7 @@ class EasterEgg {
             this.lowerAmbientVolume();
             this.arrowKeySound.currentTime = 0;
             this.arrowKeySound.volume = 0.3;
-            this.arrowKeySound.play().catch(err => {
-                console.error('Failed to play arrow key sound:', err);
-            });
+            this.arrowKeySound.play().catch(err => { });
         }
     }
     /**
@@ -11047,9 +10993,7 @@ class EasterEgg {
             this.lowerAmbientVolume();
             this.enterKeySound.currentTime = 0;
             this.enterKeySound.volume = 0.3;
-            this.enterKeySound.play().catch(err => {
-                console.error('Failed to play enter key sound:', err);
-            });
+            this.enterKeySound.play().catch(err => { });
         }
     }
     displayMessage() {
@@ -11088,17 +11032,13 @@ class EasterEgg {
                     // Play special sound for the last character
                     this.periodSound.currentTime = 0;
                     this.periodSound.volume = 0.3;
-                    this.periodSound.play().catch(err => {
-                        console.error('Failed to play period sound:', err);
-                    });
+                    this.periodSound.play().catch(err => { });
                 }
                 else if (this.zelda3Sound) {
                     // Play regular typing sound
                     this.zelda3Sound.currentTime = 0;
                     this.zelda3Sound.volume = 0.2;
-                    this.zelda3Sound.play().catch(err => {
-                        console.error('Failed to play Zelda sound:', err);
-                    });
+                    this.zelda3Sound.play().catch(err => { });
                 }
                 // Add character to text element
                 this.textElement.textContent += message.charAt(i);
@@ -11110,9 +11050,7 @@ class EasterEgg {
                         if (this.textElement && this.periodSound) {
                             this.periodSound.currentTime = 0;
                             this.periodSound.volume = 0.4;
-                            this.periodSound.play().catch(err => {
-                                console.error('Failed to play period sound:', err);
-                            });
+                            this.periodSound.play().catch(err => { });
                             this.textElement.textContent += '.';
                             // Update title with the final period
                             document.title = this.textElement.textContent || (message + '.');
@@ -11260,9 +11198,7 @@ class EasterEgg {
             this.lowerAmbientVolume();
             this.enterKeySound.currentTime = 0;
             this.enterKeySound.volume = 0.3;
-            this.enterKeySound.play().catch(err => {
-                console.error('Failed to play enter sound:', err);
-            });
+            this.enterKeySound.play().catch(err => { });
         }
         // Function to redirect to a selected server
         const redirectToServer = (server) => {
@@ -11276,9 +11212,7 @@ class EasterEgg {
                 if (this.closeMenuSound) {
                     // Lower ambient volume
                     this.lowerAmbientVolume();
-                    this.closeMenuSound.play().catch(err => {
-                        console.error('Failed to play close sound:', err);
-                    });
+                    this.closeMenuSound.play().catch(err => { });
                     // Redirect after a short delay to allow the sound to play
                     setTimeout(() => {
                         redirectToServer(server);
@@ -11301,9 +11235,7 @@ class EasterEgg {
                         this.lowerAmbientVolume();
                         this.closeMenuSound.currentTime = 0;
                         this.closeMenuSound.volume = 0.3;
-                        this.closeMenuSound.play().catch(err => {
-                            console.error('Failed to play close sound:', err);
-                        });
+                        this.closeMenuSound.play().catch(err => { });
                     }
                     // Call original close method
                     originalClose();
