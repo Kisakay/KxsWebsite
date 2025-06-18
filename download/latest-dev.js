@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.6
+// @version      2.2.7
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1358,8 +1358,14 @@ function intercept(link, targetUrl) {
 /**
  * KxsClient Modern Design System
  * Implements a modern glassmorphism UI design with blur effects
+ * Also supports classic UI styling when glassmorphism is disabled
  */
 class DesignSystem {
+    // Flag to check if glassmorphism is enabled - retrieved from KxsClient instance
+    static isGlassmorphismEnabled() {
+        var _a, _b;
+        return (_b = (_a = globalThis.kxsClient) === null || _a === void 0 ? void 0 : _a.isGlassmorphismEnabled) !== null && _b !== void 0 ? _b : true;
+    }
     /**
      * Injects required fonts and animations into the document
      */
@@ -1392,27 +1398,53 @@ class DesignSystem {
         }
     }
     /**
-     * Creates a glassmorphism element
+     * Creates a style object for UI elements based on whether glassmorphism is enabled
+     * @param type Style effect type
+     * @param additionalStyles Additional CSS styles
+     * @returns CSS style object
+     */
+    static createStyle(type, additionalStyles = {}) {
+        if (this.isGlassmorphismEnabled()) {
+            // Use glassmorphism styles
+            const glass = this.glass[type];
+            return Object.assign({ backgroundColor: glass.background, backdropFilter: `blur(${glass.blur})`, WebkitBackdropFilter: `blur(${glass.blur})`, border: glass.border, boxShadow: glass.shadow, borderRadius: this.radius.lg }, additionalStyles);
+        }
+        else {
+            // Use classic styles
+            const classic = this.classic[type];
+            return Object.assign({ backgroundColor: classic.background, border: classic.border, boxShadow: classic.shadow, backdropFilter: 'none', WebkitBackdropFilter: 'none', borderRadius: this.radius.md }, additionalStyles);
+        }
+    }
+    /**
+     * Legacy method for backward compatibility
      * @param type Glass effect type
      * @param additionalStyles Additional CSS styles
      * @returns CSS style object
      */
     static createGlassStyle(type, additionalStyles = {}) {
-        const glass = this.glass[type];
-        return Object.assign({ backgroundColor: glass.background, backdropFilter: `blur(${glass.blur})`, WebkitBackdropFilter: `blur(${glass.blur})`, border: glass.border, boxShadow: glass.shadow, borderRadius: this.radius.lg }, additionalStyles);
+        return this.createStyle(type, additionalStyles);
     }
     /**
-     * Applies glassmorphism styles to an HTML element
+     * Applies appropriate styles to an HTML element based on whether glassmorphism is enabled
+     * @param element HTML element to style
+     * @param type Style effect type
+     * @param additionalStyles Additional CSS styles
+     */
+    static applyStyle(element, type, additionalStyles = {}) {
+        const styles = this.createStyle(type, additionalStyles);
+        Object.assign(element.style, styles);
+    }
+    /**
+     * Legacy method for backward compatibility
      * @param element HTML element to style
      * @param type Glass effect type
      * @param additionalStyles Additional CSS styles
      */
     static applyGlassEffect(element, type, additionalStyles = {}) {
-        const styles = this.createGlassStyle(type, additionalStyles);
-        Object.assign(element.style, styles);
+        this.applyStyle(element, type, additionalStyles);
     }
     /**
-     * Creates a modern button with glassmorphism effect
+     * Creates a button with either glassmorphism or classic styling
      * @param text Button text
      * @param onClick Click handler
      * @param variant Button variant
@@ -1423,46 +1455,73 @@ class DesignSystem {
         button.textContent = text;
         button.addEventListener('click', onClick);
         // Base styles
-        Object.assign(button.style, {
+        const baseStyles = {
             padding: `${this.spacing.sm} ${this.spacing.md}`,
-            borderRadius: this.radius.md,
+            borderRadius: this.isGlassmorphismEnabled() ? this.radius.md : this.radius.sm,
             fontFamily: this.fonts.primary,
             fontSize: this.fonts.sizes.base,
             fontWeight: '500',
             color: this.colors.light,
-            backgroundColor: this.colors[variant],
             border: 'none',
             cursor: 'pointer',
             transition: `all ${this.animation.normal} ease`,
-            outline: 'none',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        });
-        // Hover effect
+            outline: 'none'
+        };
+        if (this.isGlassmorphismEnabled()) {
+            // Glassmorphism button style
+            Object.assign(button.style, Object.assign(Object.assign({}, baseStyles), { backgroundColor: this.colors[variant], backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }));
+        }
+        else {
+            // Classic button style
+            Object.assign(button.style, Object.assign(Object.assign({}, baseStyles), { backgroundColor: this.colors[variant].replace(/[^,]+(?=\))/, '1'), boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)', border: '1px solid rgba(0, 0, 0, 0.1)' }));
+        }
+        // Hover effect based on style
         button.addEventListener('mouseenter', () => {
-            button.style.transform = 'translateY(-2px)';
-            button.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            if (this.isGlassmorphismEnabled()) {
+                button.style.transform = 'translateY(-2px)';
+                button.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }
+            else {
+                button.style.transform = 'translateY(-1px)';
+                button.style.filter = 'brightness(1.1)';
+                button.style.boxShadow = '0 3px 5px rgba(0, 0, 0, 0.15)';
+            }
         });
         button.addEventListener('mouseleave', () => {
-            button.style.transform = 'translateY(0)';
-            button.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            if (this.isGlassmorphismEnabled()) {
+                button.style.transform = 'translateY(0)';
+                button.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            }
+            else {
+                button.style.transform = 'translateY(0)';
+                button.style.filter = 'brightness(1)';
+                button.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+            }
         });
         // Active effect
         button.addEventListener('mousedown', () => {
-            button.style.transform = 'translateY(1px)';
-            button.style.boxShadow = '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06)';
+            if (this.isGlassmorphismEnabled()) {
+                button.style.transform = 'translateY(1px)';
+                button.style.boxShadow = '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06)';
+            }
+            else {
+                button.style.transform = 'translateY(1px)';
+                button.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
+                button.style.filter = 'brightness(0.95)';
+            }
         });
         return button;
     }
     /**
-     * Creates a modern card with glassmorphism effect
+     * Creates a card with either glassmorphism or classic styling
      * @param content HTML content for the card
-     * @param type Glass effect type
+     * @param type Style effect type
      * @returns HTMLDivElement
      */
     static createCard(content, type = 'medium') {
         const card = document.createElement('div');
         card.innerHTML = content;
-        this.applyGlassEffect(card, type, {
+        this.applyStyle(card, type, {
             padding: this.spacing.lg,
             margin: this.spacing.md,
         });
@@ -1797,6 +1856,24 @@ DesignSystem.glass = {
         shadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
     },
 };
+// Classic styles (non-glassmorphism)
+DesignSystem.classic = {
+    light: {
+        background: 'rgba(240, 240, 240, 0.9)',
+        border: '1px solid #ccc',
+        shadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+    },
+    medium: {
+        background: 'rgba(220, 220, 220, 0.95)',
+        border: '1px solid #bbb',
+        shadow: '0 3px 6px rgba(0, 0, 0, 0.25)',
+    },
+    dark: {
+        background: 'rgba(50, 50, 50, 0.9)',
+        border: '1px solid #555',
+        shadow: '0 3px 8px rgba(0, 0, 0, 0.3)',
+    },
+};
 // Font settings
 DesignSystem.fonts = {
     primary: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
@@ -1864,10 +1941,14 @@ class HealthWarning {
     createWarningElement() {
         const warning = document.createElement("div");
         const uiTopLeft = document.getElementById("ui-top-left");
-        // Apply enhanced glassmorphism effect using DesignSystem
-        DesignSystem.applyGlassEffect(warning, 'medium', {
+        // Vérifier si le mode glassmorphism est activé
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        // Appliquer le style approprié en fonction du toggle glassmorphism
+        DesignSystem.applyStyle(warning, 'dark', {
             position: 'fixed',
-            border: '2px solid rgba(255, 0, 0, 0.8)',
+            border: is_glassmorphism_enabled ?
+                '2px solid rgba(255, 0, 0, 0.8)' :
+                '2px solid rgba(255, 50, 50, 0.9)',
             padding: DesignSystem.spacing.md + ' ' + DesignSystem.spacing.lg,
             color: '#ff4444',
             fontFamily: DesignSystem.fonts.primary,
@@ -1877,9 +1958,22 @@ class HealthWarning {
             display: 'none',
             pointerEvents: 'none',
             transition: `all ${DesignSystem.animation.normal} ease`,
-            boxShadow: '0 8px 32px rgba(255, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2)',
-            textShadow: '0 0 10px rgba(255, 0, 0, 0.5)'
+            boxShadow: is_glassmorphism_enabled ?
+                '0 8px 32px rgba(255, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2)' :
+                '0 4px 12px rgba(255, 0, 0, 0.25)',
+            textShadow: is_glassmorphism_enabled ?
+                '0 0 10px rgba(255, 0, 0, 0.5)' :
+                '0 0 5px rgba(255, 0, 0, 0.4)',
+            backdropFilter: is_glassmorphism_enabled ? 'blur(8px) saturate(180%)' : 'none',
+            borderRadius: is_glassmorphism_enabled ? '12px' : '8px'
         });
+        // Appliquer le webkit backdrop filter manuellement
+        if (is_glassmorphism_enabled) {
+            warning.style['-webkit-backdrop-filter'] = 'blur(8px) saturate(180%)';
+        }
+        else {
+            warning.style['-webkit-backdrop-filter'] = 'none';
+        }
         const content = document.createElement("div");
         Object.assign(content.style, {
             display: 'flex',
@@ -1990,10 +2084,22 @@ class HealthWarning {
     enableDragging() {
         if (!this.warningElement)
             return;
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
         this.isDraggable = true;
         this.warningElement.style.pointerEvents = 'auto';
         this.warningElement.style.cursor = 'move';
+        // Adaptation du style pour le mode placement, selon le toggle glassmorphism
         this.warningElement.style.borderColor = '#00ff00'; // Feedback visuel quand déplaçable
+        if (is_glassmorphism_enabled) {
+            this.warningElement.style.boxShadow = '0 8px 32px rgba(0, 255, 0, 0.2), 0 0 20px rgba(0, 255, 0, 0.15)';
+            this.warningElement.style.backdropFilter = 'blur(8px) saturate(180%)';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'blur(8px) saturate(180%)';
+        }
+        else {
+            this.warningElement.style.boxShadow = '0 4px 12px rgba(0, 255, 0, 0.2)';
+            this.warningElement.style.backdropFilter = 'none';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'none';
+        }
         // Force l'affichage de l'avertissement LOW HP, peu importe la santé actuelle
         this.warningElement.style.display = 'block';
         const span = this.warningElement.querySelector("span");
@@ -2004,11 +2110,23 @@ class HealthWarning {
     disableDragging() {
         if (!this.warningElement)
             return;
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
         this.isDraggable = false;
         this.isDragging = false;
         this.warningElement.style.pointerEvents = 'none';
         this.warningElement.style.cursor = 'default';
         this.warningElement.style.borderColor = '#ff0000'; // Retour à la couleur normale
+        // Restauration du style original en fonction du mode glassmorphism
+        if (is_glassmorphism_enabled) {
+            this.warningElement.style.boxShadow = '0 8px 32px rgba(255, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2)';
+            this.warningElement.style.backdropFilter = 'blur(8px) saturate(180%)';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'blur(8px) saturate(180%)';
+        }
+        else {
+            this.warningElement.style.boxShadow = '0 4px 12px rgba(255, 0, 0, 0.25)';
+            this.warningElement.style.backdropFilter = 'none';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'none';
+        }
         // Remet le texte original si l'avertissement est visible
         if (this.warningElement.style.display === 'block') {
             const span = this.warningElement.querySelector("span");
@@ -2988,7 +3106,6 @@ class NotificationManager {
     constructor() {
         this.notifications = [];
         this.NOTIFICATION_HEIGHT = 65; // Height + margin
-        this.NOTIFICATION_MARGIN = 10;
         this.addGlobalStyles();
     }
     static getInstance() {
@@ -3060,10 +3177,15 @@ class NotificationManager {
         };
         return configs[type];
     }
+    // Helper method to check if glassmorphism is enabled
+    isGlassmorphismEnabled() {
+        var _a, _b;
+        return (_b = (_a = globalThis.kxsClient) === null || _a === void 0 ? void 0 : _a.isGlassmorphismEnabled) !== null && _b !== void 0 ? _b : true;
+    }
     showNotification(message, type, duration = 5000) {
         const notification = document.createElement("div");
-        // Apply glassmorphism effect using DesignSystem
-        DesignSystem.applyGlassEffect(notification, 'light', {
+        // Apply styles using DesignSystem with dark theme to match the rest of the interface
+        DesignSystem.applyStyle(notification, 'dark', {
             position: "fixed",
             top: "20px",
             left: "20px",
@@ -3095,20 +3217,37 @@ class NotificationManager {
         const messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.flex = "1";
-        // Create progress bar with glass morphism style
+        // Create progress bar with appropriate style based on glassmorphism setting
         const progressBar = document.createElement("div");
-        Object.assign(progressBar.style, {
-            height: "4px",
-            background: "rgba(255, 255, 255, 0.3)",
-            backdropFilter: "blur(5px)",
-            webkitBackdropFilter: "blur(5px)",
-            borderRadius: `0 0 ${DesignSystem.radius.lg} ${DesignSystem.radius.lg}`,
-            width: "100%",
-            position: "absolute",
-            bottom: "0",
-            left: "0",
-            animation: `slideLeft ${duration}ms linear forwards`
-        });
+        if (this.isGlassmorphismEnabled()) {
+            // Glassmorphism progress bar style
+            Object.assign(progressBar.style, {
+                height: "4px",
+                background: "rgba(255, 255, 255, 0.3)",
+                backdropFilter: "blur(5px)",
+                webkitBackdropFilter: "blur(5px)",
+                borderRadius: `0 0 ${DesignSystem.radius.lg} ${DesignSystem.radius.lg}`,
+                width: "100%",
+                position: "absolute",
+                bottom: "0",
+                left: "0",
+                animation: `slideLeft ${duration}ms linear forwards`
+            });
+        }
+        else {
+            // Classic progress bar style
+            Object.assign(progressBar.style, {
+                height: "3px",
+                background: type === "success" ? "#4CAF50" : type === "error" ? "#F44336" : "#2196F3",
+                opacity: "0.7",
+                borderRadius: `0 0 ${DesignSystem.radius.md} ${DesignSystem.radius.md}`,
+                width: "100%",
+                position: "absolute",
+                bottom: "0",
+                left: "0",
+                animation: `slideLeft ${duration}ms linear forwards`
+            });
+        }
         // Assemble notification
         notification.appendChild(icon);
         notification.appendChild(messageDiv);
@@ -3208,8 +3347,8 @@ class KxsClientSecondaryMenu {
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
         // Injecter les polices et animations du DesignSystem
         DesignSystem.injectFonts();
-        // Appliquer le style glassmorphism du DesignSystem avec dimensions réduites
-        DesignSystem.applyGlassEffect(this.menu, 'dark', {
+        // Apply appropriate styling based on the glassmorphism toggle
+        DesignSystem.applyStyle(this.menu, 'dark', {
             position: "fixed",
             left: "50%",
             top: "50%",
@@ -3228,32 +3367,37 @@ class KxsClientSecondaryMenu {
             overflow: "hidden",
             boxSizing: "border-box",
             transition: `all ${DesignSystem.animation.normal} ease`,
-            // Effet glassmorphism optimisé pour les performances
-            backgroundColor: "rgba(15, 23, 42, 0.85)",
-            backdropFilter: "blur(12px) saturate(150%)",
-            WebkitBackdropFilter: "blur(12px) saturate(150%)",
-            willChange: "transform, opacity",
-            border: "1px solid rgba(255, 255, 255, 0.12)",
-            borderRadius: "14px",
-            boxShadow: "0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08)"
+            borderRadius: this.kxsClient.isGlassmorphismEnabled ? "14px" : "10px"
         });
-        // Styles réduits pour mobile avec glassmorphism optimisé
+        // Styles réduits pour mobile
         if (isMobile) {
             Object.assign(this.menu.style, {
                 padding: "8px",
-                borderRadius: "12px",
+                borderRadius: this.kxsClient.isGlassmorphismEnabled ? "12px" : "8px",
                 width: "75vw",
                 maxWidth: "80vw",
                 fontSize: "11px",
                 maxHeight: "65vh",
-                top: "5%",
-                // Glassmorphism mobile optimisé pour les performances
-                backdropFilter: "blur(10px) saturate(140%)",
-                WebkitBackdropFilter: "blur(10px) saturate(140%)",
-                willChange: "transform, opacity",
-                backgroundColor: "rgba(15, 23, 42, 0.9)",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                top: "5%"
             });
+            // Add specific mobile styles based on glassmorphism toggle
+            if (this.kxsClient.isGlassmorphismEnabled) {
+                // Glassmorphism mobile optimisé pour les performances
+                Object.assign(this.menu.style, {
+                    backdropFilter: "blur(10px) saturate(140%)",
+                    WebkitBackdropFilter: "blur(10px) saturate(140%)",
+                    willChange: "transform, opacity",
+                    backgroundColor: "rgba(15, 23, 42, 0.9)",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                });
+            }
+            else {
+                // Classic style mobile
+                Object.assign(this.menu.style, {
+                    backgroundColor: "rgba(40, 40, 40, 0.97)",
+                    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.4)"
+                });
+            }
         }
     }
     blockMousePropagation(element, preventDefault = true) {
@@ -3764,12 +3908,24 @@ class KxsClientSecondaryMenu {
         this.addOption(HUD, {
             label: `Winning Animation`,
             value: this.kxsClient.isWinningAnimationEnabled,
-            icon: '<svg fill="#000000" height="200px" width="200px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 448.881 448.881" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M189.82,138.531c-8.92,0-16.611,6.307-18.353,15.055l-11.019,55.306c-3.569,20.398-7.394,40.53-9.946,59.652h-0.513 c-2.543-19.122-5.35-37.474-9.176-57.615l-11.85-62.35c-1.112-5.832-6.206-10.048-12.139-10.048H95.819 c-5.854,0-10.909,4.114-12.099,9.853l-12.497,60.507c-4.332,21.159-8.414,41.805-11.213,60.413h-0.513 c-2.8-17.332-6.369-39.511-10.196-59.901l-10.024-54.643c-1.726-9.403-9.922-16.23-19.479-16.23c-6.05,0-11.774,2.77-15.529,7.52 c-3.755,4.751-5.133,10.965-3.733,16.851l32.747,137.944c1.322,5.568,6.299,9.503,12.022,9.503h22.878 c5.792,0,10.809-4.028,12.061-9.689l14.176-64.241c4.083-17.334,6.883-33.648,9.946-53.019h0.507 c2.037,19.627,4.845,35.685,8.157,53.019l12.574,63.96c1.136,5.794,6.222,9.97,12.125,9.97h22.325 c5.638,0,10.561-3.811,11.968-9.269l35.919-139.158c1.446-5.607,0.225-11.564-3.321-16.136 C201.072,141.207,195.612,138.531,189.82,138.531z"></path> <path d="M253.516,138.531c-10.763,0-19.495,8.734-19.495,19.503v132.821c0,10.763,8.732,19.495,19.495,19.495 c10.771,0,19.503-8.732,19.503-19.495V158.034C273.019,147.265,264.287,138.531,253.516,138.531z"></path> <path d="M431.034,138.531c-9.861,0-17.847,7.995-17.847,17.847v32.373c0,25.748,0.761,48.945,3.313,71.637h-0.763 c-7.652-19.379-17.847-40.786-28.041-58.891l-32.14-56.704c-2.193-3.865-6.299-6.26-10.747-6.26h-25.818 c-6.827,0-12.357,5.529-12.357,12.357v141.615c0,9.86,7.987,17.847,17.847,17.847c9.853,0,17.84-7.987,17.84-17.847v-33.905 c0-28.042-0.514-52.258-1.532-74.941l0.769-0.256c8.406,20.141,19.627,42.318,29.823,60.671l33.174,59.909 c2.177,3.927,6.321,6.369,10.809,6.369h21.159c6.828,0,12.357-5.53,12.357-12.357V156.378 C448.881,146.526,440.894,138.531,431.034,138.531z"></path> </g> </g></svg>',
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.5713 14.5L9.46583 18.4141M18.9996 3.60975C17.4044 3.59505 16.6658 4.33233 16.4236 5.07743C16.2103 5.73354 16.4052 7.07735 15.896 8.0727C15.4091 9.02443 14.1204 9.5617 12.6571 9.60697M20 7.6104L20.01 7.61049M19 15.96L19.01 15.9601M7.00001 3.94926L7.01001 3.94936M19 11.1094C17.5 11.1094 16.5 11.6094 15.5949 12.5447M10.2377 7.18796C11 6.10991 11.5 5.10991 11.0082 3.52734M3.53577 20.4645L7.0713 9.85791L14.1424 16.929L3.53577 20.4645Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
             category: "HUD",
             type: "toggle",
             onChange: () => {
                 this.kxsClient.isWinningAnimationEnabled = !this.kxsClient.isWinningAnimationEnabled;
                 this.kxsClient.updateLocalStorage();
+            },
+        });
+        this.addOption(HUD, {
+            label: `Glassmorphism`,
+            value: this.kxsClient.isGlassmorphismEnabled,
+            icon: '<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M 6 5 L 6 7.375 L 6.8125 7.65625 C 7.546875 8.269531 8 9.15625 8 10.125 L 8 21 C 8 22.644531 9.355469 24 11 24 C 12.644531 24 14 22.644531 14 21 L 14 18.875 C 14 18.144531 14.660156 17.679688 15.34375 17.9375 C 15.738281 18.085938 16 18.453125 16 18.875 L 16 25 C 16 26.644531 17.355469 28 19 28 C 20.644531 28 22 26.644531 22 25 L 22 16.03125 C 22 14.757813 22.980469 13.796875 24.1875 13.75 L 24.21875 13.75 L 26 14.375 L 26 12 Z M 9.8125 8.71875 L 21.5 12.8125 C 20.59375 13.59375 20 14.730469 20 16.03125 L 20 25 C 20 25.566406 19.566406 26 19 26 C 18.433594 26 18 25.566406 18 25 L 18 18.875 C 18 17.628906 17.230469 16.5 16.0625 16.0625 C 14.132813 15.339844 12 16.8125 12 18.875 L 12 21 C 12 21.566406 11.566406 22 11 22 C 10.433594 22 10 21.566406 10 21 L 10 10.125 C 10 9.644531 9.9375 9.171875 9.8125 8.71875 Z"></path></g></svg>',
+            category: "HUD",
+            type: "toggle",
+            onChange: () => {
+                this.kxsClient.isGlassmorphismEnabled = !this.kxsClient.isGlassmorphismEnabled;
+                this.kxsClient.updateLocalStorage();
+                this.kxsClient.nm.showNotification("You need to reload the page to see the changes", "info", 1900);
             },
         });
         this.addOption(HUD, {
@@ -5506,15 +5662,24 @@ class KxsClientHUD {
         });
     }
     escapeMenu() {
+        // Détermine si le mode glassmorphism est activé
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        // Style pour mobile avec prise en charge du toggle glassmorphism
         const customStylesMobile = `
     .ui-game-menu-desktop {
+        ${is_glassmorphism_enabled ? `
         background: rgba(30, 35, 50, 0.15) !important;
         backdrop-filter: blur(10px) !important;
         -webkit-backdrop-filter: blur(10px) !important;
-        will-change: transform, opacity !important;
         border: 1px solid rgba(60, 70, 90, 0.3) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(80, 90, 110, 0.2) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(80, 90, 110, 0.2) !important;` : `
+        background: rgba(50, 50, 50, 0.95) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid #555 !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;`}
+        will-change: transform, opacity !important;
+        border-radius: ${is_glassmorphism_enabled ? '16px' : '8px'} !important;
         padding: 2px 2px !important;
         max-width: 45vw !important;
         width: 45vw !important;
@@ -5562,13 +5727,20 @@ class KxsClientHUD {
 `;
         const customStylesDesktop = `
 .ui-game-menu-desktop {
+	${is_glassmorphism_enabled ? `
 	background: rgba(25, 30, 45, 0.12) !important;
 	backdrop-filter: blur(12px) !important;
 	-webkit-backdrop-filter: blur(12px) !important;
-	will-change: transform, opacity !important;
 	border: 1px solid rgba(55, 65, 85, 0.25) !important;
 	border-radius: 20px !important;
-	box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(75, 85, 105, 0.2), 0 0 0 1px rgba(45, 55, 75, 0.1) !important;
+	box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(75, 85, 105, 0.2), 0 0 0 1px rgba(45, 55, 75, 0.1) !important;` : `
+	background: rgba(45, 45, 45, 0.95) !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border: 1px solid #555 !important;
+	border-radius: 12px !important;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;`}
+	will-change: transform, opacity !important;
 	padding: 20px !important;
 	max-width: 350px !important;
 	/* max-height: 80vh !important; */ /* Optional: Limit the maximum height */
@@ -5599,21 +5771,21 @@ class KxsClientHUD {
 	width: 8px !important;
 }
 .ui-game-menu-desktop::-webkit-scrollbar-track {
-	background: rgba(25, 25, 35, 0.5) !important;
-	border-radius: 10px !important;
+	background: ${is_glassmorphism_enabled ? 'rgba(25, 25, 35, 0.5)' : 'rgba(40, 40, 40, 0.9)'} !important;
+	border-radius: ${is_glassmorphism_enabled ? '10px' : '6px'} !important;
 }
 .ui-game-menu-desktop::-webkit-scrollbar-thumb {
-	background-color: #7f8c8d !important;
-	border-radius: 10px !important;
-	border: 2px solid rgba(25, 25, 35, 0.5) !important;
+	background-color: ${is_glassmorphism_enabled ? '#7f8c8d' : '#555'} !important;
+	border-radius: ${is_glassmorphism_enabled ? '10px' : '6px'} !important;
+	border: ${is_glassmorphism_enabled ? '2px solid rgba(25, 25, 35, 0.5)' : '1px solid #444'} !important;
 }
 .ui-game-menu-desktop::-webkit-scrollbar-thumb:hover {
-	background-color: #95a5a6 !important;
+	background-color: ${is_glassmorphism_enabled ? '#95a5a6' : '#666'} !important;
 }
 
 .ui-game-menu-desktop {
 	scrollbar-width: thin !important;
-	scrollbar-color: #7f8c8d rgba(25, 25, 35, 0.5) !important;
+	scrollbar-color: ${is_glassmorphism_enabled ? '#7f8c8d rgba(25, 25, 35, 0.5)' : '#555 rgba(40, 40, 40, 0.9)'} !important;
 }
 
 .kxs-header {
@@ -5622,12 +5794,11 @@ class KxsClientHUD {
 	justify-content: flex-start;
 	margin-bottom: 20px;
 	padding: 15px;
-	border-bottom: 1px solid rgba(55, 65, 85, 0.2);
-	background: rgba(20, 25, 40, 0.08);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	border-radius: 12px;
-	box-shadow: inset 0 1px 0 rgba(70, 80, 100, 0.15);
+	border-bottom: 1px solid ${is_glassmorphism_enabled ? 'rgba(55, 65, 85, 0.2)' : '#444'};
+	background: ${is_glassmorphism_enabled ? 'rgba(20, 25, 40, 0.08)' : 'rgba(40, 40, 40, 0.95)'};
+	${is_glassmorphism_enabled ? 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);' : ''}
+	border-radius: ${is_glassmorphism_enabled ? '12px' : '8px'};
+	box-shadow: ${is_glassmorphism_enabled ? 'inset 0 1px 0 rgba(70, 80, 100, 0.15)' : '0 2px 6px rgba(0, 0, 0, 0.3)'};
 }
 
 .kxs-logo {
@@ -5654,11 +5825,21 @@ class KxsClientHUD {
 	
 
 .btn-game-menu {
+	${is_glassmorphism_enabled ? `
 	background: linear-gradient(135deg, rgba(45, 55, 75, 0.15) 0%, rgba(35, 45, 65, 0.25) 100%) !important;
 	backdrop-filter: blur(16px) saturate(180%) !important;
 	-webkit-backdrop-filter: blur(16px) saturate(180%) !important;
 	border: 1px solid rgba(255, 255, 255, 0.18) !important;
 	border-radius: 14px !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+	` : `
+	background: linear-gradient(135deg, rgba(60, 60, 60, 0.9) 0%, rgba(45, 45, 45, 1) 100%) !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border: 1px solid #555 !important;
+	border-radius: 8px !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+	`}
 	color: #ffffff !important;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 	margin: 8px 0 !important;
@@ -5674,7 +5855,6 @@ class KxsClientHUD {
 	line-height: 1.4 !important;
 	position: relative !important;
 	overflow: hidden !important;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
@@ -5695,27 +5875,43 @@ class KxsClientHUD {
 }
 
 .btn-game-menu:hover {
+	${is_glassmorphism_enabled ? `
 	background: linear-gradient(135deg, rgba(55, 65, 85, 0.25) 0%, rgba(45, 55, 75, 0.35) 100%) !important;
 	transform: translateY(-3px) scale(1.02) !important;
 	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
 	border-color: rgba(255, 255, 255, 0.25) !important;
 	backdrop-filter: blur(10px) saturate(150%) !important;
 	-webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+	` : `
+	background: linear-gradient(135deg, rgba(70, 70, 70, 0.9) 0%, rgba(50, 50, 50, 1) 100%) !important;
+	transform: translateY(-2px) !important;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+	border-color: #666 !important;
+	`}
 	will-change: transform !important;
 }
 
 .slider-container {
+	${is_glassmorphism_enabled ? `
 	background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%) !important;
 	backdrop-filter: blur(10px) saturate(150%) !important;
 	-webkit-backdrop-filter: blur(10px) saturate(150%) !important;
-	will-change: transform, opacity !important;
 	border: 1px solid rgba(255, 255, 255, 0.15) !important;
 	border-radius: 16px !important;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+	` : `
+	background: linear-gradient(135deg, rgba(55, 55, 55, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%) !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border: 1px solid #555 !important;
+	border-radius: 8px !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+	`}
+	will-change: transform, opacity !important;
 	padding: 16px 20px !important;
 	margin: 12px 0 !important;
 	width: 100% !important;
 	box-sizing: border-box !important;
-	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
 	position: relative !important;
 	overflow: hidden !important;
 }
@@ -5755,14 +5951,22 @@ class KxsClientHUD {
 	-webkit-appearance: none !important;
 	width: 100% !important;
 	height: 8px !important;
-	border-radius: 12px !important;
-	background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.8) 100%) !important;
+	border-radius: ${is_glassmorphism_enabled ? '12px' : '8px'} !important;
+	background: ${is_glassmorphism_enabled ?
+            'linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.8) 100%)' :
+            'linear-gradient(135deg, rgba(40, 40, 40, 0.8) 0%, rgba(50, 50, 50, 1) 100%)'} !important;
 	outline: none !important;
 	margin: 12px 0 !important;
+	${is_glassmorphism_enabled ? `
 	backdrop-filter: blur(8px) !important;
 	-webkit-backdrop-filter: blur(8px) !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
-	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;` : `
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border: 1px solid #444 !important;`}
+	box-shadow: ${is_glassmorphism_enabled ?
+            'inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(255, 255, 255, 0.1)' :
+            'inset 0 1px 3px rgba(0, 0, 0, 0.4)'} !important;
 	position: relative !important;
 	z-index: 1 !important;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -5778,9 +5982,12 @@ class KxsClientHUD {
 	width: 24px !important;
 	height: 24px !important;
 	border-radius: 50% !important;
-	background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%) !important;
+	background: ${is_glassmorphism_enabled ?
+            'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%)' :
+            'linear-gradient(135deg, rgba(180, 180, 180, 0.95) 0%, rgba(140, 140, 140, 1) 100%)'} !important;
+	${is_glassmorphism_enabled ? `
 	backdrop-filter: blur(12px) saturate(180%) !important;
-	-webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(12px) saturate(180%) !important;` : ``}
 	border: 2px solid rgba(59, 130, 246, 0.6) !important;
 	cursor: grab !important;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -5954,51 +6161,65 @@ class KxsClientHUD {
     }
     applyCustomStyles() {
         const customStyles = document.createElement('style');
+        // Get glassmorphism setting
+        const isGlassmorphismEnabled = this.kxsClient.isGlassmorphismEnabled;
         if (this.kxsClient.isKillFeedBlint) {
+            // Rainbow text effect with either glassmorphism or classic background
             customStyles.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@600&display=swap');
-  
-        .killfeed-div {
-            position: absolute !important;
-            padding: 5px 10px !important;
-            background: rgba(0, 0, 0, 0.7) !important;
-            border-radius: 5px !important;
-            transition: opacity 0.5s ease-out !important;
-        }
-  
-        .killfeed-text {
-            font-family: 'Oxanium', sans-serif !important;
-            font-weight: bold !important;
-            font-size: 16px !important;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
-            background: linear-gradient(90deg, 
-                rgb(255, 0, 0), 
-                rgb(255, 127, 0), 
-                rgb(255, 255, 0), 
-                rgb(0, 255, 0), 
-                rgb(0, 0, 255), 
-                rgb(75, 0, 130), 
-                rgb(148, 0, 211), 
-                rgb(255, 0, 0));
-            background-size: 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: glint 6s linear infinite;
+           @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@600&display=swap');
+ 
+           .killfeed-div {
+               position: absolute !important;
+               padding: 5px 10px !important;
+               ${isGlassmorphismEnabled ? `
+               background: rgba(0, 0, 0, 0.5) !important;
+               backdrop-filter: blur(8px) !important;
+               -webkit-backdrop-filter: blur(8px) !important;
+               border: 1px solid rgba(255, 255, 255, 0.2) !important;
+               ` : `
+               background: rgba(50, 50, 50, 0.9) !important;
+               border: 1px solid #555 !important;
+               `}
+               border-radius: ${isGlassmorphismEnabled ? '8px' : '5px'} !important;
+               transition: all 0.3s ease !important;
+               box-shadow: ${isGlassmorphismEnabled ?
+                '0 4px 15px rgba(0, 0, 0, 0.2)' :
+                '0 2px 5px rgba(0, 0, 0, 0.3)'} !important;
+           }
+ 
+           .killfeed-text {
+               font-family: 'Oxanium', sans-serif !important;
+               font-weight: bold !important;
+               font-size: 16px !important;
+               text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+               background: linear-gradient(90deg, 
+                   rgb(255, 0, 0), 
+                   rgb(255, 127, 0), 
+                   rgb(255, 255, 0), 
+                   rgb(0, 255, 0), 
+                   rgb(0, 0, 255), 
+                   rgb(75, 0, 130), 
+                   rgb(148, 0, 211), 
+                   rgb(255, 0, 0));
+               background-size: 200%;
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: transparent;
+               animation: glint 6s linear infinite;
 			will-change: background-position;
-        }
+           }
   
-        @keyframes glint {
-            0% {
-                background-position: 200% 0;
-            }
-            100% {
-                background-position: -200% 0;
-            }
-        }
+           @keyframes glint {
+               0% {
+                   background-position: 200% 0;
+               }
+               100% {
+                   background-position: -200% 0;
+               }
+           }
   
-        .killfeed-div .killfeed-text:empty {
-            display: none !important;
-        }
+           .killfeed-div .killfeed-text:empty {
+               display: none !important;
+           }
       `;
         }
         else {
@@ -6006,11 +6227,22 @@ class KxsClientHUD {
         .killfeed-div {
             position: absolute;
             padding: 5px 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 5px;
-            transition: opacity 0.5s ease-out;
+            ${isGlassmorphismEnabled ? `
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            ` : `
+            background: rgba(50, 50, 50, 0.95);
+            border: 1px solid #555;
+            `}
+            border-radius: ${isGlassmorphismEnabled ? '8px' : '5px'};
+            transition: all 0.3s ease;
+            box-shadow: ${isGlassmorphismEnabled ?
+                '0 4px 12px rgba(0, 0, 0, 0.2)' :
+                '0 2px 5px rgba(0, 0, 0, 0.3)'};
         }
-  
+ 
         .killfeed-text {
             font-family: inherit;
             font-weight: normal;
@@ -6019,7 +6251,7 @@ class KxsClientHUD {
             text-shadow: none;
             background: none;
         }
-  
+ 
         .killfeed-div .killfeed-text:empty {
             display: none;
         }
@@ -6129,14 +6361,28 @@ class KxsClientHUD {
             zIndex: "10000",
             transition: `all ${DesignSystem.animation.normal} ease`,
         });
-        // Apply simple white glassmorphism effect to counter
-        counter.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
-        counter.style.backdropFilter = "blur(8px)";
-        // Apply webkit prefix for Safari compatibility
-        counter.style['-webkit-backdrop-filter'] = "blur(8px)";
-        counter.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-        counter.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
-        counter.style.borderRadius = "8px";
+        // Check if glassmorphism is enabled
+        const isGlassmorphismEnabled = this.kxsClient.isGlassmorphismEnabled;
+        // Apply appropriate styling based on the glassmorphism toggle
+        if (isGlassmorphismEnabled) {
+            // Glassmorphism style
+            counter.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
+            counter.style.backdropFilter = "blur(8px)";
+            // Apply webkit prefix for Safari compatibility
+            counter.style['-webkit-backdrop-filter'] = "blur(8px)";
+            counter.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+            counter.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+            counter.style.borderRadius = "8px";
+        }
+        else {
+            // Classic style - solid gray background without blur
+            counter.style.backgroundColor = "rgba(75, 75, 75, 0.95)";
+            counter.style.backdropFilter = "none";
+            counter.style['-webkit-backdrop-filter'] = "none";
+            counter.style.border = "1px solid #555";
+            counter.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.2)";
+            counter.style.borderRadius = "6px";
+        }
         counter.style.color = "#ffffff";
         counter.style.fontFamily = DesignSystem.fonts.secondary;
         counter.style.fontWeight = "500";
@@ -6191,14 +6437,24 @@ class KxsClientHUD {
         if (uiTopLeft) {
             uiTopLeft.appendChild(counterContainer);
         }
-        // Add subtle hover effect
+        // Add subtle hover effect based on glassmorphism toggle
         counterContainer.addEventListener("mouseenter", () => {
             counter.style.transform = "scale(1.05)";
-            counter.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.3)";
+            if (this.kxsClient.isGlassmorphismEnabled) {
+                counter.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.3)";
+            }
+            else {
+                counter.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.25)";
+            }
         });
         counterContainer.addEventListener("mouseleave", () => {
             counter.style.transform = "scale(1)";
-            counter.style.boxShadow = DesignSystem.glass.dark.shadow;
+            if (this.kxsClient.isGlassmorphismEnabled) {
+                counter.style.boxShadow = DesignSystem.glass.dark.shadow;
+            }
+            else {
+                counter.style.boxShadow = DesignSystem.classic.dark.shadow;
+            }
         });
         const adjustFontSize = () => {
             const { width, height } = counter.getBoundingClientRect();
@@ -7135,7 +7391,9 @@ class BroadcastHUD {
      * Create the HUD container and elements
      */
     createHUD() {
-        // Apply glassmorphism effect matching the online menu style
+        // Check if glassmorphism is enabled
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        // Apply the appropriate styling based on glassmorphism toggle
         Object.assign(this.container.style, {
             position: "fixed",
             top: "20px",
@@ -7151,12 +7409,15 @@ class BroadcastHUD {
             pointerEvents: "none",
             transition: "all 0.3s ease",
             transform: "translateY(-20px)",
-            background: "rgba(255, 255, 255, 0.1)",
-            backdropFilter: "blur(20px) saturate(180%)",
-            WebkitBackdropFilter: "blur(20px) saturate(180%)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            borderRadius: "16px",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+            // Apply different styles based on glassmorphism toggle
+            background: is_glassmorphism_enabled ? "rgba(255, 255, 255, 0.1)" : "rgba(50, 50, 50, 0.95)",
+            backdropFilter: is_glassmorphism_enabled ? "blur(20px) saturate(180%)" : "none",
+            WebkitBackdropFilter: is_glassmorphism_enabled ? "blur(20px) saturate(180%)" : "none",
+            border: is_glassmorphism_enabled ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #555",
+            borderRadius: is_glassmorphism_enabled ? "16px" : "10px",
+            boxShadow: is_glassmorphism_enabled ?
+                "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)" :
+                "0 4px 15px rgba(0, 0, 0, 0.4)",
             fontSize: "15px",
             userSelect: "none",
             fontFamily: "inherit",
@@ -7203,21 +7464,21 @@ class BroadcastHUD {
         // Create decorative line
         const decorativeLine = document.createElement("div");
         Object.assign(decorativeLine.style, {
-            height: "1px",
             background: "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.05) 100%)",
             width: "100%",
             margin: "8px 0"
         });
-        // Create progress bar
+        // Create progress bar at the bottom
         Object.assign(this.progressBar.style, {
-            position: "absolute",
-            bottom: "0",
-            left: "0",
-            height: "3px",
-            width: "100%",
-            background: "linear-gradient(90deg, #3fae2a, #8fef7a)",
+            height: is_glassmorphism_enabled ? "4px" : "3px",
+            marginTop: "10px",
+            background: "linear-gradient(to right, #3fae2a, #6ae95f)",
             transformOrigin: "left",
-            transform: "scaleX(0)"
+            transform: "scaleX(0)",
+            transition: "transform 0.2s linear",
+            alignSelf: "flex-start",
+            marginLeft: "-18px", // To compensate for container padding
+            width: "calc(100% + 36px)" // Extend full width including padding
         });
         // Assemble HUD
         this.container.appendChild(header);
@@ -7638,11 +7899,24 @@ class KxsChat {
         chatBox.style.maxWidth = '480px';
         chatBox.style.minHeight = '150px'; // Hauteur minimale pour le chat box
         chatBox.style.height = '200px'; // Hauteur par défaut
-        chatBox.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
-        chatBox.style.backdropFilter = 'blur(40px) saturate(180%)';
-        chatBox.style['-webkitBackdropFilter'] = 'blur(40px) saturate(180%)';
-        chatBox.style.border = '1px solid rgba(255, 255, 255, 0.3)';
-        chatBox.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+        // Apply styling based on glassmorphism toggle
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        if (is_glassmorphism_enabled) {
+            // Glassmorphism style
+            chatBox.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
+            chatBox.style.backdropFilter = 'blur(40px) saturate(180%)';
+            chatBox.style['-webkitBackdropFilter'] = 'blur(40px) saturate(180%)';
+            chatBox.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+            chatBox.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+        }
+        else {
+            // Classic style - solid gray background without blur
+            chatBox.style.background = 'rgba(50, 50, 50, 0.95)';
+            chatBox.style.backdropFilter = 'none';
+            chatBox.style['-webkitBackdropFilter'] = 'none';
+            chatBox.style.border = '1px solid #555';
+            chatBox.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+        }
         chatBox.style.color = '#fff';
         chatBox.style.borderRadius = '15px';
         chatBox.style.padding = '7px 14px 4px 14px';
@@ -7711,11 +7985,23 @@ class KxsChat {
         input.style.padding = '8px 12px';
         input.style.borderRadius = '8px';
         input.style.border = 'none';
-        input.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04))';
-        input.style.backdropFilter = 'blur(25px) saturate(150%)';
-        input.style['-webkit-backdrop-filter'] = 'blur(25px) saturate(150%)';
-        input.style.border = '1px solid rgba(255, 255, 255, 0.35)';
-        input.style.boxShadow = '0 4px 20px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+        // Apply styling based on glassmorphism toggle for input
+        if (this.kxsClient.isGlassmorphismEnabled) {
+            // Glassmorphism style
+            input.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04))';
+            input.style.backdropFilter = 'blur(25px) saturate(150%)';
+            input.style['-webkit-backdrop-filter'] = 'blur(25px) saturate(150%)';
+            input.style.border = '1px solid rgba(255, 255, 255, 0.35)';
+            input.style.boxShadow = '0 4px 20px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+        }
+        else {
+            // Classic style - solid gray background without blur
+            input.style.background = 'rgba(60, 60, 60, 0.95)';
+            input.style.backdropFilter = 'none';
+            input.style['-webkit-backdrop-filter'] = 'none';
+            input.style.border = '1px solid #666';
+            input.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+        }
         input.style.color = '#fff';
         input.style.fontSize = '15px';
         input.style.fontFamily = 'inherit';
@@ -8056,29 +8342,33 @@ class KxsVoiceChat {
         }
     }
     createOverlayContainer() {
-        if (this.overlayContainer)
-            return;
+        var _a, _b;
         this.overlayContainer = document.createElement('div');
         this.overlayContainer.id = 'kxs-voice-chat-overlay';
-        Object.assign(this.overlayContainer.style, {
+        // Get glassmorphism setting from KxsClient
+        const isGlassmorphismEnabled = (_b = (_a = globalThis.kxsClient) === null || _a === void 0 ? void 0 : _a.isGlassmorphismEnabled) !== null && _b !== void 0 ? _b : true;
+        // Common styles for both modes
+        const commonStyles = {
             position: 'absolute',
             top: '10px',
             right: '10px',
             width: '200px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            webkitBackdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
             color: 'white',
             padding: '10px',
-            borderRadius: '15px',
             zIndex: '1000',
             fontFamily: 'Arial, sans-serif',
             fontSize: '14px',
             display: 'none',
             cursor: 'move'
-        });
+        };
+        if (isGlassmorphismEnabled) {
+            // Apply glassmorphism styles
+            Object.assign(this.overlayContainer.style, Object.assign(Object.assign({}, commonStyles), { backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', webkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.2)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', borderRadius: '15px' }));
+        }
+        else {
+            // Apply classic styles
+            Object.assign(this.overlayContainer.style, Object.assign(Object.assign({}, commonStyles), { backgroundColor: 'rgba(70, 70, 70, 0.95)', border: '1px solid #555', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)', borderRadius: '8px' }));
+        }
         // Charger la position sauvegardée si elle existe
         const savedPosition = localStorage.getItem('kxs-voice-chat-position');
         if (savedPosition) {
@@ -8425,7 +8715,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.6","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.7","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -8514,6 +8804,7 @@ class KxsClient {
         this.isKxsClientLogoEnable = true;
         this.isFocusModeEnabled = true;
         this.currentFocusModeState = false;
+        this.isGlassmorphismEnabled = true;
         this.kxsDeveloperOptions = {
             enableGameIDExchange: false,
             exchange: {
@@ -8596,24 +8887,48 @@ class KxsClient {
             return;
         const menu = document.createElement('div');
         menu.id = 'kxs-online-menu';
-        menu.style.position = 'absolute';
-        menu.style.top = '18px';
-        menu.style.left = '18px';
-        menu.style.background = 'rgba(255, 255, 255, 0.1)';
-        menu.style.backdropFilter = 'blur(20px) saturate(180%)';
-        menu.style.backdropFilter = 'blur(20px) saturate(180%)';
-        menu.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-        menu.style.color = '#fff';
-        menu.style.padding = '8px 18px';
-        menu.style.borderRadius = '16px';
-        menu.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-        menu.style.fontSize = '15px';
-        menu.style.zIndex = '999';
-        menu.style.userSelect = 'none';
-        menu.style.pointerEvents = 'auto';
-        menu.style.fontFamily = 'inherit';
-        menu.style.display = 'flex';
-        menu.style.alignItems = 'center';
+        // Appliquer les styles de base
+        const baseStyles = {
+            position: 'absolute',
+            top: '18px',
+            left: '18px',
+            color: '#fff',
+            padding: '8px 18px',
+            fontSize: '15px',
+            zIndex: '999',
+            userSelect: 'none',
+            pointerEvents: 'auto',
+            fontFamily: 'inherit',
+            display: 'flex',
+            alignItems: 'center'
+        };
+        // Appliquer les styles conditionnels selon le toggle glassmorphism
+        const is_glassmorphism_enabled = this.isGlassmorphismEnabled;
+        if (is_glassmorphism_enabled) {
+            // Style glassmorphism
+            Object.assign(baseStyles, {
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '16px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+            });
+            // Appliquer les styles à l'élément
+            Object.assign(menu.style, baseStyles);
+            // Appliquer le backdropFilter séparément (car il y a une duplication dans l'original)
+            menu.style.backdropFilter = 'blur(20px) saturate(180%)';
+            menu.style['-webkit-backdrop-filter'] = 'blur(20px) saturate(180%)';
+        }
+        else {
+            // Style classique
+            Object.assign(baseStyles, {
+                background: 'rgba(50, 50, 50, 0.95)',
+                border: '1px solid #555',
+                borderRadius: '10px',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)'
+            });
+            // Appliquer les styles à l'élément
+            Object.assign(menu.style, baseStyles);
+        }
         menu.style.cursor = 'pointer';
         menu.innerHTML = `
 		  <span id="kxs-online-dot" style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#3fae2a;margin-right:10px;box-shadow:0 0 8px #3fae2a;animation:kxs-pulse 1s infinite alternate;"></span>
@@ -8621,27 +8936,53 @@ class KxsClient {
 		`;
         const userListMenu = document.createElement('div');
         userListMenu.id = 'kxs-online-users-menu';
-        userListMenu.style.position = 'absolute';
-        userListMenu.style.top = '100%';
-        userListMenu.style.left = '0';
-        userListMenu.style.marginTop = '8px';
-        userListMenu.style.background = 'rgba(255, 255, 255, 0.08)';
-        userListMenu.style.backdropFilter = 'blur(25px) saturate(180%)';
-        userListMenu.style.backdropFilter = 'blur(25px) saturate(180%)';
-        userListMenu.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-        userListMenu.style.color = '#fff';
-        userListMenu.style.padding = '10px';
-        userListMenu.style.borderRadius = '12px';
-        userListMenu.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
-        userListMenu.style.fontSize = '14px';
-        userListMenu.style.zIndex = '1000';
-        userListMenu.style.minWidth = '180px';
-        userListMenu.style.maxHeight = '300px';
-        userListMenu.style.overflowY = 'auto';
-        userListMenu.style.display = 'none';
-        userListMenu.style.flexDirection = 'column';
-        userListMenu.style.gap = '6px';
+        // Styles communs pour le menu utilisateurs
+        const userListStyles = {
+            position: 'absolute',
+            top: '100%',
+            left: '0',
+            marginTop: '8px',
+            color: '#fff',
+            padding: '10px',
+            fontSize: '14px',
+            zIndex: '1000',
+            userSelect: 'none',
+            width: '260px',
+            maxHeight: '400px',
+            overflowY: 'auto',
+            display: 'none',
+            flexDirection: 'column',
+            gap: '6px'
+        };
+        // Appliquer les styles selon le toggle glassmorphism
+        if (is_glassmorphism_enabled) {
+            // Style glassmorphism
+            Object.assign(userListStyles, {
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '14px',
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+            });
+            // Appliquer les styles à l'élément
+            Object.assign(userListMenu.style, userListStyles);
+            // Appliquer le backdropFilter séparément
+            userListMenu.style.backdropFilter = 'blur(25px) saturate(180%)';
+            userListMenu.style['-webkit-backdrop-filter'] = 'blur(25px) saturate(180%)';
+        }
+        else {
+            // Style classique
+            Object.assign(userListStyles, {
+                background: 'rgba(45, 45, 45, 0.95)',
+                border: '1px solid #444',
+                borderRadius: '8px',
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)'
+            });
+            // Appliquer les styles à l'élément
+            Object.assign(userListMenu.style, userListStyles);
+        }
+        // Contenu du menu utilisateurs
         userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">Chargement...</div>';
+        // Ajouter le menu utilisateurs au menu principal
         menu.appendChild(userListMenu);
         if (!document.getElementById('kxs-online-style')) {
             const style = document.createElement('style');
@@ -8834,7 +9175,8 @@ class KxsClient {
             brightness: this.brightness,
             isKxsClientLogoEnable: this.isKxsClientLogoEnable,
             isFocusModeEnabled: this.isFocusModeEnabled,
-            kxsDeveloperOptions: this.kxsDeveloperOptions
+            kxsDeveloperOptions: this.kxsDeveloperOptions,
+            isGlassmorphismEnabled: this.isGlassmorphismEnabled
         }));
     }
     ;
@@ -9216,7 +9558,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -9249,6 +9591,7 @@ class KxsClient {
             this.isKxsClientLogoEnable = (_1 = savedSettings.isKxsClientLogoEnable) !== null && _1 !== void 0 ? _1 : this.isKxsClientLogoEnable;
             this.isFocusModeEnabled = (_2 = savedSettings.isFocusModeEnabled) !== null && _2 !== void 0 ? _2 : this.isFocusModeEnabled;
             this.kxsDeveloperOptions = (_3 = savedSettings.kxsDeveloperOptions) !== null && _3 !== void 0 ? _3 : this.kxsDeveloperOptions;
+            this.isGlassmorphismEnabled = (_4 = savedSettings.isGlassmorphismEnabled) !== null && _4 !== void 0 ? _4 : this.isGlassmorphismEnabled;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -9714,6 +10057,8 @@ class KxsClient {
         }
     }
     applyCustomMainMenuStyle() {
+        // Détermine si le mode glassmorphism est activé
+        const is_glassmorphism_enabled = this.isGlassmorphismEnabled;
         // Sélectionner le menu principal
         const startMenu = document.getElementById('start-menu');
         const playButtons = document.querySelectorAll('.btn-green, #btn-help, .btn-team-option');
@@ -9722,15 +10067,21 @@ class KxsClient {
         const nameInput = document.getElementById('player-name-input-solo');
         const helpSection = document.getElementById('start-help');
         if (startMenu) {
-            // Apply styles to the main container
+            // Apply styles to the main container based on glassmorphism toggle
             Object.assign(startMenu.style, {
-                background: 'linear-gradient(135deg, rgba(45, 55, 70, 0.15) 0%, rgba(35, 45, 60, 0.25) 100%)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                borderRadius: '16px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.37)',
+                background: is_glassmorphism_enabled
+                    ? 'linear-gradient(135deg, rgba(45, 55, 70, 0.15) 0%, rgba(35, 45, 60, 0.25) 100%)'
+                    : 'rgba(45, 45, 45, 0.95)',
+                border: is_glassmorphism_enabled
+                    ? '1px solid rgba(255, 255, 255, 0.18)'
+                    : '1px solid #555',
+                borderRadius: is_glassmorphism_enabled ? '16px' : '8px',
+                boxShadow: is_glassmorphism_enabled
+                    ? '0 8px 32px rgba(0, 0, 0, 0.37)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.35)',
                 padding: '15px',
-                backdropFilter: 'blur(16px) saturate(180%)',
-                webkitBackdropFilter: 'blur(16px) saturate(180%)',
+                backdropFilter: is_glassmorphism_enabled ? 'blur(16px) saturate(180%)' : 'none',
+                webkitBackdropFilter: is_glassmorphism_enabled ? 'blur(16px) saturate(180%)' : 'none',
                 margin: '0 auto'
             });
         }
@@ -9740,12 +10091,18 @@ class KxsClient {
                 if (button.classList.contains('btn-green')) {
                     // Boutons Play
                     Object.assign(button.style, {
-                        background: 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.18)',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
-                        backdropFilter: 'blur(12px) saturate(180%)',
-                        webkitBackdropFilter: 'blur(12px) saturate(180%)',
+                        background: is_glassmorphism_enabled
+                            ? 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)'
+                            : 'linear-gradient(135deg, rgba(60, 60, 60, 0.9) 0%, rgba(50, 50, 50, 1) 100%)',
+                        borderRadius: is_glassmorphism_enabled ? '12px' : '8px',
+                        border: is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.18)'
+                            : '1px solid #555',
+                        boxShadow: is_glassmorphism_enabled
+                            ? '0 4px 12px rgba(0, 0, 0, 0.25)'
+                            : '0 2px 8px rgba(0, 0, 0, 0.25)',
+                        backdropFilter: is_glassmorphism_enabled ? 'blur(12px) saturate(180%)' : 'none',
+                        webkitBackdropFilter: is_glassmorphism_enabled ? 'blur(12px) saturate(180%)' : 'none',
                         transition: 'all 0.2s ease',
                         color: 'white',
                         fontWeight: 'bold'
@@ -9754,48 +10111,71 @@ class KxsClient {
                 else {
                     // Autres boutons
                     Object.assign(button.style, {
-                        background: 'rgba(55, 65, 80, 0.15)',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        backdropFilter: 'blur(10px) saturate(180%)',
-                        webkitBackdropFilter: 'blur(10px) saturate(180%)',
+                        background: is_glassmorphism_enabled
+                            ? 'rgba(55, 65, 80, 0.15)'
+                            : 'rgba(55, 55, 55, 0.95)',
+                        borderRadius: is_glassmorphism_enabled ? '12px' : '8px',
+                        border: is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.15)'
+                            : '1px solid #444',
+                        backdropFilter: is_glassmorphism_enabled ? 'blur(10px) saturate(180%)' : 'none',
+                        webkitBackdropFilter: is_glassmorphism_enabled ? 'blur(10px) saturate(180%)' : 'none',
                         transition: 'all 0.2s ease',
                         color: 'white'
                     });
                 }
                 // Hover effect for all buttons
                 button.addEventListener('mouseover', () => {
-                    button.style.transform = 'translateY(-2px)';
-                    button.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
+                    button.style.transform = is_glassmorphism_enabled ? 'translateY(-2px)' : 'translateY(-1px)';
+                    button.style.boxShadow = is_glassmorphism_enabled
+                        ? '0 8px 25px rgba(0, 0, 0, 0.4)'
+                        : '0 4px 12px rgba(0, 0, 0, 0.3)';
                     if (button.classList.contains('btn-green')) {
-                        button.style.background = 'linear-gradient(135deg, rgba(60, 75, 95, 0.3) 0%, rgba(50, 65, 85, 0.4) 100%)';
+                        button.style.background = is_glassmorphism_enabled
+                            ? 'linear-gradient(135deg, rgba(60, 75, 95, 0.3) 0%, rgba(50, 65, 85, 0.4) 100%)'
+                            : 'linear-gradient(135deg, rgba(70, 70, 70, 0.95) 0%, rgba(60, 60, 60, 1) 100%)';
                     }
                     else {
-                        button.style.background = 'rgba(55, 65, 80, 0.25)';
+                        button.style.background = is_glassmorphism_enabled
+                            ? 'rgba(55, 65, 80, 0.25)'
+                            : 'rgba(65, 65, 65, 1)';
                     }
-                    button.style.border = '1px solid rgba(255, 255, 255, 0.25)';
+                    button.style.border = is_glassmorphism_enabled
+                        ? '1px solid rgba(255, 255, 255, 0.25)'
+                        : '1px solid #666';
                 });
                 button.addEventListener('mouseout', () => {
                     button.style.transform = 'translateY(0)';
                     if (button.classList.contains('btn-green')) {
-                        button.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)';
-                        button.style.background = 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)';
+                        button.style.boxShadow = is_glassmorphism_enabled
+                            ? '0 4px 12px rgba(0, 0, 0, 0.25)'
+                            : '0 2px 8px rgba(0, 0, 0, 0.25)';
+                        button.style.background = is_glassmorphism_enabled
+                            ? 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)'
+                            : 'linear-gradient(135deg, rgba(60, 60, 60, 0.9) 0%, rgba(50, 50, 50, 1) 100%)';
                     }
                     else {
                         button.style.boxShadow = 'none';
-                        button.style.background = 'rgba(55, 65, 80, 0.15)';
+                        button.style.background = is_glassmorphism_enabled
+                            ? 'rgba(55, 65, 80, 0.15)'
+                            : 'rgba(55, 55, 55, 0.95)';
                     }
-                    button.style.border = button.classList.contains('btn-green') ?
-                        '1px solid rgba(255, 255, 255, 0.18)' : '1px solid rgba(255, 255, 255, 0.15)';
+                    button.style.border = button.classList.contains('btn-green')
+                        ? (is_glassmorphism_enabled ? '1px solid rgba(255, 255, 255, 0.18)' : '1px solid #555')
+                        : (is_glassmorphism_enabled ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid #444');
                 });
             }
         });
         // Styliser le sélecteur de serveur
         if (serverSelect instanceof HTMLSelectElement) {
             Object.assign(serverSelect.style, {
-                background: 'rgba(50, 60, 75, 0.8)',
-                borderRadius: '8px',
-                border: '1px solid rgba(75, 85, 100, 0.3)',
+                background: is_glassmorphism_enabled
+                    ? 'rgba(50, 60, 75, 0.8)'
+                    : 'rgba(45, 45, 45, 0.95)',
+                borderRadius: is_glassmorphism_enabled ? '8px' : '6px',
+                border: is_glassmorphism_enabled
+                    ? '1px solid rgba(75, 85, 100, 0.3)'
+                    : '1px solid #444',
                 color: 'white',
                 padding: '8px 12px',
                 outline: 'none'
@@ -9804,41 +10184,57 @@ class KxsClient {
         // Styliser l'input du nom
         if (nameInput instanceof HTMLInputElement) {
             Object.assign(nameInput.style, {
-                background: 'rgba(50, 60, 75, 0.8)',
-                borderRadius: '8px',
-                border: '1px solid rgba(75, 85, 100, 0.3)',
+                background: is_glassmorphism_enabled
+                    ? 'rgba(50, 60, 75, 0.8)'
+                    : 'rgba(45, 45, 45, 0.95)',
+                borderRadius: is_glassmorphism_enabled ? '8px' : '6px',
+                border: is_glassmorphism_enabled
+                    ? '1px solid rgba(75, 85, 100, 0.3)'
+                    : '1px solid #444',
                 color: 'white',
                 padding: '8px 12px',
                 outline: 'none'
             });
             // Focus style
             nameInput.addEventListener('focus', () => {
-                nameInput.style.border = '1px solid rgba(70, 85, 105, 0.8)';
-                nameInput.style.boxShadow = '0 0 8px rgba(60, 75, 95, 0.5)';
+                nameInput.style.border = is_glassmorphism_enabled
+                    ? '1px solid rgba(70, 85, 105, 0.8)'
+                    : '1px solid #6f7e95';
+                nameInput.style.boxShadow = is_glassmorphism_enabled
+                    ? '0 0 8px rgba(60, 75, 95, 0.5)'
+                    : '0 0 6px rgba(60, 60, 60, 0.5)';
             });
             nameInput.addEventListener('blur', () => {
-                nameInput.style.border = '1px solid rgba(75, 85, 100, 0.3)';
+                nameInput.style.border = is_glassmorphism_enabled
+                    ? '1px solid rgba(75, 85, 100, 0.3)'
+                    : '1px solid #444';
                 nameInput.style.boxShadow = 'none';
             });
         }
         // Styliser la section d'aide
         if (helpSection) {
             Object.assign(helpSection.style, {
-                background: 'rgba(40, 50, 65, 0.7)',
-                borderRadius: '8px',
+                background: is_glassmorphism_enabled
+                    ? 'rgba(40, 50, 65, 0.7)'
+                    : 'rgba(40, 40, 40, 0.95)',
+                borderRadius: is_glassmorphism_enabled ? '8px' : '6px',
                 padding: '15px',
                 margin: '15px 0',
                 maxHeight: '300px',
                 overflowY: 'auto',
                 scrollbarWidth: 'thin',
-                scrollbarColor: '#7f8c8d rgba(25, 25, 35, 0.5)'
+                scrollbarColor: is_glassmorphism_enabled
+                    ? '#7f8c8d rgba(25, 25, 35, 0.5)'
+                    : '#555 rgba(30, 30, 30, 0.8)'
             });
             // Style the help section titles
             const helpTitles = helpSection.querySelectorAll('h1');
             helpTitles.forEach(title => {
                 if (title instanceof HTMLElement) {
                     Object.assign(title.style, {
-                        color: 'rgba(90, 105, 125, 1)',
+                        color: is_glassmorphism_enabled
+                            ? 'rgba(90, 105, 125, 1)'
+                            : 'rgba(200, 200, 200, 1)',
                         fontSize: '18px',
                         marginTop: '15px',
                         marginBottom: '8px'
@@ -9849,7 +10245,9 @@ class KxsClient {
             const helpParagraphs = helpSection.querySelectorAll('p');
             helpParagraphs.forEach(p => {
                 if (p instanceof HTMLElement) {
-                    p.style.color = 'rgba(255, 255, 255, 0.8)';
+                    p.style.color = is_glassmorphism_enabled
+                        ? 'rgba(255, 255, 255, 0.8)'
+                        : 'rgba(220, 220, 220, 0.9)';
                     p.style.fontSize = '14px';
                     p.style.marginBottom = '8px';
                 }
@@ -9858,14 +10256,16 @@ class KxsClient {
             const actionTerms = helpSection.querySelectorAll('.help-action');
             actionTerms.forEach(term => {
                 if (term instanceof HTMLElement) {
-                    term.style.color = '#ffc107'; // Yellow
+                    term.style.color = is_glassmorphism_enabled ? '#ffc107' : '#ffdb69'; // Yellow/gold
                     term.style.fontWeight = 'bold';
                 }
             });
             const controlTerms = helpSection.querySelectorAll('.help-control');
             controlTerms.forEach(term => {
                 if (term instanceof HTMLElement) {
-                    term.style.color = 'rgba(80, 95, 115, 1)'; // Dark blue/grey
+                    term.style.color = is_glassmorphism_enabled
+                        ? 'rgba(80, 95, 115, 1)' // Dark blue/grey for glassmorphism
+                        : 'rgba(170, 180, 190, 1)'; // Lighter grey for classic mode
                     term.style.fontWeight = 'bold';
                 }
             });
@@ -9873,9 +10273,13 @@ class KxsClient {
         // Apply specific style to double buttons
         const btnsDoubleRow = document.querySelector('.btns-double-row');
         if (btnsDoubleRow instanceof HTMLElement) {
-            btnsDoubleRow.style.display = 'flex';
-            btnsDoubleRow.style.gap = '10px';
-            btnsDoubleRow.style.marginTop = '10px';
+            Object.assign(btnsDoubleRow.style, {
+                display: 'flex',
+                gap: '10px',
+                marginTop: '10px',
+                padding: is_glassmorphism_enabled ? '0' : '2px',
+                borderRadius: is_glassmorphism_enabled ? '0' : '4px'
+            });
         }
     }
     MainMenuCleaning() {
@@ -9968,9 +10372,9 @@ class KxsClient {
         }
     }
     generateRandomPassword(len) {
-        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+abcdefghijklmnopqrstuvwxyz";
+        const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!_[]}{()'";
         let password = "";
-        for (let i = 0; i < (len || 12); i++) {
+        for (let i = 0; i < (len || 32); i++) {
             password += charset.charAt(Math.floor(Math.random() * charset.length));
         }
         return password;
