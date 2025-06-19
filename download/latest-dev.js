@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.7
+// @version      2.2.8
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -57,320 +57,15 @@ module.exports = {
 
 /***/ }),
 
-/***/ 229:
+/***/ 222:
 /***/ ((__unused_webpack_module, exports) => {
 
 var __webpack_unused_export__;
 
 __webpack_unused_export__ = ({ value: true });
-exports.A = void 0;
+exports.W = void 0;
 ;
-class SimplifiedSteganoDB {
-    data;
-    options;
-    database;
-    constructor(options) {
-        this.database = options?.database || "stegano.db";
-        this.data = {};
-        this.fetchDataFromFile();
-    }
-    read() { return localStorage.getItem(this.database) || this.data; }
-    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
-    setNestedProperty = (object, key, value) => {
-        const properties = key.split('.');
-        let currentObject = object;
-        for (let i = 0; i < properties.length - 1; i++) {
-            const property = properties[i];
-            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
-                currentObject[property] = {};
-            }
-            currentObject = currentObject[property];
-        }
-        currentObject[properties[properties.length - 1]] = value;
-    };
-    getNestedProperty = (object, key) => {
-        const properties = key.split('.');
-        let index = 0;
-        for (; index < properties.length; ++index) {
-            object = object && object[properties[index]];
-        }
-        return object;
-    };
-    fetchDataFromFile() {
-        try {
-            const content = this.read();
-            this.data = JSON.parse(content);
-        }
-        catch (error) {
-            this.data = {};
-        }
-    }
-    updateNestedProperty(key, operation, value) {
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        if (!this.data[id] && operation !== 'get') {
-            this.data[id] = nestedPath ? {} : undefined;
-        }
-        if (this.data[id] === undefined && operation === 'get') {
-            return undefined;
-        }
-        switch (operation) {
-            case 'get':
-                return nestedPath ? this.getNestedProperty(this.data[id], nestedPath) : this.data[id];
-            case 'set':
-                if (nestedPath) {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, value);
-                }
-                else {
-                    this.data[id] = value;
-                }
-                this.write();
-                break;
-            case 'add':
-                if (!nestedPath) {
-                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) + value;
-                }
-                else {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
-                }
-                this.write();
-                break;
-            case 'sub':
-                if (!nestedPath) {
-                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) - value;
-                }
-                else {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        this.data[id] = {};
-                    }
-                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
-                }
-                this.write();
-                break;
-            case 'delete':
-                if (nestedPath) {
-                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
-                        return;
-                    }
-                    const properties = nestedPath.split('.');
-                    let currentObject = this.data[id];
-                    for (let i = 0; i < properties.length - 1; i++) {
-                        const property = properties[i];
-                        if (!currentObject[property]) {
-                            return;
-                        }
-                        currentObject = currentObject[property];
-                    }
-                    delete currentObject[properties[properties.length - 1]];
-                }
-                else {
-                    delete this.data[id];
-                }
-                this.write();
-                break;
-            case 'pull':
-                const existingArray = nestedPath ?
-                    this.getNestedProperty(this.data[id], nestedPath) :
-                    this.data[id];
-                if (!Array.isArray(existingArray)) {
-                    throw new Error('The stored value is not an array');
-                }
-                const newArray = existingArray.filter((item) => item !== value);
-                if (nestedPath) {
-                    this.setNestedProperty(this.data[id], nestedPath, newArray);
-                }
-                else {
-                    this.data[id] = newArray;
-                }
-                this.write();
-                break;
-        }
-    }
-    get(key) {
-        return this.updateNestedProperty(key, 'get');
-    }
-    set(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'set', value);
-    }
-    pull(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'pull', value);
-    }
-    add(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'add', count);
-    }
-    sub(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'sub', count);
-    }
-    delete(key) {
-        this.updateNestedProperty(key, 'delete');
-    }
-    cache(key, value, time) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null ou contain a space.");
-        }
-        if (!time || isNaN(time)) {
-            throw new SyntaxError("The time needs to be a number. (ms)");
-        }
-        this.updateNestedProperty(key, 'set', value);
-        setTimeout(() => {
-            this.updateNestedProperty(key, 'delete');
-        }, time);
-    }
-    push(key, element) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        if (!this.data[id]) {
-            this.data[id] = nestedPath ? {} : [];
-        }
-        if (nestedPath) {
-            const existingArray = this.getNestedProperty(this.data[id], nestedPath);
-            if (!existingArray) {
-                this.setNestedProperty(this.data[id], nestedPath, [element]);
-            }
-            else if (!Array.isArray(existingArray)) {
-                throw new Error('The stored value is not an array');
-            }
-            else {
-                existingArray.push(element);
-                this.setNestedProperty(this.data[id], nestedPath, existingArray);
-            }
-        }
-        else {
-            if (!Array.isArray(this.data[id])) {
-                this.data[id] = [];
-            }
-            this.data[id].push(element);
-        }
-        this.write();
-    }
-    has(key) {
-        return Boolean(this.get(key));
-    }
-    deleteAll() {
-        this.data = {};
-        this.write();
-    }
-    all() {
-        return this.data;
-    }
-}
-exports.A = SimplifiedSteganoDB;
-
-
-/***/ }),
-
-/***/ 272:
-/***/ ((module) => {
-
-
-
-const debug = (
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_DEBUG &&
-  /\bsemver\b/i.test(process.env.NODE_DEBUG)
-) ? (...args) => console.error('SEMVER', ...args)
-  : () => {}
-
-module.exports = debug
-
-
-/***/ }),
-
-/***/ 560:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-const SemVer = __webpack_require__(908)
-const compare = (a, b, loose) =>
-  new SemVer(a, loose).compare(new SemVer(b, loose))
-
-module.exports = compare
-
-
-/***/ }),
-
-/***/ 580:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-const compare = __webpack_require__(560)
-const gt = (a, b, loose) => compare(a, b, loose) > 0
-module.exports = gt
-
-
-/***/ }),
-
-/***/ 587:
-/***/ ((module) => {
-
-
-
-// parse out just the options we care about
-const looseOption = Object.freeze({ loose: true })
-const emptyOpts = Object.freeze({ })
-const parseOptions = options => {
-  if (!options) {
-    return emptyOpts
-  }
-
-  if (typeof options !== 'object') {
-    return looseOption
-  }
-
-  return options
-}
-module.exports = parseOptions
-
-
-/***/ }),
-
-/***/ 686:
-/***/ ((__unused_webpack_module, exports) => {
-
-var __webpack_unused_export__;
-
-__webpack_unused_export__ = ({ value: true });
-exports.w = void 0;
-;
-class SteganoDB {
+class BrowserSteganoDB {
     data;
     currentTable;
     options;
@@ -507,7 +202,7 @@ class SteganoDB {
         if (!this.data[tableName]) {
             this.data[tableName] = [];
         }
-        return new SteganoDB(this.options);
+        return new BrowserSteganoDB(this.options);
     }
     get(key) {
         return this.updateNestedProperty(key, 'get');
@@ -600,7 +295,75 @@ class SteganoDB {
         return this.data[this.currentTable];
     }
 }
-exports.w = SteganoDB;
+exports.W = BrowserSteganoDB;
+
+
+/***/ }),
+
+/***/ 272:
+/***/ ((module) => {
+
+
+
+const debug = (
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_DEBUG &&
+  /\bsemver\b/i.test(process.env.NODE_DEBUG)
+) ? (...args) => console.error('SEMVER', ...args)
+  : () => {}
+
+module.exports = debug
+
+
+/***/ }),
+
+/***/ 560:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+
+const SemVer = __webpack_require__(908)
+const compare = (a, b, loose) =>
+  new SemVer(a, loose).compare(new SemVer(b, loose))
+
+module.exports = compare
+
+
+/***/ }),
+
+/***/ 580:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+
+const compare = __webpack_require__(560)
+const gt = (a, b, loose) => compare(a, b, loose) > 0
+module.exports = gt
+
+
+/***/ }),
+
+/***/ 587:
+/***/ ((module) => {
+
+
+
+// parse out just the options we care about
+const looseOption = Object.freeze({ loose: true })
+const emptyOpts = Object.freeze({ })
+const parseOptions = options => {
+  if (!options) {
+    return emptyOpts
+  }
+
+  if (typeof options !== 'object') {
+    return looseOption
+  }
+
+  return options
+}
+module.exports = parseOptions
 
 
 /***/ }),
@@ -865,6 +628,242 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
     // Remplace le constructeur global
     window.WebSocket = HookedWebSocket;
 })();
+
+
+/***/ }),
+
+/***/ 814:
+/***/ ((__unused_webpack_module, exports) => {
+
+var __webpack_unused_export__;
+
+__webpack_unused_export__ = ({ value: true });
+exports.A = void 0;
+;
+class SimplifiedSteganoDB {
+    data;
+    database;
+    constructor(options) {
+        this.database = options?.database || "stegano.db";
+        this.data = {};
+        this.fetchDataFromFile();
+    }
+    read() { return localStorage.getItem(this.database) || this.data; }
+    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
+    setNestedProperty = (object, key, value) => {
+        const properties = key.split('.');
+        let currentObject = object;
+        for (let i = 0; i < properties.length - 1; i++) {
+            const property = properties[i];
+            if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
+                currentObject[property] = {};
+            }
+            currentObject = currentObject[property];
+        }
+        currentObject[properties[properties.length - 1]] = value;
+    };
+    getNestedProperty = (object, key) => {
+        const properties = key.split('.');
+        let index = 0;
+        for (; index < properties.length; ++index) {
+            object = object && object[properties[index]];
+        }
+        return object;
+    };
+    fetchDataFromFile() {
+        try {
+            const content = this.read();
+            this.data = JSON.parse(content);
+        }
+        catch (error) {
+            this.data = {};
+        }
+    }
+    updateNestedProperty(key, operation, value) {
+        const [id, ...rest] = key.split('.');
+        const nestedPath = rest.join('.');
+        if (!this.data[id] && operation !== 'get') {
+            this.data[id] = nestedPath ? {} : undefined;
+        }
+        if (this.data[id] === undefined && operation === 'get') {
+            return undefined;
+        }
+        switch (operation) {
+            case 'get':
+                return nestedPath ? this.getNestedProperty(this.data[id], nestedPath) : this.data[id];
+            case 'set':
+                if (nestedPath) {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        this.data[id] = {};
+                    }
+                    this.setNestedProperty(this.data[id], nestedPath, value);
+                }
+                else {
+                    this.data[id] = value;
+                }
+                this.write();
+                break;
+            case 'add':
+                if (!nestedPath) {
+                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) + value;
+                }
+                else {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        this.data[id] = {};
+                    }
+                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
+                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
+                        throw new TypeError('The existing value is not a number.');
+                    }
+                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
+                }
+                this.write();
+                break;
+            case 'sub':
+                if (!nestedPath) {
+                    this.data[id] = (typeof this.data[id] === 'number' ? this.data[id] : 0) - value;
+                }
+                else {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        this.data[id] = {};
+                    }
+                    const existingValue = this.getNestedProperty(this.data[id], nestedPath);
+                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
+                        throw new TypeError('The existing value is not a number.');
+                    }
+                    this.setNestedProperty(this.data[id], nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
+                }
+                this.write();
+                break;
+            case 'delete':
+                if (nestedPath) {
+                    if (typeof this.data[id] !== 'object' || this.data[id] === null) {
+                        return;
+                    }
+                    const properties = nestedPath.split('.');
+                    let currentObject = this.data[id];
+                    for (let i = 0; i < properties.length - 1; i++) {
+                        const property = properties[i];
+                        if (!currentObject[property]) {
+                            return;
+                        }
+                        currentObject = currentObject[property];
+                    }
+                    delete currentObject[properties[properties.length - 1]];
+                }
+                else {
+                    delete this.data[id];
+                }
+                this.write();
+                break;
+            case 'pull':
+                const existingArray = nestedPath ?
+                    this.getNestedProperty(this.data[id], nestedPath) :
+                    this.data[id];
+                if (!Array.isArray(existingArray)) {
+                    throw new Error('The stored value is not an array');
+                }
+                const newArray = existingArray.filter((item) => item !== value);
+                if (nestedPath) {
+                    this.setNestedProperty(this.data[id], nestedPath, newArray);
+                }
+                else {
+                    this.data[id] = newArray;
+                }
+                this.write();
+                break;
+        }
+    }
+    get(key) {
+        return this.updateNestedProperty(key, 'get');
+    }
+    set(key, value) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        this.updateNestedProperty(key, 'set', value);
+    }
+    pull(key, value) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        this.updateNestedProperty(key, 'pull', value);
+    }
+    add(key, count) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (isNaN(count)) {
+            throw new SyntaxError("The value is NaN.");
+        }
+        this.updateNestedProperty(key, 'add', count);
+    }
+    sub(key, count) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        if (isNaN(count)) {
+            throw new SyntaxError("The value is NaN.");
+        }
+        this.updateNestedProperty(key, 'sub', count);
+    }
+    delete(key) {
+        this.updateNestedProperty(key, 'delete');
+    }
+    cache(key, value, time) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null ou contain a space.");
+        }
+        if (!time || isNaN(time)) {
+            throw new SyntaxError("The time needs to be a number. (ms)");
+        }
+        this.updateNestedProperty(key, 'set', value);
+        setTimeout(() => {
+            this.updateNestedProperty(key, 'delete');
+        }, time);
+    }
+    push(key, element) {
+        if (key.includes(" ") || !key || key === "") {
+            throw new SyntaxError("Key can't be null or contain a space.");
+        }
+        const [id, ...rest] = key.split('.');
+        const nestedPath = rest.join('.');
+        if (!this.data[id]) {
+            this.data[id] = nestedPath ? {} : [];
+        }
+        if (nestedPath) {
+            const existingArray = this.getNestedProperty(this.data[id], nestedPath);
+            if (!existingArray) {
+                this.setNestedProperty(this.data[id], nestedPath, [element]);
+            }
+            else if (!Array.isArray(existingArray)) {
+                throw new Error('The stored value is not an array');
+            }
+            else {
+                existingArray.push(element);
+                this.setNestedProperty(this.data[id], nestedPath, existingArray);
+            }
+        }
+        else {
+            if (!Array.isArray(this.data[id])) {
+                this.data[id] = [];
+            }
+            this.data[id].push(element);
+        }
+        this.write();
+    }
+    has(key) {
+        return Boolean(this.get(key));
+    }
+    deleteAll() {
+        this.data = {};
+        this.write();
+    }
+    all() {
+        return this.data;
+    }
+}
+exports.A = SimplifiedSteganoDB;
 
 
 /***/ }),
@@ -1300,8 +1299,8 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
-// EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/simplified_browser.js
-var simplified_browser = __webpack_require__(229);
+// EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser.js
+var browser = __webpack_require__(814);
 ;// ./config.json
 const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
@@ -1314,10 +1313,10 @@ const full_logo = config_namespaceObject.base_url + "/assets/KysClient.gif";
 const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
 const win_sound = config_namespaceObject.base_url + "/assets/win.m4a";
 const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
-const survev_settings = new simplified_browser/* SimplifiedSteganoDB */.A({
+const survev_settings = new browser/* SimplifiedSteganoDB */.A({
     database: "surviv_config",
 });
-const kxs_settings = new simplified_browser/* SimplifiedSteganoDB */.A({
+const kxs_settings = new browser/* SimplifiedSteganoDB */.A({
     database: "userSettings"
 });
 
@@ -7010,8 +7009,8 @@ class Logger {
 }
 
 
-// EXTERNAL MODULE: ../../GitLab/SteganoDB2/lib/browser.js
-var browser = __webpack_require__(686);
+// EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser2.js
+var browser2 = __webpack_require__(222);
 ;// ./src/HUD/HistoryManager.ts
 var HistoryManager_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -7725,6 +7724,9 @@ class KxsNetwork {
                     if (d && d.user && d.text) {
                         this.kxsClient.chat.addChatMessage(d.user, d.text);
                     }
+                    else if (d && d.error && !d.user) {
+                        this.kxsClient.chat.addErrorMessage(d.error);
+                    }
                 }
                 break;
             case 10: // Hello
@@ -8076,7 +8078,7 @@ class KxsChat {
     addChatMessage(user, text) {
         if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
             return;
-        this.chatMessages.push({ user, text, isSystem: false });
+        this.chatMessages.push({ user, text, isSystem: false, isError: false });
         this.renderMessages();
     }
     /**
@@ -8087,7 +8089,18 @@ class KxsChat {
         if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
             return;
         // Ajouter le message système avec un marqueur spécifique isSystem = true
-        this.chatMessages.push({ user: "", text, isSystem: true });
+        this.chatMessages.push({ user: "", text, isSystem: true, isError: false });
+        this.renderMessages();
+    }
+    /**
+     * Ajoute un message système dans le chat
+     * @param text Texte du message système
+     */
+    addErrorMessage(text) {
+        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
+            return;
+        // Ajouter le message système avec un marqueur spécifique isSystem = true
+        this.chatMessages.push({ user: "", text, isSystem: true, isError: false });
         this.renderMessages();
     }
     /**
@@ -8131,7 +8144,10 @@ class KxsChat {
         const visible_messages = this.chatMessages.slice(-visible_count);
         // Rend les messages visibles
         this.messagesContainer.innerHTML = visible_messages.map(m => {
-            if (m.isSystem) {
+            if (m.isSystem && m.isError) {
+                return `<div style='color:#EB3023; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
+            }
+            else if (m.isSystem) {
                 return `<div style='color:#3B82F6; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
             }
             else {
@@ -8715,7 +8731,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.7","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.3.8"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.7.0"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -8831,7 +8847,7 @@ class KxsClient {
             background_sound_url: background_song,
         };
         this.gridSystem = new GridSystem();
-        this.db = new browser/* SteganoDB */.w({ database: "KxsClient", tableName: "gameplay_history" });
+        this.db = new browser2/* BrowserSteganoDB */.W({ database: "KxsClient", tableName: "gameplay_history" });
         // Before all, load local storage
         this.loadLocalStorage();
         this.updateLocalStorage();
