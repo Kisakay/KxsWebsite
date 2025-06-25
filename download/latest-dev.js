@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.9
+// @version      2.2.11
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -18,6 +18,7 @@
 // @match        *://kxs.rip/*
 // @match        *://localhost:3000/*
 // @match        *://veldreth.com/*
+// @match        *://eu-comp.net/*
 // @grant        none
 // ==/UserScript==
 ;
@@ -1302,7 +1303,7 @@ var websocket_hook = __webpack_require__(746);
 // EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser.js
 var browser = __webpack_require__(814);
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
 
 
@@ -1943,7 +1944,7 @@ class HealthWarning {
         // Vérifier si le mode glassmorphism est activé
         const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
         // Appliquer le style approprié en fonction du toggle glassmorphism
-        DesignSystem.applyStyle(warning, 'dark', {
+        DesignSystem.applyGlassEffect(warning, 'medium', {
             position: 'fixed',
             border: is_glassmorphism_enabled ?
                 '2px solid rgba(255, 0, 0, 0.8)' :
@@ -3184,7 +3185,7 @@ class NotificationManager {
     showNotification(message, type, duration = 5000) {
         const notification = document.createElement("div");
         // Apply styles using DesignSystem with dark theme to match the rest of the interface
-        DesignSystem.applyStyle(notification, 'dark', {
+        DesignSystem.applyGlassEffect(notification, this.isGlassmorphismEnabled() ? 'light' : 'dark', {
             position: "fixed",
             top: "20px",
             left: "20px",
@@ -7588,7 +7589,6 @@ class KxsNetwork {
         this.currentGamePlayers = [];
         this.ws = null;
         this.heartbeatInterval = 0;
-        this.isAuthenticated = false;
         this.HOST = config_namespaceObject.api_url;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 3;
@@ -7598,6 +7598,7 @@ class KxsNetwork {
         this.privateUsername = this.generateRandomUsername();
         this.kxs_users = [];
         this[0x1] = false;
+        this.connected = false;
         this.kxsClient = kxsClient;
     }
     connect() {
@@ -7622,7 +7623,7 @@ class KxsNetwork {
         this.ws.onclose = () => {
             this.kxsClient.nm.showNotification('Disconnected from KxsNetwork', 'info', 1100);
             clearInterval(this.heartbeatInterval);
-            this.isAuthenticated = false;
+            this.connected = true;
             // Try to reconnect
             this.attemptReconnect();
         };
@@ -7695,7 +7696,7 @@ class KxsNetwork {
             case 2: // Dispatch
                 {
                     if (d === null || d === void 0 ? void 0 : d.uuid) {
-                        this.isAuthenticated = true;
+                        this.connected = true;
                     }
                 }
                 break;
@@ -7796,7 +7797,7 @@ class KxsNetwork {
         this.connect();
     }
     sendGameInfoToWebSocket(gameId) {
-        if (!this.isAuthenticated || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
             return;
         }
         try {
@@ -8731,7 +8732,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.7.0"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.11","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.7.0"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -9091,6 +9092,8 @@ class KxsClient {
             const dot = this.onlineMenuElement.querySelector('#kxs-online-dot');
             const userListMenu = this.onlineMenuElement.querySelector('#kxs-online-users-menu');
             try {
+                if (!this.kxsNetwork.connected)
+                    throw "KxsNetwork not connected";
                 if (this.kxsNetwork["1"] === true) {
                     if (countEl)
                         countEl.textContent = atob("WW91ciBpcCBoYXMgYmVlbiBiYW5uZWQgZnJvbSB1c2luZyBLeHNOZXR3b3Jr");
