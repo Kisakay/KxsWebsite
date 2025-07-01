@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.2.11
+// @version      2.2.12
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -10,7 +10,6 @@
 // @icon         https://kxs.rip/assets/KysClientLogo.png
 // @match        *://survev.io/*
 // @match        *://66.179.254.36/*
-// @match        *://zurviv.io/*
 // @match        *://resurviv.biz/*
 // @match        *://leia-uwu.github.io/survev/*
 // @match        *://survev.leia-is.gay/*
@@ -1290,6 +1289,18 @@ module.exports = SemVer
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
@@ -1303,7 +1314,7 @@ var websocket_hook = __webpack_require__(746);
 // EXTERNAL MODULE: ./node_modules/stegano.db/lib/browser.js
 var browser = __webpack_require__(814);
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","zurviv.io","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
 
 
@@ -1944,7 +1955,7 @@ class HealthWarning {
         // Vérifier si le mode glassmorphism est activé
         const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
         // Appliquer le style approprié en fonction du toggle glassmorphism
-        DesignSystem.applyGlassEffect(warning, 'medium', {
+        DesignSystem.applyGlassEffect(warning, this.kxsClient.isGlassmorphismEnabled ? 'medium' : 'dark', {
             position: 'fixed',
             border: is_glassmorphism_enabled ?
                 '2px solid rgba(255, 0, 0, 0.8)' :
@@ -3177,15 +3188,10 @@ class NotificationManager {
         };
         return configs[type];
     }
-    // Helper method to check if glassmorphism is enabled
-    isGlassmorphismEnabled() {
-        var _a, _b;
-        return (_b = (_a = globalThis.kxsClient) === null || _a === void 0 ? void 0 : _a.isGlassmorphismEnabled) !== null && _b !== void 0 ? _b : true;
-    }
     showNotification(message, type, duration = 5000) {
         const notification = document.createElement("div");
         // Apply styles using DesignSystem with dark theme to match the rest of the interface
-        DesignSystem.applyGlassEffect(notification, this.isGlassmorphismEnabled() ? 'light' : 'dark', {
+        DesignSystem.applyGlassEffect(notification, __webpack_require__.g.kxsClient.isGlassmorphismEnabled ? 'light' : 'dark', {
             position: "fixed",
             top: "20px",
             left: "20px",
@@ -3219,7 +3225,7 @@ class NotificationManager {
         messageDiv.style.flex = "1";
         // Create progress bar with appropriate style based on glassmorphism setting
         const progressBar = document.createElement("div");
-        if (this.isGlassmorphismEnabled()) {
+        if (__webpack_require__.g.kxsClient.isGlassmorphismEnabled) {
             // Glassmorphism progress bar style
             Object.assign(progressBar.style, {
                 height: "4px",
@@ -8732,7 +8738,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.11","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.7.0"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.2.12","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2","stegano.db":"^4.7.0"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11765,7 +11771,11 @@ else if (window.location.pathname === "/") {
     if (backgroundElement)
         backgroundElement.style.backgroundImage = `url("${background_image}")`;
     setFavicon(kxs_logo);
-    const kxsClient = new KxsClient();
+    try {
+        const kxsClient = new KxsClient();
+    }
+    catch (_a) {
+    }
     document.title = "KxsClient";
     const uiStatsLogo = document.querySelector('#ui-stats-logo');
     if (uiStatsLogo && kxs_settings.get("isKxsClientLogoEnable") === true) {
