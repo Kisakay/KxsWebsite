@@ -1,0 +1,58 @@
+==========================================
+        KxsClient - Survev.io Mod Client
+==========================================
+
+Full Name       : KxsClient (Kisakay x Surviv)
+Type            : Modded Client (UserScript) for Survev.io
+Main Author     : Kisakay (Discord: @kisakay)
+License         : MIT
+Language        : TypeScript / JavaScript
+Platform        : Web Browser (via Tampermonkey, Greasemonkey)
+Build System    : Webpack
+GitHub Repo     : https://github.com/Kisakay/KxsClient
+Script Page     : https://greasyfork.org/en/scripts/531396-kxs-client-survev-io-client
+
+==========================================
+               Features
+==========================================
+
+• Discord Rich Presence
+• Fully customizable HUD
+• Healing alerts & status
+• Kill leader stats
+• Win/Loss animations
+• Game recording via webhook
+• Toggleable module system
+• Modern, lightweight UI
+• Fast, optimized, ToS-compliant
+
+==========================================
+              Installation
+==========================================
+
+1. Install Tampermonkey: https://tampermonkey.net/
+2. Visit the script link: https://greasyfork.org/en/scripts/531396-kxs-client-survev-io-client
+3. Click “Install”
+4. Open Surviv.io — mods will activate automatically!
+
+==========================================
+             ⚠️ Legal Notice ⚠️
+==========================================
+
+This project is licensed under MIT.  
+It does **not** modify the original Surviv.io game code.  
+KxsClient respects the official Surviv.io Terms of Service.  
+Use at your own risk.
+
+==========================================
+          Contributors & Thanks
+==========================================
+
+Main Developer:
+  • Kisakay (Discord: kisakay)
+
+Special Thanks:
+  • Surviv.io community
+  • GitHub contributors
+  • Alpha/Beta testers
+  • Open-source mod developers who inspired the project

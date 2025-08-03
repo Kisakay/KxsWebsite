@@ -1,0 +1,16 @@
+
+           >>> KxsClient Contributors Wall <<<
+
+------------------------------------------------------------
+| Name        | Role             | Discord / Contact        |
+|-------------|------------------|--------------------------|
+| Kisakay     | Lead Developer   | kisakay                  |
+| SoyAlguien  | Base Fork Origin | -                        |
+| Testers     | QA & Feedback    | Alpha/Beta Community     |
+| Users       | Bug Reports      | GreasyFork / GitHub      |
+------------------------------------------------------------
+
+💡 Want to contribute? Visit:
+https://github.com/Kisakay/KxsClient
+
+Thanks to everyone supporting the project! ❤️
