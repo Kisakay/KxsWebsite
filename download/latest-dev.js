@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.3.2
+// @version      2.4.0
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -3158,7 +3158,7 @@ class KxsClientSecondaryMenu {
     }
     createHeader() {
         const header = document.createElement("div");
-        // Détection mobile pour styles réduits
+        // Mobile detection for reduced styles
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
         const logoSize = isMobile ? 20 : 30;
         const titleFontSize = isMobile ? 12 : 20;
@@ -3166,6 +3166,9 @@ class KxsClientSecondaryMenu {
         const headerMarginBottom = isMobile ? 8 : 20;
         const closeBtnPadding = isMobile ? 2 : 6;
         const closeBtnFontSize = isMobile ? 12 : 18;
+        const discordBtnPadding = isMobile ? '4px 6px' : '6px 12px';
+        const discordBtnFontSize = isMobile ? 10 : 12;
+        const discordIconSize = isMobile ? 12 : 16;
         header.style.marginBottom = `${headerMarginBottom}px`;
         header.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isMobile ? 7 : 15}px; width: 100%; box-sizing: border-box;">
@@ -3183,7 +3186,25 @@ class KxsClientSecondaryMenu {
                  letter-spacing: 0.5px;
                ">v${this.kxsClient.pkg.version}</span></span>
             </div>
-            <div style="display: flex; gap: ${headerGap}px;">
+            <div style="display: flex; gap: ${headerGap}px; align-items: center;">
+              <button id="discordBtn" style="
+                padding: ${discordBtnPadding};
+                border: none;
+                border-radius: ${isMobile ? '3px' : '4px'};
+                color: white;
+                cursor: pointer;
+                font-size: ${discordBtnFontSize}px;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: ${isMobile ? '3px' : '6px'};
+                transition: background 0.2s;
+              " onmouseover="this.style.background='#4752C4'" onmouseout="this.style.background='#242632'">
+                <svg width="${discordIconSize}" height="${discordIconSize}" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+                ${isMobile ? '' : 'Join Discord'}
+              </button>
               <button style="
                 padding: ${closeBtnPadding}px;
                 background: none;
@@ -3251,10 +3272,20 @@ class KxsClientSecondaryMenu {
         closeButton === null || closeButton === void 0 ? void 0 : closeButton.addEventListener('click', () => {
             this.toggleMenuVisibility();
         });
+        // Discord button event listener
+        const discordButton = header.querySelector('#discordBtn');
+        DesignSystem.applyGlassEffect(discordButton, this.kxsClient.isGlassmorphismEnabled ? 'medium' : 'dark');
+        if (discordButton) {
+            this.blockMousePropagation(discordButton);
+            discordButton.addEventListener('click', () => {
+                // Open Discord invite link in new tab
+                window.open('https://discord.wf/kxsclient', '_blank');
+            });
+        }
         const searchInput = header.querySelector('#kxsSearchInput');
         if (searchInput) {
             this.blockMousePropagation(searchInput, false);
-            // Gestionnaire pour mettre à jour la recherche
+            // Handler to update search
             searchInput.addEventListener('input', (e) => {
                 this.searchTerm = e.target.value.toLowerCase();
                 this.filterOptions();
@@ -3272,16 +3303,16 @@ class KxsClientSecondaryMenu {
                     e.stopPropagation();
                 });
             });
-            // Éviter que la barre de recherche ne reprenne automatiquement le focus
-            // lorsque l'utilisateur interagit avec un autre champ de texte
+            // Prevent search bar from automatically refocusing
+            // when user interacts with another text field
             searchInput.addEventListener('blur', (e) => {
-                // Ne pas reprendre le focus si l'utilisateur clique sur un autre input
+                // Don't refocus if user clicked on another input
                 const newFocusElement = e.relatedTarget;
                 if (newFocusElement && (newFocusElement.tagName === 'INPUT' || newFocusElement.tagName === 'TEXTAREA')) {
-                    // L'utilisateur a cliqué sur un autre champ de texte, ne pas reprendre le focus
+                    // User clicked on another text field, don't refocus
                     return;
                 }
-                // Pour les autres cas, seulement si aucun autre élément n'a le focus (optimized)
+                // For other cases, only if no other element has focus (optimized)
                 requestAnimationFrame(() => {
                     const activeElement = document.activeElement;
                     if (this.isClientMenuVisible &&
@@ -8761,7 +8792,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.3.2","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11716,6 +11747,156 @@ class EasterEgg {
     }
 }
 
+;// ./src/creditpage.html?raw
+const creditpageraw_namespaceObject = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\r\n<head>\r\n\t<meta charset=\"UTF-8\">\r\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n\t<title>KxsClient - Credits</title>\r\n\t<style>\r\n\t\t* {\r\n\t\t\tmargin: 0;\r\n\t\t\tpadding: 0;\r\n\t\t\tbox-sizing: border-box;\r\n\t\t}\r\n\r\n\t\tbody {\r\n\t\t\tfont-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;\r\n\t\t\tbackground: #0d1117;\r\n\t\t\tcolor: #c9d1d9;\r\n\t\t\theight: 100vh;\r\n\t\t\tdisplay: flex;\r\n\t\t\tflex-direction: column;\r\n\t\t}\r\n\r\n\t\t.tabs {\r\n\t\t\tdisplay: flex;\r\n\t\t\tbackground: #161b22;\r\n\t\t\tborder-bottom: 1px solid #21262d;\r\n\t\t}\r\n\r\n\t\t.tab {\r\n\t\t\tpadding: 12px 24px;\r\n\t\t\tcursor: pointer;\r\n\t\t\tbackground: transparent;\r\n\t\t\tborder: none;\r\n\t\t\tcolor: #7d8590;\r\n\t\t\tfont: inherit;\r\n\t\t\ttransition: all 0.15s ease;\r\n\t\t\tborder-bottom: 2px solid transparent;\r\n\t\t}\r\n\r\n\t\t.tab:hover {\r\n\t\t\tcolor: #c9d1d9;\r\n\t\t\tbackground: #21262d;\r\n\t\t}\r\n\r\n\t\t.tab.active {\r\n\t\t\tcolor: #58a6ff;\r\n\t\t\tborder-bottom-color: #58a6ff;\r\n\t\t}\r\n\r\n\t\t.content-area {\r\n\t\t\tflex: 1;\r\n\t\t\toverflow: hidden;\r\n\t\t}\r\n\r\n\t\t.content {\r\n\t\t\theight: 100%;\r\n\t\t\tpadding: 24px;\r\n\t\t\toverflow-y: auto;\r\n\t\t\twhite-space: pre-wrap;\r\n\t\t\tfont-size: 13px;\r\n\t\t\tline-height: 1.6;\r\n\t\t\tdisplay: none;\r\n\t\t}\r\n\r\n\t\t.content.active {\r\n\t\t\tdisplay: block;\r\n\t\t}\r\n\r\n\t\t.loading {\r\n\t\t\tdisplay: flex;\r\n\t\t\tjustify-content: center;\r\n\t\t\talign-items: center;\r\n\t\t\theight: 200px;\r\n\t\t\tcolor: #7d8590;\r\n\t\t\tfont-size: 14px;\r\n\t\t}\r\n\r\n\t\t.error {\r\n\t\t\tcolor: #f85149;\r\n\t\t\ttext-align: center;\r\n\t\t\tpadding: 24px;\r\n\t\t\tfont-size: 14px;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar {\r\n\t\t\twidth: 8px;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar-track {\r\n\t\t\tbackground: #0d1117;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar-thumb {\r\n\t\t\tbackground: #30363d;\r\n\t\t\tborder-radius: 4px;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar-thumb:hover {\r\n\t\t\tbackground: #484f58;\r\n\t\t}\r\n\t</style>\r\n</head>\r\n\r\n<body>\r\n\t<div class=\"tabs\">\r\n\t\t<button class=\"tab active\" onclick=\"switchTab('credits')\">credits</button>\r\n\t\t<button class=\"tab\" onclick=\"switchTab('contributors')\">contributors</button>\r\n\t\t<button class=\"tab\" onclick=\"switchTab('changelogs')\">changelogs</button>\r\n\t</div>\r\n\r\n\t<div class=\"content-area\">\r\n\t\t<div id=\"credits-content\" class=\"content active\">\r\n\t\t\t<div class=\"loading\">Loading credits.txt...</div>\r\n\t\t</div>\r\n\t\t<div id=\"contributors-content\" class=\"content\">\r\n\t\t\t<div class=\"loading\">Loading contributors_wall.txt...</div>\r\n\t\t</div>\r\n\t\t<div id=\"changelogs-content\" class=\"content\">\r\n\t\t\t<div class=\"loading\">Loading changelogs.txt...</div>\r\n\t\t</div>\r\n\t</div>\r\n\r\n\t<script>\r\n\t\tlet loadedTabs = new Set();\r\n\r\n\t\tfunction switchTab(tabName) {\r\n\t\t\t// Update tab states\r\n\t\t\tdocument.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));\r\n\t\t\tdocument.querySelectorAll('.content').forEach(content => content.classList.remove('active'));\r\n\r\n\t\t\t// Activate selected tab\r\n\t\t\tevent.target.classList.add('active');\r\n\t\t\tconst contentElement = document.getElementById(`${tabName}-content`);\r\n\t\t\tcontentElement.classList.add('active');\r\n\r\n\t\t\t// Load content if not already loaded\r\n\t\t\tif (!loadedTabs.has(tabName)) {\r\n\t\t\t\tloadContent(tabName);\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\tasync function loadContent(type) {\r\n\t\t\tconst contentElement = document.getElementById(`${type}-content`);\r\n\t\t\tconst urls = {\r\n\t\t\t\t'credits': 'https://kxs.rip/credits.txt',\r\n\t\t\t\t'contributors': 'https://kxs.rip/contributors_wall.txt',\r\n\t\t\t\t'changelogs': 'https://kxs.rip/changelogs.txt'\r\n\t\t\t};\r\n\r\n\t\t\ttry {\r\n\t\t\t\tconst response = await fetch(urls[type]);\r\n\t\t\t\tif (!response.ok) throw new Error(`Failed to load ${type}`);\r\n\t\t\t\tconst text = await response.text();\r\n\t\t\t\tcontentElement.textContent = text;\r\n\t\t\t\tloadedTabs.add(type);\r\n\t\t\t} catch (error) {\r\n\t\t\t\tcontentElement.innerHTML = `<div class=\"error\">Error loading ${type}: ${error.message}</div>`;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t// Load initial content\r\n\t\tloadContent('credits');\r\n\t</script>\r\n</body>\r\n\r\n</html>";
+;// ./src/UTILS/credits-helper.ts
+// @ts-ignore
+
+// Function to create and show the "Click on me" animation above the version link
+function showClickMeAnimation() {
+    // Get the position of the version link to position the animation above it
+    const startBottomMiddle = document.getElementById("start-bottom-middle");
+    if (!startBottomMiddle)
+        return;
+    const versionLink = startBottomMiddle.getElementsByTagName("a")[0];
+    if (!versionLink)
+        return;
+    // Get the position of the version link
+    const linkRect = versionLink.getBoundingClientRect();
+    // Create the animation container
+    const animationContainer = document.createElement('div');
+    animationContainer.id = 'click-me-animation';
+    animationContainer.style.cssText = `
+        position: fixed;
+        bottom: ${window.innerHeight - linkRect.top}px;
+        left: ${linkRect.left + (linkRect.width / 2)}px;
+        z-index: 10000;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeInBounce 1s ease-out;
+        transform: translateX(-50%);
+    `;
+    // Create the text element
+    const textElement = document.createElement('div');
+    textElement.textContent = 'Click on me';
+    textElement.style.cssText = `
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s infinite;
+        white-space: nowrap;
+    `;
+    // Create the arrow element pointing down to the version link
+    const arrowElement = document.createElement('div');
+    arrowElement.innerHTML = '▼';
+    arrowElement.style.cssText = `
+        color: #fff;
+        font-size: 20px;
+        animation: bounce 1.5s infinite;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        margin-top: -5px;
+    `;
+    // Add CSS animations to the document
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        @keyframes fadeInBounce {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            60% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+       
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-8px);
+            }
+            60% {
+                transform: translateY(-4px);
+            }
+        }
+       
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+       
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+    `;
+    document.head.appendChild(styleElement);
+    // Assemble the animation
+    animationContainer.appendChild(textElement);
+    animationContainer.appendChild(arrowElement);
+    document.body.appendChild(animationContainer);
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+        animationContainer.style.animation = 'fadeOut 0.5s ease-in forwards';
+        setTimeout(() => {
+            if (animationContainer.parentNode) {
+                animationContainer.parentNode.removeChild(animationContainer);
+            }
+            if (styleElement.parentNode) {
+                styleElement.parentNode.removeChild(styleElement);
+            }
+        }, 500);
+    }, 8000);
+    return animationContainer;
+}
+// Function to create and open the credits window
+function openCreditsWindow() {
+    // Use the imported HTML content
+    const htmlContent = creditpageraw_namespaceObject;
+    // Create a blob URL from the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    // Open the window with the blob URL
+    const creditsWindow = window.open(blobUrl, 'KxsCredits', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    if (!creditsWindow) {
+        alert('Please allow popups for this site to view credits.');
+        URL.revokeObjectURL(blobUrl); // Clean up if window couldn't open
+        return;
+    }
+    // Clean up the blob URL after the window loads
+    creditsWindow.addEventListener('load', () => {
+        URL.revokeObjectURL(blobUrl);
+    });
+}
+
+
 ;// ./src/index.ts
 
 
@@ -11759,14 +11940,29 @@ else if (window.location.pathname === "/") {
     if (uiStatsLogo && kxs_settings.get("isKxsClientLogoEnable") === true) {
         uiStatsLogo.style.backgroundImage = `url('${full_logo}')`;
     }
-    const newChangelogUrl = config_namespaceObject.base_url;
     const startBottomMiddle = document.getElementById("start-bottom-middle");
     if (startBottomMiddle) {
         const links = startBottomMiddle.getElementsByTagName("a");
         if (links.length > 0) {
             const firstLink = links[0];
-            firstLink.href = newChangelogUrl;
+            firstLink.removeAttribute('href');
+            firstLink.style.cursor = 'pointer';
             firstLink.textContent = kxsClient.pkg.version;
+            firstLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                openCreditsWindow();
+                // Hide the animation when clicked
+                const animation = document.getElementById('click-me-animation');
+                if (animation) {
+                    animation.style.animation = 'fadeOut 0.3s ease-in forwards';
+                    setTimeout(() => {
+                        if (animation.parentNode) {
+                            animation.parentNode.removeChild(animation);
+                        }
+                    }, 300);
+                }
+            });
+            // Remove additional links
             while (links.length > 1) {
                 links[1].remove();
             }
@@ -11774,6 +11970,9 @@ else if (window.location.pathname === "/") {
     }
     setTimeout(() => {
         loadingScreen.hide();
+        setTimeout(() => {
+            showClickMeAnimation();
+        }, 500);
     }, 1400);
 }
 
