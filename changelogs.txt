@@ -1,0 +1,147 @@
+<@&1356012705919668284>  `2.3.2`
+
+> *Added 185*
+
+* Added 185 website (by <@726559229451829290>)
+* Fix an issue with stegano.db missing in the npm registry
+
+---
+
+<@&1356012705919668284>  `2.3.1`
+
+> *New Right Shift Menu Style*
+
+* We are now using the Linear selection under the right shift menu
+* Some code improvement
+* Add a way to disable the custom background on the main game menu
+
+---
+
+<@&1356012705919668284>  `2.2.14`
+
+> *AutoUpdater fix*
+
+* Instead of using the [**`/getLatestVersion`**](https://network.kxs.rip) route, the URL for getting the latest script version has changed to the KxsNetwork CORS Proxy
+
+---
+
+<@&1356012705919668284>  `2.2.13`
+
+> *Quality of life update*
+
+* Code cleanup
+* Enable chatbox resizing only when menu is open
+* New "CONFIG" tab in the RSHIFT Menu for saving/import KxsClient configuration
+
+---
+
+<@&1356012705919668284>  `2.2.7`
+
+> *Unglassmorphizable update*
+
+* can now disable/enabled the glassmorphism for low-end computer
+
+---
+
+<@&1356012705919668284>  `2.2.6`
+
+> *Fix update*
+
+* Code refactoring
+* fixing the counters size not saved
+
+---
+
+<@&1356012705919668284>  `2.2.5`
+
+> *The blacklist update*
+
+* When got blacklisted
+  * Cannot use / connected to the KxsNetwork
+  * Get notified about the banishement
+  * Cannot use KxsNetwork related mod in RSHIFT Menue
+
+---
+
+<@&1356012705919668284>  `2.2.4`
+
+> *The developer update*
+
+* New Developer Feature: Exchange Key System
+  * Automatically notify your bots when you join a game
+  * Connect external applications to your client
+  * See [Exchange Key documentation](https://github.com/Kisakay/KxsClient/blob/main/src/HELP/exchange_key_help.md) for setup instructions
+
+---
+
+<@&1356012705919668284> `2.2.3`
+
+> *Some minor improvements*
+
+* Chat fixes
+  * The chat can now be moved freely around the screen.
+  * The message limit is now calculated based on the chat box size (the larger the chat box, the more messages you can see at once).
+  * Fixed an issue with pressing Enter and mouse clicks. Now, when pressing Enter to write a message, a mouse click will close the dialog box.
+
+* Code refactoring
+
+* Broadcast message system (see the attachment)
+
+---
+
+<@&1356012705919668284>  `2.2.2`
+
+> *Some quality-of-life improvements*
+
+* Fixing the "Kill leader tracking" module when entering in a new game
+
+---
+
+<@&1356012705919668284>  `2.2.1`
+
+> *New minor updates*
+
+* Glassmorphism update
+
+---
+
+<@&1356012705919668284>  `2.1.25`
+
+> *Some quality-of-life improvements*
+
+* **Focus Mode**: You can now toggle the Focus Mode option off if you don’t want CTRL+F / COMMAND+F to activate it.
+
+---
+
+<@&1356012705919668284> `2.1.23`
+
+>  *Some quality-of-life improvements*
+
+- **Background replacement on loading**: The issue when reloading KxsClient doens't show your custom background are now fixed.
+- **KxsClient Logo** : The mod are now fixed, you can now replace or not the SURVEV.IO logo on a end game session
+
+---
+
+<@&1356012705919668284> `2.1.22`
+
+>  *Some quality-of-life improvements*
+
+- **Focus Mode Improvement**: The shortcut to toggle focus mode has been optimized for each platform. On macOS, use Command+F (⌘+F), and on Windows/Linux, use Ctrl+F. This change resolves conflicts with system shortcuts and provides a more intuitive experience across all platforms.
+
+---
+
+<@&1356012705919668284> `2.1.21`
+
+>  *Some quality-of-life improvements*
+
+- **The FPS, Kills, and Ping counters now have rounded corners when displayed individually. When placed next to each other, their adjacent corners become squared to create a cleaner, unified look.**
+
+---
+
+<@&1356012705919668284> `2.1.19`
+
+> *A few changements, aka QOL*
+
+- **KxsClient Favicon is now working on Chrome**
+- **Removed useless logs in the console**
+
