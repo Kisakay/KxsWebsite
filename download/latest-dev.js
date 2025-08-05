@@ -2988,6 +2988,7 @@ class OnboardingModal {
         this.overlay = null;
         this.isVisible = false;
         felicitation(true, "https://kxs.rip/assets/o_sound.mp3", 2000, "Welcome to KxsClient");
+        localStorage.setItem("on_boarding_complete", "yes");
     }
     // Add event listeners for interactions
     addEventListeners() {
@@ -12048,7 +12049,7 @@ else if (window.location.pathname === "/") {
     }
     ;
     survev_settings.set("language", "en");
-    if (kxs_settings.get("used") === undefined) {
+    if (localStorage.getItem("on_boarding_complete") !== "yes") {
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const onboardingModal = new OnboardingModal();
