@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.4.0
+// @version      2.4.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -861,12 +861,23 @@ class SimplifiedDatabase {
         this.data = {};
         this.fetchDataFromFile();
     }
-    read() { return localStorage.getItem(this.database) || this.data; }
-    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
+    // FIX: Return only the localStorage string, not this.data
+    read() {
+        return localStorage.getItem(this.database);
+    }
+    write() {
+        return localStorage.setItem(this.database, JSON.stringify(this.data));
+    }
+    // FIX: Properly handle localStorage data loading
     fetchDataFromFile() {
         try {
             const content = this.read();
-            this.data = JSON.parse(content);
+            if (content && content !== "null" && content !== "") {
+                this.data = JSON.parse(content);
+            }
+            else {
+                this.data = {};
+            }
         }
         catch (error) {
             this.data = {};
@@ -1677,6 +1688,1354 @@ DesignSystem.layers = {
     tooltip: 30,
     notification: 40,
 };
+
+;// ./src/HUD/MOD/LoadingScreen.ts
+/**
+ * LoadingScreen.ts
+ *
+ * This module provides a loading animation with a logo and a rotating loading circle
+ * that displays during the loading of game resources.
+ */
+
+class LoadingScreen {
+    /**
+     * Creates a new instance of the loading screen
+     * @param logoUrl URL of the Kxs logo to display
+     */
+    constructor(logoUrl) {
+        this.logoUrl = logoUrl;
+        this.container = document.createElement('div');
+        this.initializeStyles();
+        this.createContent();
+    }
+    /**
+     * Initializes CSS styles for the loading screen
+     */
+    initializeStyles() {
+        // Apply glassmorphism effect using DesignSystem
+        DesignSystem.applyGlassEffect(this.container, 'dark', {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: DesignSystem.layers.modal.toString(),
+            transition: `opacity ${DesignSystem.animation.slow} ease-in-out`,
+            animation: 'fadeIn 0.5s ease-in-out',
+            borderRadius: '0'
+        });
+    }
+    /**
+     * Creates the loading screen content (logo and loading circle)
+     */
+    createContent() {
+        // Create container for the logo
+        const logoContainer = document.createElement('div');
+        Object.assign(logoContainer.style, {
+            width: '200px',
+            height: '200px',
+            marginBottom: '20px',
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        });
+        // Create the logo element
+        const logo = document.createElement('img');
+        logo.src = this.logoUrl;
+        Object.assign(logo.style, {
+            width: '150px',
+            height: '150px',
+            objectFit: 'contain',
+            position: 'absolute',
+            zIndex: '2',
+            animation: 'pulse 2s ease-in-out infinite'
+        });
+        // Create the main loading circle
+        const loadingCircle = document.createElement('div');
+        Object.assign(loadingCircle.style, {
+            width: '180px',
+            height: '180px',
+            border: '4px solid transparent',
+            borderTopColor: '#3498db',
+            borderRadius: '50%',
+            animation: 'spin 1.5s linear infinite',
+            position: 'absolute',
+            zIndex: '1'
+        });
+        // Create a second loading circle (rotating in the opposite direction)
+        const loadingCircle2 = document.createElement('div');
+        Object.assign(loadingCircle2.style, {
+            width: '200px',
+            height: '200px',
+            border: '2px solid transparent',
+            borderLeftColor: '#e74c3c',
+            borderRightColor: '#e74c3c',
+            borderRadius: '50%',
+            animation: 'spin-reverse 3s linear infinite',
+            position: 'absolute',
+            zIndex: '0'
+        });
+        // Add animations
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes spin-reverse {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(-360deg); }
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            @keyframes fadeIn {
+                0% { opacity: 0; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+        // Ajout d'un texte de chargement
+        const loadingText = document.createElement('div');
+        loadingText.textContent = 'Loading...';
+        Object.assign(loadingText.style, {
+            color: 'white',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '18px',
+            marginTop: '20px',
+            animation: 'pulse 1.5s ease-in-out infinite'
+        });
+        // Ajout d'un sous-texte
+        const subText = document.createElement('div');
+        subText.textContent = 'Initializing resources...';
+        Object.assign(subText.style, {
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            marginTop: '5px'
+        });
+        // Assemble the elements
+        logoContainer.appendChild(loadingCircle2);
+        logoContainer.appendChild(loadingCircle);
+        logoContainer.appendChild(logo);
+        this.container.appendChild(logoContainer);
+        this.container.appendChild(loadingText);
+        this.container.appendChild(subText);
+    }
+    /**
+     * Shows the loading screen
+     */
+    show() {
+        document.body.appendChild(this.container);
+    }
+    /**
+     * Hides the loading screen with a fade transition
+     */
+    hide() {
+        this.container.style.opacity = '0';
+        // Optimized: use event listener for transition end instead of setTimeout
+        this.container.addEventListener('transitionend', () => {
+            if (this.container.parentNode) {
+                document.body.removeChild(this.container);
+            }
+        }, { once: true });
+    }
+}
+
+;// ./src/HUD/ServerSelector.ts
+class ServerSelector {
+    constructor(servers, onServerSelect) {
+        this.isActive = false;
+        this.serverContainer = null;
+        this.serverCards = [];
+        this.selectedIndex = 0;
+        this.originalBodyContent = '';
+        this.animation = null;
+        this.servers = [];
+        this.onServerSelect = null;
+        this.servers = this.processServerUrls(servers);
+        this.onServerSelect = onServerSelect || null;
+    }
+    /**
+     * Process server URLs from match patterns to display-friendly names
+     */
+    processServerUrls(servers) {
+        return servers.map(server => {
+            // Remove wildcards and protocol
+            return server.replace(/^\*:\/\//, '')
+                // Remove trailing wildcards
+                .replace(/\/\*$/, '')
+                // Handle special case for IP addresses
+                .replace(/\/+$/, '');
+        });
+    }
+    /**
+     * Show the server selection interface
+     */
+    show() {
+        // If already active, close first to reset properly
+        if (this.isActive) {
+            this.close();
+        }
+        this.isActive = true;
+        // Store original content if not already stored
+        if (!this.originalBodyContent) {
+            this.originalBodyContent = document.body.innerHTML;
+        }
+        // Create overlay
+        this.createInterface();
+        // Start animations
+        this.startAnimations();
+        // Add keyboard navigation
+        this.setupKeyboardNavigation();
+    }
+    /**
+     * Create the server selection interface
+     */
+    createInterface() {
+        // Create overlay container
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        overlay.style.display = 'flex';
+        overlay.style.flexDirection = 'column';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.zIndex = '10000';
+        overlay.style.perspective = '1000px';
+        overlay.style.fontFamily = 'Arial, sans-serif';
+        // Create header
+        const header = document.createElement('h1');
+        header.textContent = 'Select Server';
+        header.style.color = '#fff';
+        header.style.marginBottom = '40px';
+        header.style.fontSize = '36px';
+        header.style.textShadow = '0 0 10px rgba(255,0,0,0.8)';
+        overlay.appendChild(header);
+        // Create server container
+        this.serverContainer = document.createElement('div');
+        this.serverContainer.style.position = 'relative';
+        this.serverContainer.style.width = '80%';
+        this.serverContainer.style.height = '300px';
+        this.serverContainer.style.display = 'flex';
+        this.serverContainer.style.justifyContent = 'center';
+        this.serverContainer.style.alignItems = 'center';
+        this.serverContainer.style.transformStyle = 'preserve-3d';
+        overlay.appendChild(this.serverContainer);
+        // Create instructions
+        const instructions = document.createElement('div');
+        instructions.style.position = 'absolute';
+        instructions.style.bottom = '20px';
+        instructions.style.color = '#aaa';
+        instructions.style.fontSize = '16px';
+        instructions.innerHTML = 'Use <strong>←/→</strong> arrows to navigate | <strong>Enter</strong> to select | <strong>Esc</strong> to close';
+        overlay.appendChild(instructions);
+        // Create server cards
+        this.createServerCards();
+        // Add the overlay to the body
+        document.body.appendChild(overlay);
+    }
+    /**
+     * Create 3D rotating cards for each server
+     */
+    createServerCards() {
+        if (!this.serverContainer)
+            return;
+        const totalServers = this.servers.length;
+        const radius = 300; // Radius of the circle
+        const cardWidth = 200;
+        const cardHeight = 120;
+        this.servers.forEach((server, index) => {
+            const card = document.createElement('div');
+            card.className = 'server-card';
+            card.style.position = 'absolute';
+            card.style.width = `${cardWidth}px`;
+            card.style.height = `${cardHeight}px`;
+            card.style.backgroundColor = index === this.selectedIndex ? '#500' : '#333';
+            card.style.color = '#fff';
+            card.style.borderRadius = '10px';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.justifyContent = 'center';
+            card.style.alignItems = 'center';
+            card.style.cursor = 'pointer';
+            card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
+            card.style.transition = 'background-color 0.3s ease';
+            card.style.padding = '15px';
+            card.style.backfaceVisibility = 'hidden';
+            // Create server name
+            const serverName = document.createElement('h2');
+            serverName.textContent = server;
+            serverName.style.margin = '0 0 10px 0';
+            serverName.style.fontSize = '20px';
+            card.appendChild(serverName);
+            // Add status indicator
+            const status = document.createElement('div');
+            status.style.width = '10px';
+            status.style.height = '10px';
+            status.style.borderRadius = '50%';
+            status.style.backgroundColor = '#0f0'; // Green for online
+            status.style.marginTop = '10px';
+            card.appendChild(status);
+            // Add click event
+            card.addEventListener('click', () => {
+                this.selectedIndex = index;
+                this.updateCardPositions();
+                this.selectServer();
+            });
+            this.serverCards.push(card);
+            if (this.serverContainer) {
+                this.serverContainer.appendChild(card);
+            }
+        });
+        // Position the cards in a circle
+        this.updateCardPositions();
+    }
+    /**
+     * Update the positions of all server cards in a 3D circle
+     */
+    updateCardPositions() {
+        const totalServers = this.servers.length;
+        const radius = Math.max(300, totalServers * 40); // Adjust radius based on number of servers
+        this.serverCards.forEach((card, index) => {
+            // Calculate position on the circle
+            const theta = ((index - this.selectedIndex) / totalServers) * 2 * Math.PI;
+            const x = radius * Math.sin(theta);
+            const z = radius * Math.cos(theta) - radius;
+            // Update card style
+            card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-theta * 180 / Math.PI}deg)`;
+            card.style.zIndex = z < 0 ? '-1' : '1';
+            card.style.opacity = (1 - Math.abs(index - this.selectedIndex) / totalServers).toString();
+            card.style.backgroundColor = index === this.selectedIndex ? '#500' : '#333';
+            // Add glow effect to selected card
+            if (index === this.selectedIndex) {
+                card.style.boxShadow = '0 0 20px rgba(255,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5)';
+            }
+            else {
+                card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
+            }
+        });
+    }
+    /**
+     * Start animations for the 3D carousel
+     */
+    startAnimations() {
+        // Subtle continuous movement for more 3D effect using requestAnimationFrame
+        let angle = 0;
+        let animationId;
+        const animate = () => {
+            angle += 0.005;
+            if (this.serverContainer) {
+                this.serverContainer.style.transform = `rotateY(${Math.sin(angle) * 5}deg) rotateX(${Math.cos(angle) * 3}deg)`;
+            }
+            animationId = requestAnimationFrame(animate);
+        };
+        // Store the animation ID for cleanup
+        this.animation = animationId = requestAnimationFrame(animate);
+    }
+    /**
+     * Set up keyboard navigation
+     */
+    setupKeyboardNavigation() {
+        const keyHandler = (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    this.navigate(-1);
+                    break;
+                case 'ArrowRight':
+                    this.navigate(1);
+                    break;
+                case 'Enter':
+                    this.selectServer();
+                    break;
+                case 'Escape':
+                    this.close();
+                    break;
+            }
+        };
+        document.addEventListener('keydown', keyHandler);
+        // Store the handler reference so it can be removed when the selector is closed
+        this._keyHandler = keyHandler;
+    }
+    /**
+     * Navigate between servers
+     */
+    navigate(direction) {
+        const totalServers = this.servers.length;
+        this.selectedIndex = (this.selectedIndex + direction + totalServers) % totalServers;
+        this.updateCardPositions();
+    }
+    /**
+     * Select current server and close the selector
+     */
+    selectServer() {
+        const selectedServer = this.servers[this.selectedIndex];
+        if (this.onServerSelect && selectedServer) {
+            this.onServerSelect(selectedServer);
+        }
+        this.close();
+    }
+    /**
+     * Close the server selector
+     */
+    close() {
+        var _a;
+        if (!this.isActive)
+            return;
+        this.isActive = false;
+        // Stop animations
+        if (this.animation !== null) {
+            clearInterval(this.animation);
+            this.animation = null;
+        }
+        // Remove keyboard event listener
+        if (this._keyHandler) {
+            document.removeEventListener('keydown', this._keyHandler);
+            this._keyHandler = null;
+        }
+        // Remove the overlay
+        document.querySelectorAll('div.server-card').forEach(el => el.remove());
+        if (this.serverContainer && this.serverContainer.parentNode) {
+            const parent = this.serverContainer.parentNode;
+            if (parent && parent instanceof HTMLElement) {
+                parent.remove();
+            }
+            else if (parent) {
+                // Fallback if parentNode exists but isn't an HTMLElement
+                const parentEl = parent;
+                (_a = parentEl.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(parentEl);
+            }
+        }
+        // Reset state for next use
+        this.serverContainer = null;
+        this.serverCards = [];
+        this.selectedIndex = 0;
+    }
+}
+
+;// ./src/HUD/EasterEgg.ts
+
+
+class EasterEgg {
+    constructor() {
+        this.originalStyles = {};
+        this.zelda3Sound = null;
+        this.periodSound = null;
+        this.ambientSound = null;
+        this.buttonClickSound = null;
+        this.arrowKeySound = null;
+        this.enterKeySound = null;
+        this.closeMenuSound = null;
+        this.textElement = null;
+        this.fireElements = [];
+        this.pillars = [];
+        this.isActive = false;
+        this.isInitialized = false;
+        this.overlayElement = null;
+        this.animationFrameId = null;
+        this.originalBodyContent = '';
+        this.serverSelector = null;
+        this.serverButton = null;
+        this.messageChangeInterval = null;
+        this.originalPageTitle = '';
+        this.messages = [
+            "You're already in",
+            "You didnt have found Kxs, is kxs who found you",
+            "The prophecies are true",
+            "Kxs is the chosen one",
+            "Kxs is the one who will save you",
+            "I am Kxs, the one who will save you"
+        ];
+        this.globalEventHandlersInitialized = false;
+        this.init();
+    }
+    init() {
+        // Save original page title
+        this.originalPageTitle = document.title;
+        // Check if we're on the target website
+        if (window.location.hostname === 'kxs.rip' || window.location.hostname === 'www.kxs.rip') {
+            // Initialize sounds
+            this.zelda3Sound = new Audio('https://kxs.rip/assets/message.mp3'); // Replace with actual Zelda sound
+            this.periodSound = new Audio('https://kxs.rip/assets/message-finish.mp3'); // Sound for the final period
+            this.ambientSound = new Audio('https://kxs.rip/assets/hell_ambiance.m4a'); // Replace with actual ambient URL
+            this.buttonClickSound = new Audio('https://kxs.rip/assets/enter.mp3'); // Button click sound
+            this.arrowKeySound = new Audio('https://kxs.rip/assets/arrow.mp3'); // Arrow key sound
+            this.enterKeySound = new Audio('https://kxs.rip/assets/enter.mp3'); // Enter key sound
+            this.closeMenuSound = new Audio('https://kxs.rip/assets/close.mp3'); // Close menu sound
+            if (this.ambientSound) {
+                this.ambientSound.loop = true;
+            }
+            // Create the initial overlay with Click prompt instead of immediately applying Easter egg
+            this.createInitialOverlay();
+            // Initialize global event handlers for interaction sounds
+            this.initGlobalEventHandlers();
+        }
+    }
+    /**
+     * Creates the initial blur overlay with Click text
+     */
+    createInitialOverlay() {
+        // Store original body content to restore it later if needed
+        this.originalBodyContent = document.body.innerHTML;
+        // Save original styles
+        this.saveOriginalStyles();
+        // Create the overlay
+        this.overlayElement = document.createElement('div');
+        const overlay = this.overlayElement;
+        // Set full screen styles
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        overlay.style.backdropFilter = 'blur(10px)';
+        overlay.style['-webkit-backdrop-filter'] = 'blur(10px)';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.cursor = 'pointer';
+        overlay.style.zIndex = '9999';
+        overlay.style.transition = 'opacity 0.5s ease';
+        // Create the Click text
+        const clickText = document.createElement('div');
+        clickText.textContent = 'Click';
+        clickText.style.color = '#fff';
+        clickText.style.fontSize = '3rem';
+        clickText.style.fontWeight = 'bold';
+        clickText.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.7)';
+        clickText.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
+        clickText.style.letterSpacing = '5px';
+        // Add font for the text
+        const fontLink = document.createElement('link');
+        fontLink.rel = 'stylesheet';
+        fontLink.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap';
+        document.head.appendChild(fontLink);
+        // Add click event to start the Easter egg
+        overlay.addEventListener('click', () => {
+            this.removeOverlay();
+            this.applyEasterEgg();
+        });
+        // Add the text to the overlay
+        overlay.appendChild(clickText);
+        // Add the overlay to the body
+        document.body.appendChild(overlay);
+    }
+    /**
+     * Removes the initial overlay
+     */
+    removeOverlay() {
+        if (this.overlayElement && this.overlayElement.parentNode) {
+            // Fade out
+            this.overlayElement.style.opacity = '0';
+            // Remove after transition (optimized)
+            this.overlayElement.addEventListener('transitionend', () => {
+                if (this.overlayElement && this.overlayElement.parentNode) {
+                    this.overlayElement.parentNode.removeChild(this.overlayElement);
+                    this.overlayElement = null;
+                }
+            }, { once: true });
+        }
+    }
+    /**
+     * Initialize global event handlers for sounds
+     */
+    initGlobalEventHandlers() {
+        if (this.globalEventHandlersInitialized)
+            return;
+        this.globalEventHandlersInitialized = true;
+        // Play sound on button clicks
+        document.addEventListener('click', (e) => {
+            if (e.target instanceof HTMLButtonElement ||
+                e.target instanceof HTMLAnchorElement ||
+                (e.target instanceof HTMLElement && e.target.role === 'button')) {
+                this.playButtonSound();
+            }
+        });
+        // Play sound on arrow keys and enter key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                this.playArrowKeySound();
+            }
+            else if (e.key === 'Enter') {
+                this.playEnterKeySound();
+            }
+        });
+    }
+    applyEasterEgg() {
+        if (this.isActive)
+            return;
+        this.isActive = true;
+        this.isInitialized = true;
+        // Transform the website
+        this.transformWebsite();
+        // Start animations
+        this.startAnimations();
+        // Play ambient sound
+        this.playAmbientSound();
+        // Display the message with sound effect (optimized)
+        setTimeout(() => {
+            this.displayMessage();
+            // Add server selector button after the message is displayed
+            this.addServerSelectorButton();
+        }, 2000);
+    }
+    saveOriginalStyles() {
+        this.originalStyles = {
+            bodyBackground: document.body.style.background,
+            bodyColor: document.body.style.color,
+            bodyOverflow: document.body.style.overflow
+        };
+    }
+    transformWebsite() {
+        // Clear the existing content
+        document.body.innerHTML = '';
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
+        document.body.style.overflow = 'hidden';
+        document.body.style.backgroundColor = '#000';
+        document.body.style.color = '#fff';
+        document.body.style.fontFamily = '"Times New Roman", serif';
+        document.body.style.height = '100vh';
+        document.body.style.display = 'flex';
+        document.body.style.flexDirection = 'column';
+        document.body.style.justifyContent = 'center';
+        document.body.style.alignItems = 'center';
+        document.body.style.perspective = '1000px';
+        // Create a temple background
+        const temple = document.createElement('div');
+        temple.style.position = 'absolute';
+        temple.style.top = '0';
+        temple.style.left = '0';
+        temple.style.width = '100%';
+        temple.style.height = '100%';
+        temple.style.background = 'linear-gradient(to bottom, #000, #300)';
+        temple.style.zIndex = '-2';
+        document.body.appendChild(temple);
+        // Create pillars
+        for (let i = 0; i < 6; i++) {
+            const pillar = document.createElement('div');
+            pillar.style.position = 'absolute';
+            pillar.style.width = '80px';
+            pillar.style.height = '100%';
+            pillar.style.background = 'linear-gradient(to bottom, #222, #111)';
+            pillar.style.transform = `rotateY(${i * 60}deg) translateZ(400px)`;
+            pillar.style.boxShadow = 'inset 0 0 20px #500';
+            pillar.style.transition = 'transform 0.5s ease-in-out';
+            this.pillars.push(pillar);
+            document.body.appendChild(pillar);
+        }
+        // Create floor
+        const floor = document.createElement('div');
+        floor.style.position = 'absolute';
+        floor.style.bottom = '0';
+        floor.style.width = '100%';
+        floor.style.height = '40%';
+        floor.style.background = 'radial-gradient(circle, #300, #100)';
+        floor.style.zIndex = '-1';
+        document.body.appendChild(floor);
+        // Create text container for the message
+        this.textElement = document.createElement('div');
+        this.textElement.style.position = 'relative';
+        this.textElement.style.fontSize = '3.5em';
+        this.textElement.style.fontWeight = 'bold';
+        this.textElement.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
+        this.textElement.style.color = '#f00';
+        this.textElement.style.textShadow = '0 0 10px #f00, 0 0 20px #f00, 0 0 30px #900';
+        this.textElement.style.letterSpacing = '2px';
+        this.textElement.style.opacity = '0';
+        this.textElement.style.transition = 'opacity 2s';
+        // Add a fancy font from Google Fonts
+        const fontLink = document.createElement('link');
+        fontLink.rel = 'stylesheet';
+        fontLink.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap';
+        document.head.appendChild(fontLink);
+        document.body.appendChild(this.textElement);
+        // Create fire elements as 3D rotating rectangles
+        for (let i = 0; i < 20; i++) {
+            const fire = document.createElement('div');
+            fire.style.position = 'absolute';
+            fire.style.width = `${Math.random() * 40 + 20}px`;
+            fire.style.height = `${Math.random() * 60 + 40}px`;
+            fire.style.background = 'radial-gradient(circle, #f50, #900, transparent)';
+            fire.style.borderRadius = '10%';
+            fire.style.filter = 'blur(3px)';
+            fire.style.opacity = `${Math.random() * 0.5 + 0.5}`;
+            const randomX = Math.random() * 100;
+            fire.style.left = `${randomX}%`;
+            fire.style.bottom = '0';
+            fire.style.zIndex = '-1';
+            fire.style.transformStyle = 'preserve-3d';
+            fire.style.perspective = '1000px';
+            fire.dataset.velocityY = `${Math.random() * 2 + 1}`;
+            fire.dataset.posX = randomX.toString();
+            fire.dataset.posY = '0';
+            fire.dataset.rotateX = `${Math.random() * 4 - 2}`; // Random rotation speed X
+            fire.dataset.rotateY = `${Math.random() * 4 - 2}`; // Random rotation speed Y
+            fire.dataset.rotateZ = `${Math.random() * 4 - 2}`; // Random rotation speed Z
+            fire.dataset.rotationX = '0';
+            fire.dataset.rotationY = '0';
+            fire.dataset.rotationZ = '0';
+            this.fireElements.push(fire);
+            document.body.appendChild(fire);
+        }
+    }
+    startAnimations() {
+        // Animate fire and pillars
+        this.animateFireElements();
+        this.animatePillars();
+    }
+    animateFireElements() {
+        if (!this.isActive)
+            return;
+        this.fireElements.forEach(fire => {
+            let posY = parseFloat(fire.dataset.posY || '0');
+            const velocityY = parseFloat(fire.dataset.velocityY || '1');
+            // Update position
+            posY += velocityY;
+            fire.dataset.posY = posY.toString();
+            // Update rotation
+            let rotX = parseFloat(fire.dataset.rotationX || '0');
+            let rotY = parseFloat(fire.dataset.rotationY || '0');
+            let rotZ = parseFloat(fire.dataset.rotationZ || '0');
+            rotX += parseFloat(fire.dataset.rotateX || '0');
+            rotY += parseFloat(fire.dataset.rotateY || '0');
+            rotZ += parseFloat(fire.dataset.rotateZ || '0');
+            fire.dataset.rotationX = rotX.toString();
+            fire.dataset.rotationY = rotY.toString();
+            fire.dataset.rotationZ = rotZ.toString();
+            // Apply transform
+            fire.style.transform = `translateY(${-posY}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+            // Reset fire when it goes off screen
+            if (posY > 100) {
+                posY = 0;
+                fire.dataset.posY = '0';
+                fire.style.opacity = `${Math.random() * 0.5 + 0.5}`;
+                fire.style.width = `${Math.random() * 40 + 20}px`;
+                fire.style.height = `${Math.random() * 60 + 40}px`;
+                const randomX = Math.random() * 100;
+                fire.style.left = `${randomX}%`;
+                fire.dataset.posX = randomX.toString();
+                // Reset rotation speeds
+                fire.dataset.rotateX = `${Math.random() * 4 - 2}`;
+                fire.dataset.rotateY = `${Math.random() * 4 - 2}`;
+                fire.dataset.rotateZ = `${Math.random() * 4 - 2}`;
+            }
+            fire.style.opacity = `${Math.max(0, 1 - posY / 100)}`;
+        });
+        this.animationFrameId = requestAnimationFrame(() => this.animateFireElements());
+    }
+    animatePillars() {
+        if (!this.isActive)
+            return;
+        // Create a slow rotation effect for the pillars using requestAnimationFrame
+        let angle = 0;
+        let lastTime = 0;
+        const animate = (currentTime) => {
+            if (!this.isActive)
+                return;
+            // Throttle to ~10fps instead of 60fps for this slow animation
+            if (currentTime - lastTime >= 100) {
+                angle += 0.5;
+                this.pillars.forEach((pillar, index) => {
+                    pillar.style.transform = `rotateY(${index * 60 + angle}deg) translateZ(400px)`;
+                });
+                lastTime = currentTime;
+            }
+            requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    }
+    playAmbientSound() {
+        // Play ambient sound
+        if (this.ambientSound) {
+            this.ambientSound.volume = 0.3;
+            this.ambientSound.play().catch(err => { });
+        }
+    }
+    /**
+     * Temporarily reduce ambient sound volume to allow other sounds to be heard better
+     */
+    lowerAmbientVolume() {
+        if (this.ambientSound) {
+            // Store current volume if we need it
+            const originalVolume = this.ambientSound.volume;
+            // Lower volume
+            this.ambientSound.volume = 0.1; // Lower to 1/3 of original volume
+            // Restore volume after a delay
+            setTimeout(() => {
+                if (this.ambientSound) {
+                    this.ambientSound.volume = 0.3; // Restore to original volume
+                }
+            }, 500); // Half second delay
+        }
+    }
+    /**
+     * Play button click sound
+     */
+    playButtonSound() {
+        if (this.buttonClickSound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.buttonClickSound.currentTime = 0;
+            this.buttonClickSound.volume = 0.3;
+            this.buttonClickSound.play().catch(err => { });
+        }
+    }
+    /**
+     * Play arrow key sound
+     */
+    playArrowKeySound() {
+        if (this.arrowKeySound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.arrowKeySound.currentTime = 0;
+            this.arrowKeySound.volume = 0.3;
+            this.arrowKeySound.play().catch(err => { });
+        }
+    }
+    /**
+     * Play enter key sound
+     */
+    playEnterKeySound() {
+        if (this.enterKeySound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.enterKeySound.currentTime = 0;
+            this.enterKeySound.volume = 0.3;
+            this.enterKeySound.play().catch(err => { });
+        }
+    }
+    displayMessage() {
+        if (!this.textElement)
+            return;
+        // Set the message text and start with the first message
+        this.typeMessage(this.messages[0]);
+        // Set up message changing at random intervals
+        this.setupMessageChanging();
+    }
+    /**
+     * Type out a message with the typewriter effect
+     */
+    typeMessage(message) {
+        if (!this.textElement)
+            return;
+        // Clear current text and ensure visibility
+        this.textElement.textContent = '';
+        this.textElement.style.opacity = '1';
+        // Update page title with message
+        document.title = message;
+        // Calculate typing speed based on message length
+        // Longer messages type faster (inversely proportional)
+        const baseSpeed = 300; // Base speed in ms
+        const minSpeed = 40; // Minimum speed for very long messages
+        const typeSpeed = Math.max(minSpeed, baseSpeed - (message.length * 5));
+        // Type writer effect with Zelda sound
+        let i = 0;
+        const typeInterval = setInterval(() => {
+            if (i < message.length && this.textElement) {
+                // Check if we're at the last character and it's not already a period
+                const isLastChar = i === message.length - 1;
+                const shouldAddPeriod = isLastChar && message.charAt(i) !== '.';
+                // Play the appropriate sound
+                if (isLastChar && this.periodSound) {
+                    // Play special sound for the last character
+                    this.periodSound.currentTime = 0;
+                    this.periodSound.volume = 0.3;
+                    this.periodSound.play().catch(err => { });
+                }
+                else if (this.zelda3Sound) {
+                    // Play regular typing sound
+                    this.zelda3Sound.currentTime = 0;
+                    this.zelda3Sound.volume = 0.2;
+                    this.zelda3Sound.play().catch(err => { });
+                }
+                // Add character to text element
+                this.textElement.textContent += message.charAt(i);
+                // Update page title in real-time with the current text
+                document.title = this.textElement.textContent || message;
+                // If last character and we should add a period, do it with a pause (optimized)
+                if (shouldAddPeriod) {
+                    setTimeout(() => {
+                        if (this.textElement && this.periodSound) {
+                            this.periodSound.currentTime = 0;
+                            this.periodSound.volume = 0.4;
+                            this.periodSound.play().catch(err => { });
+                            this.textElement.textContent += '.';
+                            // Update title with the final period
+                            document.title = this.textElement.textContent || (message + '.');
+                        }
+                    }, 400);
+                }
+                i++;
+            }
+            else {
+                clearInterval(typeInterval);
+            }
+        }, typeSpeed); // Dynamic typing speed based on message length
+    }
+    /**
+     * Setup changing messages at random intervals
+     */
+    setupMessageChanging() {
+        // Function to change to a random message
+        const changeMessage = () => {
+            // Get a random message that's different from the current one
+            if (!this.textElement)
+                return;
+            const currentMessage = this.textElement.textContent || '';
+            let newMessage = currentMessage;
+            // Make sure we pick a different message
+            while (newMessage === currentMessage) {
+                const randomIndex = Math.floor(Math.random() * this.messages.length);
+                newMessage = this.messages[randomIndex];
+            }
+            // Type the new message
+            this.typeMessage(newMessage);
+            // Schedule the next message change
+            this.scheduleNextMessageChange();
+        };
+        // Schedule the first message change
+        this.scheduleNextMessageChange();
+    }
+    /**
+     * Schedule the next message change with a random delay
+     */
+    scheduleNextMessageChange() {
+        // Clear any existing timer
+        if (this.messageChangeInterval !== null) {
+            clearTimeout(this.messageChangeInterval);
+        }
+        // Random delay between 4 and 19 seconds
+        const delay = Math.floor(Math.random() * 15000) + 4000; // 4-19 seconds
+        // Set timeout for next message change
+        this.messageChangeInterval = window.setTimeout(() => {
+            // Get a random message that's different from the current one
+            if (!this.textElement)
+                return;
+            const currentMessage = this.textElement.textContent || '';
+            let newMessage = currentMessage;
+            // Make sure we pick a different message
+            while (newMessage === currentMessage) {
+                const randomIndex = Math.floor(Math.random() * this.messages.length);
+                newMessage = this.messages[randomIndex];
+            }
+            // Type the new message
+            this.typeMessage(newMessage);
+            // Schedule the next message change
+            this.scheduleNextMessageChange();
+        }, delay);
+    }
+    /**
+     * Add a button to open the server selector
+     */
+    addServerSelectorButton() {
+        // Create a button
+        this.serverButton = document.createElement('button');
+        const button = this.serverButton;
+        // Set button text
+        button.textContent = 'SELECT SERVER';
+        // Position and base styling
+        button.style.position = 'absolute';
+        button.style.bottom = '30px';
+        button.style.left = '50%';
+        button.style.transform = 'translateX(-50%)';
+        // Enhanced styling
+        button.style.backgroundColor = 'transparent';
+        button.style.color = '#ff9';
+        button.style.border = '2px solid #900';
+        button.style.padding = '15px 30px';
+        button.style.fontSize = '20px';
+        button.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
+        button.style.fontWeight = 'bold';
+        button.style.letterSpacing = '3px';
+        button.style.borderRadius = '3px';
+        button.style.textTransform = 'uppercase';
+        button.style.boxShadow = '0 0 20px rgba(255, 30, 0, 0.6), inset 0 0 10px rgba(255, 50, 0, 0.4)';
+        button.style.textShadow = '0 0 10px rgba(255, 150, 0, 0.8), 0 0 5px rgba(255, 100, 0, 0.5)';
+        button.style.cursor = 'pointer';
+        button.style.zIndex = '100';
+        button.style.opacity = '0';
+        button.style.transition = 'all 0.5s ease-in-out';
+        button.style.background = 'linear-gradient(to bottom, rgba(80, 0, 0, 0.8), rgba(30, 0, 0, 0.9))';
+        button.style.backdropFilter = 'blur(3px)';
+        // Add enhanced hover effects
+        button.addEventListener('mouseover', () => {
+            button.style.color = '#fff';
+            button.style.borderColor = '#f00';
+            button.style.boxShadow = '0 0 25px rgba(255, 50, 0, 0.8), inset 0 0 15px rgba(255, 100, 0, 0.6)';
+            button.style.textShadow = '0 0 15px rgba(255, 200, 0, 1), 0 0 10px rgba(255, 150, 0, 0.8)';
+            button.style.transform = 'translateX(-50%) scale(1.05)';
+            button.style.background = 'linear-gradient(to bottom, rgba(100, 0, 0, 0.9), rgba(50, 0, 0, 1))';
+        });
+        button.addEventListener('mouseout', () => {
+            button.style.color = '#ff9';
+            button.style.borderColor = '#900';
+            button.style.boxShadow = '0 0 20px rgba(255, 30, 0, 0.6), inset 0 0 10px rgba(255, 50, 0, 0.4)';
+            button.style.textShadow = '0 0 10px rgba(255, 150, 0, 0.8), 0 0 5px rgba(255, 100, 0, 0.5)';
+            button.style.transform = 'translateX(-50%)';
+            button.style.background = 'linear-gradient(to bottom, rgba(80, 0, 0, 0.8), rgba(30, 0, 0, 0.9))';
+        });
+        // Add active/press effect
+        button.addEventListener('mousedown', () => {
+            button.style.transform = 'translateX(-50%) scale(0.98)';
+            button.style.boxShadow = '0 0 10px rgba(255, 30, 0, 0.8), inset 0 0 8px rgba(255, 100, 0, 0.8)';
+        });
+        button.addEventListener('mouseup', () => {
+            button.style.transform = 'translateX(-50%) scale(1.05)';
+            button.style.boxShadow = '0 0 25px rgba(255, 50, 0, 0.8), inset 0 0 15px rgba(255, 100, 0, 0.6)';
+        });
+        // Add click handler to show server selector
+        button.addEventListener('click', () => {
+            this.showServerSelector();
+        });
+        // Add to body
+        document.body.appendChild(button);
+        // Fade in the button after a short delay
+        setTimeout(() => {
+            if (button) {
+                button.style.opacity = '1';
+            }
+        }, 1500);
+    }
+    /**
+     * Initialize and show the server selector
+     */
+    showServerSelector() {
+        // Play enter sound when opening the menu
+        if (this.enterKeySound) {
+            // Lower ambient volume
+            this.lowerAmbientVolume();
+            this.enterKeySound.currentTime = 0;
+            this.enterKeySound.volume = 0.3;
+            this.enterKeySound.play().catch(err => { });
+        }
+        // Function to redirect to a selected server
+        const redirectToServer = (server) => {
+            window.location.href = `https://${server}`;
+        };
+        // Create server selector if it doesn't exist
+        if (!this.serverSelector) {
+            // Create a modified version of redirectToServer that includes the close sound
+            const redirectWithSound = (server) => {
+                // Play close sound first
+                if (this.closeMenuSound) {
+                    // Lower ambient volume
+                    this.lowerAmbientVolume();
+                    this.closeMenuSound.play().catch(err => { });
+                    // Redirect after a short delay to allow the sound to play
+                    setTimeout(() => {
+                        redirectToServer(server);
+                    }, 300);
+                }
+                else {
+                    // If sound failed to load, just redirect
+                    redirectToServer(server);
+                }
+            };
+            // Create server selector with our modified redirect function
+            this.serverSelector = new ServerSelector(config_namespaceObject.match, redirectWithSound);
+            // Handle close events to play the close sound
+            if (this.serverSelector) {
+                const originalClose = this.serverSelector.close.bind(this.serverSelector);
+                this.serverSelector.close = () => {
+                    // Play close sound
+                    if (this.closeMenuSound) {
+                        // Lower ambient volume
+                        this.lowerAmbientVolume();
+                        this.closeMenuSound.currentTime = 0;
+                        this.closeMenuSound.volume = 0.3;
+                        this.closeMenuSound.play().catch(err => { });
+                    }
+                    // Call original close method
+                    originalClose();
+                };
+            }
+        }
+        // Show the selector
+        this.serverSelector.show();
+    }
+    // Call this method if you ever want to restore the original website
+    restoreWebsite() {
+        if (!this.isInitialized)
+            return;
+        this.isActive = false;
+        this.isInitialized = false;
+        // Restore original page title
+        document.title = this.originalPageTitle;
+        // Remove overlay if it exists
+        if (this.overlayElement) {
+            this.removeOverlay();
+        }
+        // Stop animations
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        // Stop message changing
+        if (this.messageChangeInterval !== null) {
+            clearTimeout(this.messageChangeInterval);
+            this.messageChangeInterval = null;
+        }
+        // Stop sounds
+        if (this.zelda3Sound) {
+            this.zelda3Sound.pause();
+        }
+        if (this.periodSound) {
+            this.periodSound.pause();
+        }
+        if (this.ambientSound) {
+            this.ambientSound.pause();
+        }
+        if (this.buttonClickSound) {
+            this.buttonClickSound.pause();
+        }
+        if (this.arrowKeySound) {
+            this.arrowKeySound.pause();
+        }
+        if (this.enterKeySound) {
+            this.enterKeySound.pause();
+        }
+        if (this.closeMenuSound) {
+            this.closeMenuSound.pause();
+        }
+        // Remove server selector if it exists
+        if (this.serverSelector) {
+            this.serverSelector.close();
+            this.serverSelector = null;
+        }
+        // Remove server button if it exists
+        if (this.serverButton && this.serverButton.parentNode) {
+            this.serverButton.parentNode.removeChild(this.serverButton);
+            this.serverButton = null;
+        }
+        // Restore original content
+        document.body.innerHTML = this.originalBodyContent;
+        // Restore original styles
+        document.body.style.background = this.originalStyles.bodyBackground || '';
+        document.body.style.color = this.originalStyles.bodyColor || '';
+        document.body.style.overflow = this.originalStyles.bodyOverflow || '';
+        // Re-initialize global event handlers since they may have been lost
+        this.globalEventHandlersInitialized = false;
+        this.initGlobalEventHandlers();
+    }
+}
+
+;// ./src/assets/onboarding.html?raw
+const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+;// ./src/assets/onboarding-styles.css?raw
+const onboarding_stylesraw_namespaceObject = "            /* Reset and base styles */\r\n            .popup-overlay {\r\n                position: fixed;\r\n                top: 0;\r\n                left: 0;\r\n                width: 100%;\r\n                height: 100%;\r\n                background: rgba(0, 0, 0, 0.8);\r\n                display: flex;\r\n                align-items: center;\r\n                justify-content: center;\r\n                z-index: 1000;\r\n                font-family: Arial, sans-serif;\r\n            }\r\n\r\n            .popup-content {\r\n                background: #2c3e50;\r\n                border-radius: 10px;\r\n                max-width: 90%;\r\n                max-height: 90%;\r\n                overflow-y: auto;\r\n                color: white;\r\n                position: relative;\r\n            }\r\n\r\n            /* Header with Discord button */\r\n            .popup-header {\r\n                display: flex;\r\n                justify-content: space-between;\r\n                align-items: center;\r\n                padding: 20px 30px 0;\r\n                margin-bottom: 20px;\r\n            }\r\n\r\n            .discord-button {\r\n                background: #5865F2;\r\n                color: white;\r\n                border: none;\r\n                padding: 10px 20px;\r\n                border-radius: 5px;\r\n                cursor: pointer;\r\n                font-size: 14px;\r\n                font-weight: bold;\r\n                transition: background-color 0.3s ease;\r\n                display: flex;\r\n                align-items: center;\r\n                gap: 8px;\r\n            }\r\n\r\n            .discord-button:hover {\r\n                background: #4752C4;\r\n            }\r\n\r\n            .discord-icon {\r\n                width: 16px;\r\n                height: 16px;\r\n                fill: currentColor;\r\n            }\r\n\r\n            .popup-content .container {\r\n                max-width: 600px;\r\n                margin: 0 auto;\r\n                padding: 0 20px 40px;\r\n                text-align: center;\r\n            }\r\n\r\n            .popup-content h1 {\r\n                color: #3498db;\r\n                font-size: 2.5em;\r\n                margin-bottom: 10px;\r\n            }\r\n\r\n            .popup-content .subtitle {\r\n                font-size: 1.2em;\r\n                margin-bottom: 40px;\r\n                color: #bdc3c7;\r\n            }\r\n\r\n            .popup-content .steps {\r\n                text-align: left;\r\n                margin: 40px 0;\r\n            }\r\n\r\n            .popup-content .step {\r\n                background: #34495e;\r\n                padding: 20px;\r\n                margin: 15px 0;\r\n                border-radius: 8px;\r\n                border-left: 4px solid #3498db;\r\n                display: flex;\r\n                align-items: center;\r\n                gap: 20px;\r\n            }\r\n\r\n            .popup-content .step-large-image {\r\n                margin: 20px 0;\r\n                text-align: center;\r\n                background: #34495e;\r\n                border-radius: 8px;\r\n                padding: 15px;\r\n                border: 2px solid #3498db;\r\n            }\r\n\r\n            .popup-content .step-large-image img {\r\n                width: 100%;\r\n                max-width: 500px;\r\n                height: auto;\r\n                border-radius: 5px;\r\n                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\r\n            }\r\n\r\n            .popup-content .step-content {\r\n                flex: 1;\r\n            }\r\n\r\n            .popup-content .step h3 {\r\n                margin: 0 0 10px 0;\r\n                color: #3498db;\r\n            }\r\n\r\n            .popup-content .step p {\r\n                margin: 0;\r\n                line-height: 1.5;\r\n            }\r\n\r\n            .popup-content .play-button {\r\n                background: #e74c3c;\r\n                color: white;\r\n                border: none;\r\n                padding: 15px 30px;\r\n                font-size: 1.2em;\r\n                border-radius: 5px;\r\n                cursor: pointer;\r\n                margin-top: 30px;\r\n                transition: background-color 0.3s ease;\r\n            }\r\n\r\n            .popup-content .play-button:hover {\r\n                background: #c0392b;\r\n            }\r\n\r\n            @media (max-width: 768px) {\r\n                .popup-header {\r\n                    flex-direction: column;\r\n                    gap: 15px;\r\n                    align-items: stretch;\r\n                }\r\n\r\n                .discord-button {\r\n                    justify-content: center;\r\n                }\r\n\r\n                .popup-content h1 {\r\n                    font-size: 2em;\r\n                }\r\n\r\n                .popup-content .step {\r\n                    flex-direction: column;\r\n                    text-align: center;\r\n                }\r\n            }";
+;// ./src/FUNC/Logger.ts
+class Logger {
+    getHeader(method) {
+        return "[" + "KxsClient" + " - " + method + "]";
+    }
+    展示(...args) {
+        console.log(...args);
+    }
+    ;
+    log(...args) {
+        // Convert args to string and join them
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        this.展示(this.getHeader("LOG"), message);
+    }
+    warn(...args) {
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        this.展示(this.getHeader("WARN"), message);
+    }
+    error(...args) {
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        this.展示(this.getHeader("ERROR"), message);
+    }
+}
+
+
+;// ./src/FUNC/Felicitations.ts
+
+function felicitation(enable, url_string, time = 5000, text) {
+    const goldText = document.createElement("div");
+    goldText.textContent = text;
+    goldText.style.position = "fixed";
+    goldText.style.top = "50%";
+    goldText.style.left = "50%";
+    goldText.style.transform = "translate(-50%, -50%)";
+    goldText.style.fontSize = "80px";
+    goldText.style.color = "gold";
+    goldText.style.textShadow = "2px 2px 4px rgba(0,0,0,0.3)";
+    goldText.style.zIndex = "10000";
+    document.body.appendChild(goldText);
+    function createConfetti() {
+        const colors = [
+            "#ff0000",
+            "#00ff00",
+            "#0000ff",
+            "#ffff00",
+            "#ff00ff",
+            "#00ffff",
+            "gold",
+        ];
+        const confetti = document.createElement("div");
+        confetti.style.position = "fixed";
+        confetti.style.width = Math.random() * 10 + 5 + "px";
+        confetti.style.height = Math.random() * 10 + 5 + "px";
+        confetti.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = "50%";
+        confetti.style.zIndex = "9999";
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.top = "-20px";
+        document.body.appendChild(confetti);
+        let posY = -20;
+        let posX = parseFloat(confetti.style.left);
+        let rotation = 0;
+        let speedY = Math.random() * 2 + 1;
+        let speedX = Math.random() * 2 - 1;
+        function fall() {
+            posY += speedY;
+            posX += speedX;
+            rotation += 5;
+            confetti.style.top = posY + "px";
+            confetti.style.left = posX + "vw";
+            confetti.style.transform = `rotate(${rotation}deg)`;
+            if (posY < window.innerHeight) {
+                requestAnimationFrame(fall);
+            }
+            else {
+                confetti.remove();
+            }
+        }
+        fall();
+    }
+    const confettiInterval = setInterval(() => {
+        for (let i = 0; i < 5; i++) {
+            createConfetti();
+        }
+    }, 100);
+    if (enable) {
+        const audio = new Audio(url_string);
+        audio.play().catch((err) => new Logger().error("Erreur lecture:", err));
+    }
+    setTimeout(() => {
+        clearInterval(confettiInterval);
+        goldText.style.transition = "opacity 1s";
+        goldText.style.opacity = "0";
+        setTimeout(() => goldText.remove(), 1000);
+    }, time);
+}
+
+;// ./src/FUNC/Onboarding.ts
+// FUNC/Onboarding.ts
+// @ts-ignore
+
+// @ts-ignore
+
+
+class OnboardingModal {
+    constructor() {
+        this.overlay = null;
+        this.isVisible = false;
+    }
+    // Inject CSS styles
+    injectStyles() {
+        const styleId = 'onboarding-styles';
+        // Check if styles already exist
+        if (document.getElementById(styleId)) {
+            return;
+        }
+        const styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        styleElement.textContent = onboarding_stylesraw_namespaceObject;
+        document.head.appendChild(styleElement);
+    }
+    // Show the onboarding modal
+    show() {
+        if (this.isVisible) {
+            return;
+        }
+        // Inject CSS styles
+        this.injectStyles();
+        // Create overlay element
+        this.overlay = document.createElement('div');
+        this.overlay.innerHTML = onboardingraw_namespaceObject;
+        // Get the actual overlay from the created HTML
+        const overlayElement = this.overlay.firstElementChild;
+        // Add to document body
+        document.body.appendChild(overlayElement);
+        // Store reference to the overlay
+        this.overlay = overlayElement;
+        this.isVisible = true;
+        // Add event listeners
+        this.addEventListeners();
+    }
+    // Hide the onboarding modal
+    hide() {
+        if (!this.isVisible || !this.overlay) {
+            return;
+        }
+        // Remove overlay from DOM
+        this.overlay.remove();
+        this.overlay = null;
+        this.isVisible = false;
+        felicitation(true, "https://kxs.rip/assets/o_sound.mp3", 2000, "Welcome to KxsClient");
+    }
+    // Add event listeners for interactions
+    addEventListeners() {
+        if (!this.overlay)
+            return;
+        // Play button click handler
+        const playButton = this.overlay.querySelector('#play-now-btn');
+        if (playButton) {
+            playButton.addEventListener('click', () => {
+                this.onPlayButtonClick();
+            });
+        }
+        // Discord button click handler
+        const discordButton = this.overlay.querySelector('#discord-btn');
+        if (discordButton) {
+            discordButton.addEventListener('click', () => {
+                this.onDiscordButtonClick();
+            });
+        }
+        // Click outside to close (optional)
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this.hide();
+            }
+        });
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isVisible) {
+                this.hide();
+            }
+        });
+    }
+    // Handle play button click
+    onPlayButtonClick() {
+        // Close the modal
+        this.hide();
+    }
+    // Handle Discord button click
+    onDiscordButtonClick() {
+        // Replace with your actual Discord invite link
+        window.open('https://discord.wf/kxsclient', '_blank');
+    }
+    // Check if modal is currently visible
+    isOpen() {
+        return this.isVisible;
+    }
+}
+/* harmony default export */ const Onboarding = ((/* unused pure expression or super */ null && (OnboardingModal)));
 
 ;// ./src/HUD/MOD/HealthWarning.ts
 
@@ -6813,31 +8172,6 @@ class KxsClientHUD {
 }
 
 
-;// ./src/FUNC/Logger.ts
-class Logger {
-    getHeader(method) {
-        return "[" + "KxsClient" + " - " + method + "]";
-    }
-    展示(...args) {
-        console.log(...args);
-    }
-    ;
-    log(...args) {
-        // Convert args to string and join them
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("LOG"), message);
-    }
-    warn(...args) {
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("WARN"), message);
-    }
-    error(...args) {
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("ERROR"), message);
-    }
-}
-
-
 ;// ./src/DATABASE/browser2.ts
 ;
 class Browser2Database {
@@ -8792,7 +10126,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -8822,6 +10156,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -8883,6 +10218,7 @@ class KxsClient {
         this.currentFocusModeState = false;
         this.isGlassmorphismEnabled = true;
         this.isCustomBackgroundEnabled = true;
+        this.used = true;
         this.kxsDeveloperOptions = {
             enableGameIDExchange: false,
             exchange: {
@@ -9250,7 +10586,8 @@ class KxsClient {
             isFocusModeEnabled: this.isFocusModeEnabled,
             kxsDeveloperOptions: this.kxsDeveloperOptions,
             isGlassmorphismEnabled: this.isGlassmorphismEnabled,
-            isCustomBackgroundEnabled: this.isCustomBackgroundEnabled
+            isCustomBackgroundEnabled: this.isCustomBackgroundEnabled,
+            used: this.used
         }));
     }
     ;
@@ -9337,7 +10674,7 @@ class KxsClient {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             if (this.isWinningAnimationEnabled) {
-                this.felicitation();
+                felicitation(kxsClient.isWinSoundEnabled, this.soundLibrary.win_sound_url, 5000, '#1');
             }
             const stats = this.getPlayerStats(true);
             const body = {
@@ -9365,76 +10702,6 @@ class KxsClient {
             yield this.discordTracker.trackGameEnd(body);
             this.db.set(new Date().toISOString(), body);
         });
-    }
-    felicitation() {
-        const goldText = document.createElement("div");
-        goldText.textContent = "#1";
-        goldText.style.position = "fixed";
-        goldText.style.top = "50%";
-        goldText.style.left = "50%";
-        goldText.style.transform = "translate(-50%, -50%)";
-        goldText.style.fontSize = "80px";
-        goldText.style.color = "gold";
-        goldText.style.textShadow = "2px 2px 4px rgba(0,0,0,0.3)";
-        goldText.style.zIndex = "10000";
-        document.body.appendChild(goldText);
-        function createConfetti() {
-            const colors = [
-                "#ff0000",
-                "#00ff00",
-                "#0000ff",
-                "#ffff00",
-                "#ff00ff",
-                "#00ffff",
-                "gold",
-            ];
-            const confetti = document.createElement("div");
-            confetti.style.position = "fixed";
-            confetti.style.width = Math.random() * 10 + 5 + "px";
-            confetti.style.height = Math.random() * 10 + 5 + "px";
-            confetti.style.backgroundColor =
-                colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.borderRadius = "50%";
-            confetti.style.zIndex = "9999";
-            confetti.style.left = Math.random() * 100 + "vw";
-            confetti.style.top = "-20px";
-            document.body.appendChild(confetti);
-            let posY = -20;
-            let posX = parseFloat(confetti.style.left);
-            let rotation = 0;
-            let speedY = Math.random() * 2 + 1;
-            let speedX = Math.random() * 2 - 1;
-            function fall() {
-                posY += speedY;
-                posX += speedX;
-                rotation += 5;
-                confetti.style.top = posY + "px";
-                confetti.style.left = posX + "vw";
-                confetti.style.transform = `rotate(${rotation}deg)`;
-                if (posY < window.innerHeight) {
-                    requestAnimationFrame(fall);
-                }
-                else {
-                    confetti.remove();
-                }
-            }
-            fall();
-        }
-        const confettiInterval = setInterval(() => {
-            for (let i = 0; i < 5; i++) {
-                createConfetti();
-            }
-        }, 100);
-        if (this.isWinSoundEnabled) {
-            const audio = new Audio(this.soundLibrary.win_sound_url);
-            audio.play().catch((err) => this.logger.error("Erreur lecture:", err));
-        }
-        setTimeout(() => {
-            clearInterval(confettiInterval);
-            goldText.style.transition = "opacity 1s";
-            goldText.style.opacity = "0";
-            setTimeout(() => goldText.remove(), 1000);
-        }, 5000);
     }
     getUsername() {
         return survev_settings.get("playerName") || "Player";
@@ -9554,7 +10821,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -9589,6 +10856,7 @@ class KxsClient {
             this.kxsDeveloperOptions = (_3 = savedSettings.kxsDeveloperOptions) !== null && _3 !== void 0 ? _3 : this.kxsDeveloperOptions;
             this.isGlassmorphismEnabled = (_4 = savedSettings.isGlassmorphismEnabled) !== null && _4 !== void 0 ? _4 : this.isGlassmorphismEnabled;
             this.isCustomBackgroundEnabled = (_5 = savedSettings.isCustomBackgroundEnabled) !== null && _5 !== void 0 ? _5 : this.isCustomBackgroundEnabled;
+            this.used = (_6 = savedSettings.used) !== null && _6 !== void 0 ? _6 : this.used;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -10604,1149 +11872,6 @@ class KxsClient {
     }
 }
 
-;// ./src/HUD/MOD/LoadingScreen.ts
-/**
- * LoadingScreen.ts
- *
- * This module provides a loading animation with a logo and a rotating loading circle
- * that displays during the loading of game resources.
- */
-
-class LoadingScreen {
-    /**
-     * Creates a new instance of the loading screen
-     * @param logoUrl URL of the Kxs logo to display
-     */
-    constructor(logoUrl) {
-        this.logoUrl = logoUrl;
-        this.container = document.createElement('div');
-        this.initializeStyles();
-        this.createContent();
-    }
-    /**
-     * Initializes CSS styles for the loading screen
-     */
-    initializeStyles() {
-        // Apply glassmorphism effect using DesignSystem
-        DesignSystem.applyGlassEffect(this.container, 'dark', {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: DesignSystem.layers.modal.toString(),
-            transition: `opacity ${DesignSystem.animation.slow} ease-in-out`,
-            animation: 'fadeIn 0.5s ease-in-out',
-            borderRadius: '0'
-        });
-    }
-    /**
-     * Creates the loading screen content (logo and loading circle)
-     */
-    createContent() {
-        // Create container for the logo
-        const logoContainer = document.createElement('div');
-        Object.assign(logoContainer.style, {
-            width: '200px',
-            height: '200px',
-            marginBottom: '20px',
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-        });
-        // Create the logo element
-        const logo = document.createElement('img');
-        logo.src = this.logoUrl;
-        Object.assign(logo.style, {
-            width: '150px',
-            height: '150px',
-            objectFit: 'contain',
-            position: 'absolute',
-            zIndex: '2',
-            animation: 'pulse 2s ease-in-out infinite'
-        });
-        // Create the main loading circle
-        const loadingCircle = document.createElement('div');
-        Object.assign(loadingCircle.style, {
-            width: '180px',
-            height: '180px',
-            border: '4px solid transparent',
-            borderTopColor: '#3498db',
-            borderRadius: '50%',
-            animation: 'spin 1.5s linear infinite',
-            position: 'absolute',
-            zIndex: '1'
-        });
-        // Create a second loading circle (rotating in the opposite direction)
-        const loadingCircle2 = document.createElement('div');
-        Object.assign(loadingCircle2.style, {
-            width: '200px',
-            height: '200px',
-            border: '2px solid transparent',
-            borderLeftColor: '#e74c3c',
-            borderRightColor: '#e74c3c',
-            borderRadius: '50%',
-            animation: 'spin-reverse 3s linear infinite',
-            position: 'absolute',
-            zIndex: '0'
-        });
-        // Add animations
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            @keyframes spin-reverse {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(-360deg); }
-            }
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-            @keyframes fadeIn {
-                0% { opacity: 0; }
-                100% { opacity: 1; }
-            }
-        `;
-        document.head.appendChild(styleSheet);
-        // Ajout d'un texte de chargement
-        const loadingText = document.createElement('div');
-        loadingText.textContent = 'Loading...';
-        Object.assign(loadingText.style, {
-            color: 'white',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '18px',
-            marginTop: '20px',
-            animation: 'pulse 1.5s ease-in-out infinite'
-        });
-        // Ajout d'un sous-texte
-        const subText = document.createElement('div');
-        subText.textContent = 'Initializing resources...';
-        Object.assign(subText.style, {
-            color: 'rgba(255, 255, 255, 0.7)',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '14px',
-            marginTop: '5px'
-        });
-        // Assemble the elements
-        logoContainer.appendChild(loadingCircle2);
-        logoContainer.appendChild(loadingCircle);
-        logoContainer.appendChild(logo);
-        this.container.appendChild(logoContainer);
-        this.container.appendChild(loadingText);
-        this.container.appendChild(subText);
-    }
-    /**
-     * Shows the loading screen
-     */
-    show() {
-        document.body.appendChild(this.container);
-    }
-    /**
-     * Hides the loading screen with a fade transition
-     */
-    hide() {
-        this.container.style.opacity = '0';
-        // Optimized: use event listener for transition end instead of setTimeout
-        this.container.addEventListener('transitionend', () => {
-            if (this.container.parentNode) {
-                document.body.removeChild(this.container);
-            }
-        }, { once: true });
-    }
-}
-
-;// ./src/HUD/ServerSelector.ts
-class ServerSelector {
-    constructor(servers, onServerSelect) {
-        this.isActive = false;
-        this.serverContainer = null;
-        this.serverCards = [];
-        this.selectedIndex = 0;
-        this.originalBodyContent = '';
-        this.animation = null;
-        this.servers = [];
-        this.onServerSelect = null;
-        this.servers = this.processServerUrls(servers);
-        this.onServerSelect = onServerSelect || null;
-    }
-    /**
-     * Process server URLs from match patterns to display-friendly names
-     */
-    processServerUrls(servers) {
-        return servers.map(server => {
-            // Remove wildcards and protocol
-            return server.replace(/^\*:\/\//, '')
-                // Remove trailing wildcards
-                .replace(/\/\*$/, '')
-                // Handle special case for IP addresses
-                .replace(/\/+$/, '');
-        });
-    }
-    /**
-     * Show the server selection interface
-     */
-    show() {
-        // If already active, close first to reset properly
-        if (this.isActive) {
-            this.close();
-        }
-        this.isActive = true;
-        // Store original content if not already stored
-        if (!this.originalBodyContent) {
-            this.originalBodyContent = document.body.innerHTML;
-        }
-        // Create overlay
-        this.createInterface();
-        // Start animations
-        this.startAnimations();
-        // Add keyboard navigation
-        this.setupKeyboardNavigation();
-    }
-    /**
-     * Create the server selection interface
-     */
-    createInterface() {
-        // Create overlay container
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0';
-        overlay.style.left = '0';
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-        overlay.style.display = 'flex';
-        overlay.style.flexDirection = 'column';
-        overlay.style.justifyContent = 'center';
-        overlay.style.alignItems = 'center';
-        overlay.style.zIndex = '10000';
-        overlay.style.perspective = '1000px';
-        overlay.style.fontFamily = 'Arial, sans-serif';
-        // Create header
-        const header = document.createElement('h1');
-        header.textContent = 'Select Server';
-        header.style.color = '#fff';
-        header.style.marginBottom = '40px';
-        header.style.fontSize = '36px';
-        header.style.textShadow = '0 0 10px rgba(255,0,0,0.8)';
-        overlay.appendChild(header);
-        // Create server container
-        this.serverContainer = document.createElement('div');
-        this.serverContainer.style.position = 'relative';
-        this.serverContainer.style.width = '80%';
-        this.serverContainer.style.height = '300px';
-        this.serverContainer.style.display = 'flex';
-        this.serverContainer.style.justifyContent = 'center';
-        this.serverContainer.style.alignItems = 'center';
-        this.serverContainer.style.transformStyle = 'preserve-3d';
-        overlay.appendChild(this.serverContainer);
-        // Create instructions
-        const instructions = document.createElement('div');
-        instructions.style.position = 'absolute';
-        instructions.style.bottom = '20px';
-        instructions.style.color = '#aaa';
-        instructions.style.fontSize = '16px';
-        instructions.innerHTML = 'Use <strong>←/→</strong> arrows to navigate | <strong>Enter</strong> to select | <strong>Esc</strong> to close';
-        overlay.appendChild(instructions);
-        // Create server cards
-        this.createServerCards();
-        // Add the overlay to the body
-        document.body.appendChild(overlay);
-    }
-    /**
-     * Create 3D rotating cards for each server
-     */
-    createServerCards() {
-        if (!this.serverContainer)
-            return;
-        const totalServers = this.servers.length;
-        const radius = 300; // Radius of the circle
-        const cardWidth = 200;
-        const cardHeight = 120;
-        this.servers.forEach((server, index) => {
-            const card = document.createElement('div');
-            card.className = 'server-card';
-            card.style.position = 'absolute';
-            card.style.width = `${cardWidth}px`;
-            card.style.height = `${cardHeight}px`;
-            card.style.backgroundColor = index === this.selectedIndex ? '#500' : '#333';
-            card.style.color = '#fff';
-            card.style.borderRadius = '10px';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
-            card.style.justifyContent = 'center';
-            card.style.alignItems = 'center';
-            card.style.cursor = 'pointer';
-            card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
-            card.style.transition = 'background-color 0.3s ease';
-            card.style.padding = '15px';
-            card.style.backfaceVisibility = 'hidden';
-            // Create server name
-            const serverName = document.createElement('h2');
-            serverName.textContent = server;
-            serverName.style.margin = '0 0 10px 0';
-            serverName.style.fontSize = '20px';
-            card.appendChild(serverName);
-            // Add status indicator
-            const status = document.createElement('div');
-            status.style.width = '10px';
-            status.style.height = '10px';
-            status.style.borderRadius = '50%';
-            status.style.backgroundColor = '#0f0'; // Green for online
-            status.style.marginTop = '10px';
-            card.appendChild(status);
-            // Add click event
-            card.addEventListener('click', () => {
-                this.selectedIndex = index;
-                this.updateCardPositions();
-                this.selectServer();
-            });
-            this.serverCards.push(card);
-            if (this.serverContainer) {
-                this.serverContainer.appendChild(card);
-            }
-        });
-        // Position the cards in a circle
-        this.updateCardPositions();
-    }
-    /**
-     * Update the positions of all server cards in a 3D circle
-     */
-    updateCardPositions() {
-        const totalServers = this.servers.length;
-        const radius = Math.max(300, totalServers * 40); // Adjust radius based on number of servers
-        this.serverCards.forEach((card, index) => {
-            // Calculate position on the circle
-            const theta = ((index - this.selectedIndex) / totalServers) * 2 * Math.PI;
-            const x = radius * Math.sin(theta);
-            const z = radius * Math.cos(theta) - radius;
-            // Update card style
-            card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-theta * 180 / Math.PI}deg)`;
-            card.style.zIndex = z < 0 ? '-1' : '1';
-            card.style.opacity = (1 - Math.abs(index - this.selectedIndex) / totalServers).toString();
-            card.style.backgroundColor = index === this.selectedIndex ? '#500' : '#333';
-            // Add glow effect to selected card
-            if (index === this.selectedIndex) {
-                card.style.boxShadow = '0 0 20px rgba(255,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5)';
-            }
-            else {
-                card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
-            }
-        });
-    }
-    /**
-     * Start animations for the 3D carousel
-     */
-    startAnimations() {
-        // Subtle continuous movement for more 3D effect using requestAnimationFrame
-        let angle = 0;
-        let animationId;
-        const animate = () => {
-            angle += 0.005;
-            if (this.serverContainer) {
-                this.serverContainer.style.transform = `rotateY(${Math.sin(angle) * 5}deg) rotateX(${Math.cos(angle) * 3}deg)`;
-            }
-            animationId = requestAnimationFrame(animate);
-        };
-        // Store the animation ID for cleanup
-        this.animation = animationId = requestAnimationFrame(animate);
-    }
-    /**
-     * Set up keyboard navigation
-     */
-    setupKeyboardNavigation() {
-        const keyHandler = (e) => {
-            switch (e.key) {
-                case 'ArrowLeft':
-                    this.navigate(-1);
-                    break;
-                case 'ArrowRight':
-                    this.navigate(1);
-                    break;
-                case 'Enter':
-                    this.selectServer();
-                    break;
-                case 'Escape':
-                    this.close();
-                    break;
-            }
-        };
-        document.addEventListener('keydown', keyHandler);
-        // Store the handler reference so it can be removed when the selector is closed
-        this._keyHandler = keyHandler;
-    }
-    /**
-     * Navigate between servers
-     */
-    navigate(direction) {
-        const totalServers = this.servers.length;
-        this.selectedIndex = (this.selectedIndex + direction + totalServers) % totalServers;
-        this.updateCardPositions();
-    }
-    /**
-     * Select current server and close the selector
-     */
-    selectServer() {
-        const selectedServer = this.servers[this.selectedIndex];
-        if (this.onServerSelect && selectedServer) {
-            this.onServerSelect(selectedServer);
-        }
-        this.close();
-    }
-    /**
-     * Close the server selector
-     */
-    close() {
-        var _a;
-        if (!this.isActive)
-            return;
-        this.isActive = false;
-        // Stop animations
-        if (this.animation !== null) {
-            clearInterval(this.animation);
-            this.animation = null;
-        }
-        // Remove keyboard event listener
-        if (this._keyHandler) {
-            document.removeEventListener('keydown', this._keyHandler);
-            this._keyHandler = null;
-        }
-        // Remove the overlay
-        document.querySelectorAll('div.server-card').forEach(el => el.remove());
-        if (this.serverContainer && this.serverContainer.parentNode) {
-            const parent = this.serverContainer.parentNode;
-            if (parent && parent instanceof HTMLElement) {
-                parent.remove();
-            }
-            else if (parent) {
-                // Fallback if parentNode exists but isn't an HTMLElement
-                const parentEl = parent;
-                (_a = parentEl.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(parentEl);
-            }
-        }
-        // Reset state for next use
-        this.serverContainer = null;
-        this.serverCards = [];
-        this.selectedIndex = 0;
-    }
-}
-
-;// ./src/HUD/EasterEgg.ts
-
-
-class EasterEgg {
-    constructor() {
-        this.originalStyles = {};
-        this.zelda3Sound = null;
-        this.periodSound = null;
-        this.ambientSound = null;
-        this.buttonClickSound = null;
-        this.arrowKeySound = null;
-        this.enterKeySound = null;
-        this.closeMenuSound = null;
-        this.textElement = null;
-        this.fireElements = [];
-        this.pillars = [];
-        this.isActive = false;
-        this.isInitialized = false;
-        this.overlayElement = null;
-        this.animationFrameId = null;
-        this.originalBodyContent = '';
-        this.serverSelector = null;
-        this.serverButton = null;
-        this.messageChangeInterval = null;
-        this.originalPageTitle = '';
-        this.messages = [
-            "You're already in",
-            "You didnt have found Kxs, is kxs who found you",
-            "The prophecies are true",
-            "Kxs is the chosen one",
-            "Kxs is the one who will save you",
-            "I am Kxs, the one who will save you"
-        ];
-        this.globalEventHandlersInitialized = false;
-        this.init();
-    }
-    init() {
-        // Save original page title
-        this.originalPageTitle = document.title;
-        // Check if we're on the target website
-        if (window.location.hostname === 'kxs.rip' || window.location.hostname === 'www.kxs.rip') {
-            // Initialize sounds
-            this.zelda3Sound = new Audio('https://kxs.rip/assets/message.mp3'); // Replace with actual Zelda sound
-            this.periodSound = new Audio('https://kxs.rip/assets/message-finish.mp3'); // Sound for the final period
-            this.ambientSound = new Audio('https://kxs.rip/assets/hell_ambiance.m4a'); // Replace with actual ambient URL
-            this.buttonClickSound = new Audio('https://kxs.rip/assets/enter.mp3'); // Button click sound
-            this.arrowKeySound = new Audio('https://kxs.rip/assets/arrow.mp3'); // Arrow key sound
-            this.enterKeySound = new Audio('https://kxs.rip/assets/enter.mp3'); // Enter key sound
-            this.closeMenuSound = new Audio('https://kxs.rip/assets/close.mp3'); // Close menu sound
-            if (this.ambientSound) {
-                this.ambientSound.loop = true;
-            }
-            // Create the initial overlay with Click prompt instead of immediately applying Easter egg
-            this.createInitialOverlay();
-            // Initialize global event handlers for interaction sounds
-            this.initGlobalEventHandlers();
-        }
-    }
-    /**
-     * Creates the initial blur overlay with Click text
-     */
-    createInitialOverlay() {
-        // Store original body content to restore it later if needed
-        this.originalBodyContent = document.body.innerHTML;
-        // Save original styles
-        this.saveOriginalStyles();
-        // Create the overlay
-        this.overlayElement = document.createElement('div');
-        const overlay = this.overlayElement;
-        // Set full screen styles
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0';
-        overlay.style.left = '0';
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
-        overlay.style.backdropFilter = 'blur(10px)';
-        overlay.style['-webkit-backdrop-filter'] = 'blur(10px)';
-        overlay.style.display = 'flex';
-        overlay.style.justifyContent = 'center';
-        overlay.style.alignItems = 'center';
-        overlay.style.cursor = 'pointer';
-        overlay.style.zIndex = '9999';
-        overlay.style.transition = 'opacity 0.5s ease';
-        // Create the Click text
-        const clickText = document.createElement('div');
-        clickText.textContent = 'Click';
-        clickText.style.color = '#fff';
-        clickText.style.fontSize = '3rem';
-        clickText.style.fontWeight = 'bold';
-        clickText.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.7)';
-        clickText.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
-        clickText.style.letterSpacing = '5px';
-        // Add font for the text
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'stylesheet';
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap';
-        document.head.appendChild(fontLink);
-        // Add click event to start the Easter egg
-        overlay.addEventListener('click', () => {
-            this.removeOverlay();
-            this.applyEasterEgg();
-        });
-        // Add the text to the overlay
-        overlay.appendChild(clickText);
-        // Add the overlay to the body
-        document.body.appendChild(overlay);
-    }
-    /**
-     * Removes the initial overlay
-     */
-    removeOverlay() {
-        if (this.overlayElement && this.overlayElement.parentNode) {
-            // Fade out
-            this.overlayElement.style.opacity = '0';
-            // Remove after transition (optimized)
-            this.overlayElement.addEventListener('transitionend', () => {
-                if (this.overlayElement && this.overlayElement.parentNode) {
-                    this.overlayElement.parentNode.removeChild(this.overlayElement);
-                    this.overlayElement = null;
-                }
-            }, { once: true });
-        }
-    }
-    /**
-     * Initialize global event handlers for sounds
-     */
-    initGlobalEventHandlers() {
-        if (this.globalEventHandlersInitialized)
-            return;
-        this.globalEventHandlersInitialized = true;
-        // Play sound on button clicks
-        document.addEventListener('click', (e) => {
-            if (e.target instanceof HTMLButtonElement ||
-                e.target instanceof HTMLAnchorElement ||
-                (e.target instanceof HTMLElement && e.target.role === 'button')) {
-                this.playButtonSound();
-            }
-        });
-        // Play sound on arrow keys and enter key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                this.playArrowKeySound();
-            }
-            else if (e.key === 'Enter') {
-                this.playEnterKeySound();
-            }
-        });
-    }
-    applyEasterEgg() {
-        if (this.isActive)
-            return;
-        this.isActive = true;
-        this.isInitialized = true;
-        // Transform the website
-        this.transformWebsite();
-        // Start animations
-        this.startAnimations();
-        // Play ambient sound
-        this.playAmbientSound();
-        // Display the message with sound effect (optimized)
-        setTimeout(() => {
-            this.displayMessage();
-            // Add server selector button after the message is displayed
-            this.addServerSelectorButton();
-        }, 2000);
-    }
-    saveOriginalStyles() {
-        this.originalStyles = {
-            bodyBackground: document.body.style.background,
-            bodyColor: document.body.style.color,
-            bodyOverflow: document.body.style.overflow
-        };
-    }
-    transformWebsite() {
-        // Clear the existing content
-        document.body.innerHTML = '';
-        document.body.style.margin = '0';
-        document.body.style.padding = '0';
-        document.body.style.overflow = 'hidden';
-        document.body.style.backgroundColor = '#000';
-        document.body.style.color = '#fff';
-        document.body.style.fontFamily = '"Times New Roman", serif';
-        document.body.style.height = '100vh';
-        document.body.style.display = 'flex';
-        document.body.style.flexDirection = 'column';
-        document.body.style.justifyContent = 'center';
-        document.body.style.alignItems = 'center';
-        document.body.style.perspective = '1000px';
-        // Create a temple background
-        const temple = document.createElement('div');
-        temple.style.position = 'absolute';
-        temple.style.top = '0';
-        temple.style.left = '0';
-        temple.style.width = '100%';
-        temple.style.height = '100%';
-        temple.style.background = 'linear-gradient(to bottom, #000, #300)';
-        temple.style.zIndex = '-2';
-        document.body.appendChild(temple);
-        // Create pillars
-        for (let i = 0; i < 6; i++) {
-            const pillar = document.createElement('div');
-            pillar.style.position = 'absolute';
-            pillar.style.width = '80px';
-            pillar.style.height = '100%';
-            pillar.style.background = 'linear-gradient(to bottom, #222, #111)';
-            pillar.style.transform = `rotateY(${i * 60}deg) translateZ(400px)`;
-            pillar.style.boxShadow = 'inset 0 0 20px #500';
-            pillar.style.transition = 'transform 0.5s ease-in-out';
-            this.pillars.push(pillar);
-            document.body.appendChild(pillar);
-        }
-        // Create floor
-        const floor = document.createElement('div');
-        floor.style.position = 'absolute';
-        floor.style.bottom = '0';
-        floor.style.width = '100%';
-        floor.style.height = '40%';
-        floor.style.background = 'radial-gradient(circle, #300, #100)';
-        floor.style.zIndex = '-1';
-        document.body.appendChild(floor);
-        // Create text container for the message
-        this.textElement = document.createElement('div');
-        this.textElement.style.position = 'relative';
-        this.textElement.style.fontSize = '3.5em';
-        this.textElement.style.fontWeight = 'bold';
-        this.textElement.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
-        this.textElement.style.color = '#f00';
-        this.textElement.style.textShadow = '0 0 10px #f00, 0 0 20px #f00, 0 0 30px #900';
-        this.textElement.style.letterSpacing = '2px';
-        this.textElement.style.opacity = '0';
-        this.textElement.style.transition = 'opacity 2s';
-        // Add a fancy font from Google Fonts
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'stylesheet';
-        fontLink.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap';
-        document.head.appendChild(fontLink);
-        document.body.appendChild(this.textElement);
-        // Create fire elements as 3D rotating rectangles
-        for (let i = 0; i < 20; i++) {
-            const fire = document.createElement('div');
-            fire.style.position = 'absolute';
-            fire.style.width = `${Math.random() * 40 + 20}px`;
-            fire.style.height = `${Math.random() * 60 + 40}px`;
-            fire.style.background = 'radial-gradient(circle, #f50, #900, transparent)';
-            fire.style.borderRadius = '10%';
-            fire.style.filter = 'blur(3px)';
-            fire.style.opacity = `${Math.random() * 0.5 + 0.5}`;
-            const randomX = Math.random() * 100;
-            fire.style.left = `${randomX}%`;
-            fire.style.bottom = '0';
-            fire.style.zIndex = '-1';
-            fire.style.transformStyle = 'preserve-3d';
-            fire.style.perspective = '1000px';
-            fire.dataset.velocityY = `${Math.random() * 2 + 1}`;
-            fire.dataset.posX = randomX.toString();
-            fire.dataset.posY = '0';
-            fire.dataset.rotateX = `${Math.random() * 4 - 2}`; // Random rotation speed X
-            fire.dataset.rotateY = `${Math.random() * 4 - 2}`; // Random rotation speed Y
-            fire.dataset.rotateZ = `${Math.random() * 4 - 2}`; // Random rotation speed Z
-            fire.dataset.rotationX = '0';
-            fire.dataset.rotationY = '0';
-            fire.dataset.rotationZ = '0';
-            this.fireElements.push(fire);
-            document.body.appendChild(fire);
-        }
-    }
-    startAnimations() {
-        // Animate fire and pillars
-        this.animateFireElements();
-        this.animatePillars();
-    }
-    animateFireElements() {
-        if (!this.isActive)
-            return;
-        this.fireElements.forEach(fire => {
-            let posY = parseFloat(fire.dataset.posY || '0');
-            const velocityY = parseFloat(fire.dataset.velocityY || '1');
-            // Update position
-            posY += velocityY;
-            fire.dataset.posY = posY.toString();
-            // Update rotation
-            let rotX = parseFloat(fire.dataset.rotationX || '0');
-            let rotY = parseFloat(fire.dataset.rotationY || '0');
-            let rotZ = parseFloat(fire.dataset.rotationZ || '0');
-            rotX += parseFloat(fire.dataset.rotateX || '0');
-            rotY += parseFloat(fire.dataset.rotateY || '0');
-            rotZ += parseFloat(fire.dataset.rotateZ || '0');
-            fire.dataset.rotationX = rotX.toString();
-            fire.dataset.rotationY = rotY.toString();
-            fire.dataset.rotationZ = rotZ.toString();
-            // Apply transform
-            fire.style.transform = `translateY(${-posY}px) rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
-            // Reset fire when it goes off screen
-            if (posY > 100) {
-                posY = 0;
-                fire.dataset.posY = '0';
-                fire.style.opacity = `${Math.random() * 0.5 + 0.5}`;
-                fire.style.width = `${Math.random() * 40 + 20}px`;
-                fire.style.height = `${Math.random() * 60 + 40}px`;
-                const randomX = Math.random() * 100;
-                fire.style.left = `${randomX}%`;
-                fire.dataset.posX = randomX.toString();
-                // Reset rotation speeds
-                fire.dataset.rotateX = `${Math.random() * 4 - 2}`;
-                fire.dataset.rotateY = `${Math.random() * 4 - 2}`;
-                fire.dataset.rotateZ = `${Math.random() * 4 - 2}`;
-            }
-            fire.style.opacity = `${Math.max(0, 1 - posY / 100)}`;
-        });
-        this.animationFrameId = requestAnimationFrame(() => this.animateFireElements());
-    }
-    animatePillars() {
-        if (!this.isActive)
-            return;
-        // Create a slow rotation effect for the pillars using requestAnimationFrame
-        let angle = 0;
-        let lastTime = 0;
-        const animate = (currentTime) => {
-            if (!this.isActive)
-                return;
-            // Throttle to ~10fps instead of 60fps for this slow animation
-            if (currentTime - lastTime >= 100) {
-                angle += 0.5;
-                this.pillars.forEach((pillar, index) => {
-                    pillar.style.transform = `rotateY(${index * 60 + angle}deg) translateZ(400px)`;
-                });
-                lastTime = currentTime;
-            }
-            requestAnimationFrame(animate);
-        };
-        requestAnimationFrame(animate);
-    }
-    playAmbientSound() {
-        // Play ambient sound
-        if (this.ambientSound) {
-            this.ambientSound.volume = 0.3;
-            this.ambientSound.play().catch(err => { });
-        }
-    }
-    /**
-     * Temporarily reduce ambient sound volume to allow other sounds to be heard better
-     */
-    lowerAmbientVolume() {
-        if (this.ambientSound) {
-            // Store current volume if we need it
-            const originalVolume = this.ambientSound.volume;
-            // Lower volume
-            this.ambientSound.volume = 0.1; // Lower to 1/3 of original volume
-            // Restore volume after a delay
-            setTimeout(() => {
-                if (this.ambientSound) {
-                    this.ambientSound.volume = 0.3; // Restore to original volume
-                }
-            }, 500); // Half second delay
-        }
-    }
-    /**
-     * Play button click sound
-     */
-    playButtonSound() {
-        if (this.buttonClickSound) {
-            // Lower ambient volume
-            this.lowerAmbientVolume();
-            this.buttonClickSound.currentTime = 0;
-            this.buttonClickSound.volume = 0.3;
-            this.buttonClickSound.play().catch(err => { });
-        }
-    }
-    /**
-     * Play arrow key sound
-     */
-    playArrowKeySound() {
-        if (this.arrowKeySound) {
-            // Lower ambient volume
-            this.lowerAmbientVolume();
-            this.arrowKeySound.currentTime = 0;
-            this.arrowKeySound.volume = 0.3;
-            this.arrowKeySound.play().catch(err => { });
-        }
-    }
-    /**
-     * Play enter key sound
-     */
-    playEnterKeySound() {
-        if (this.enterKeySound) {
-            // Lower ambient volume
-            this.lowerAmbientVolume();
-            this.enterKeySound.currentTime = 0;
-            this.enterKeySound.volume = 0.3;
-            this.enterKeySound.play().catch(err => { });
-        }
-    }
-    displayMessage() {
-        if (!this.textElement)
-            return;
-        // Set the message text and start with the first message
-        this.typeMessage(this.messages[0]);
-        // Set up message changing at random intervals
-        this.setupMessageChanging();
-    }
-    /**
-     * Type out a message with the typewriter effect
-     */
-    typeMessage(message) {
-        if (!this.textElement)
-            return;
-        // Clear current text and ensure visibility
-        this.textElement.textContent = '';
-        this.textElement.style.opacity = '1';
-        // Update page title with message
-        document.title = message;
-        // Calculate typing speed based on message length
-        // Longer messages type faster (inversely proportional)
-        const baseSpeed = 300; // Base speed in ms
-        const minSpeed = 40; // Minimum speed for very long messages
-        const typeSpeed = Math.max(minSpeed, baseSpeed - (message.length * 5));
-        // Type writer effect with Zelda sound
-        let i = 0;
-        const typeInterval = setInterval(() => {
-            if (i < message.length && this.textElement) {
-                // Check if we're at the last character and it's not already a period
-                const isLastChar = i === message.length - 1;
-                const shouldAddPeriod = isLastChar && message.charAt(i) !== '.';
-                // Play the appropriate sound
-                if (isLastChar && this.periodSound) {
-                    // Play special sound for the last character
-                    this.periodSound.currentTime = 0;
-                    this.periodSound.volume = 0.3;
-                    this.periodSound.play().catch(err => { });
-                }
-                else if (this.zelda3Sound) {
-                    // Play regular typing sound
-                    this.zelda3Sound.currentTime = 0;
-                    this.zelda3Sound.volume = 0.2;
-                    this.zelda3Sound.play().catch(err => { });
-                }
-                // Add character to text element
-                this.textElement.textContent += message.charAt(i);
-                // Update page title in real-time with the current text
-                document.title = this.textElement.textContent || message;
-                // If last character and we should add a period, do it with a pause (optimized)
-                if (shouldAddPeriod) {
-                    setTimeout(() => {
-                        if (this.textElement && this.periodSound) {
-                            this.periodSound.currentTime = 0;
-                            this.periodSound.volume = 0.4;
-                            this.periodSound.play().catch(err => { });
-                            this.textElement.textContent += '.';
-                            // Update title with the final period
-                            document.title = this.textElement.textContent || (message + '.');
-                        }
-                    }, 400);
-                }
-                i++;
-            }
-            else {
-                clearInterval(typeInterval);
-            }
-        }, typeSpeed); // Dynamic typing speed based on message length
-    }
-    /**
-     * Setup changing messages at random intervals
-     */
-    setupMessageChanging() {
-        // Function to change to a random message
-        const changeMessage = () => {
-            // Get a random message that's different from the current one
-            if (!this.textElement)
-                return;
-            const currentMessage = this.textElement.textContent || '';
-            let newMessage = currentMessage;
-            // Make sure we pick a different message
-            while (newMessage === currentMessage) {
-                const randomIndex = Math.floor(Math.random() * this.messages.length);
-                newMessage = this.messages[randomIndex];
-            }
-            // Type the new message
-            this.typeMessage(newMessage);
-            // Schedule the next message change
-            this.scheduleNextMessageChange();
-        };
-        // Schedule the first message change
-        this.scheduleNextMessageChange();
-    }
-    /**
-     * Schedule the next message change with a random delay
-     */
-    scheduleNextMessageChange() {
-        // Clear any existing timer
-        if (this.messageChangeInterval !== null) {
-            clearTimeout(this.messageChangeInterval);
-        }
-        // Random delay between 4 and 19 seconds
-        const delay = Math.floor(Math.random() * 15000) + 4000; // 4-19 seconds
-        // Set timeout for next message change
-        this.messageChangeInterval = window.setTimeout(() => {
-            // Get a random message that's different from the current one
-            if (!this.textElement)
-                return;
-            const currentMessage = this.textElement.textContent || '';
-            let newMessage = currentMessage;
-            // Make sure we pick a different message
-            while (newMessage === currentMessage) {
-                const randomIndex = Math.floor(Math.random() * this.messages.length);
-                newMessage = this.messages[randomIndex];
-            }
-            // Type the new message
-            this.typeMessage(newMessage);
-            // Schedule the next message change
-            this.scheduleNextMessageChange();
-        }, delay);
-    }
-    /**
-     * Add a button to open the server selector
-     */
-    addServerSelectorButton() {
-        // Create a button
-        this.serverButton = document.createElement('button');
-        const button = this.serverButton;
-        // Set button text
-        button.textContent = 'SELECT SERVER';
-        // Position and base styling
-        button.style.position = 'absolute';
-        button.style.bottom = '30px';
-        button.style.left = '50%';
-        button.style.transform = 'translateX(-50%)';
-        // Enhanced styling
-        button.style.backgroundColor = 'transparent';
-        button.style.color = '#ff9';
-        button.style.border = '2px solid #900';
-        button.style.padding = '15px 30px';
-        button.style.fontSize = '20px';
-        button.style.fontFamily = '"Cinzel", "Trajan Pro", serif';
-        button.style.fontWeight = 'bold';
-        button.style.letterSpacing = '3px';
-        button.style.borderRadius = '3px';
-        button.style.textTransform = 'uppercase';
-        button.style.boxShadow = '0 0 20px rgba(255, 30, 0, 0.6), inset 0 0 10px rgba(255, 50, 0, 0.4)';
-        button.style.textShadow = '0 0 10px rgba(255, 150, 0, 0.8), 0 0 5px rgba(255, 100, 0, 0.5)';
-        button.style.cursor = 'pointer';
-        button.style.zIndex = '100';
-        button.style.opacity = '0';
-        button.style.transition = 'all 0.5s ease-in-out';
-        button.style.background = 'linear-gradient(to bottom, rgba(80, 0, 0, 0.8), rgba(30, 0, 0, 0.9))';
-        button.style.backdropFilter = 'blur(3px)';
-        // Add enhanced hover effects
-        button.addEventListener('mouseover', () => {
-            button.style.color = '#fff';
-            button.style.borderColor = '#f00';
-            button.style.boxShadow = '0 0 25px rgba(255, 50, 0, 0.8), inset 0 0 15px rgba(255, 100, 0, 0.6)';
-            button.style.textShadow = '0 0 15px rgba(255, 200, 0, 1), 0 0 10px rgba(255, 150, 0, 0.8)';
-            button.style.transform = 'translateX(-50%) scale(1.05)';
-            button.style.background = 'linear-gradient(to bottom, rgba(100, 0, 0, 0.9), rgba(50, 0, 0, 1))';
-        });
-        button.addEventListener('mouseout', () => {
-            button.style.color = '#ff9';
-            button.style.borderColor = '#900';
-            button.style.boxShadow = '0 0 20px rgba(255, 30, 0, 0.6), inset 0 0 10px rgba(255, 50, 0, 0.4)';
-            button.style.textShadow = '0 0 10px rgba(255, 150, 0, 0.8), 0 0 5px rgba(255, 100, 0, 0.5)';
-            button.style.transform = 'translateX(-50%)';
-            button.style.background = 'linear-gradient(to bottom, rgba(80, 0, 0, 0.8), rgba(30, 0, 0, 0.9))';
-        });
-        // Add active/press effect
-        button.addEventListener('mousedown', () => {
-            button.style.transform = 'translateX(-50%) scale(0.98)';
-            button.style.boxShadow = '0 0 10px rgba(255, 30, 0, 0.8), inset 0 0 8px rgba(255, 100, 0, 0.8)';
-        });
-        button.addEventListener('mouseup', () => {
-            button.style.transform = 'translateX(-50%) scale(1.05)';
-            button.style.boxShadow = '0 0 25px rgba(255, 50, 0, 0.8), inset 0 0 15px rgba(255, 100, 0, 0.6)';
-        });
-        // Add click handler to show server selector
-        button.addEventListener('click', () => {
-            this.showServerSelector();
-        });
-        // Add to body
-        document.body.appendChild(button);
-        // Fade in the button after a short delay
-        setTimeout(() => {
-            if (button) {
-                button.style.opacity = '1';
-            }
-        }, 1500);
-    }
-    /**
-     * Initialize and show the server selector
-     */
-    showServerSelector() {
-        // Play enter sound when opening the menu
-        if (this.enterKeySound) {
-            // Lower ambient volume
-            this.lowerAmbientVolume();
-            this.enterKeySound.currentTime = 0;
-            this.enterKeySound.volume = 0.3;
-            this.enterKeySound.play().catch(err => { });
-        }
-        // Function to redirect to a selected server
-        const redirectToServer = (server) => {
-            window.location.href = `https://${server}`;
-        };
-        // Create server selector if it doesn't exist
-        if (!this.serverSelector) {
-            // Create a modified version of redirectToServer that includes the close sound
-            const redirectWithSound = (server) => {
-                // Play close sound first
-                if (this.closeMenuSound) {
-                    // Lower ambient volume
-                    this.lowerAmbientVolume();
-                    this.closeMenuSound.play().catch(err => { });
-                    // Redirect after a short delay to allow the sound to play
-                    setTimeout(() => {
-                        redirectToServer(server);
-                    }, 300);
-                }
-                else {
-                    // If sound failed to load, just redirect
-                    redirectToServer(server);
-                }
-            };
-            // Create server selector with our modified redirect function
-            this.serverSelector = new ServerSelector(config_namespaceObject.match, redirectWithSound);
-            // Handle close events to play the close sound
-            if (this.serverSelector) {
-                const originalClose = this.serverSelector.close.bind(this.serverSelector);
-                this.serverSelector.close = () => {
-                    // Play close sound
-                    if (this.closeMenuSound) {
-                        // Lower ambient volume
-                        this.lowerAmbientVolume();
-                        this.closeMenuSound.currentTime = 0;
-                        this.closeMenuSound.volume = 0.3;
-                        this.closeMenuSound.play().catch(err => { });
-                    }
-                    // Call original close method
-                    originalClose();
-                };
-            }
-        }
-        // Show the selector
-        this.serverSelector.show();
-    }
-    // Call this method if you ever want to restore the original website
-    restoreWebsite() {
-        if (!this.isInitialized)
-            return;
-        this.isActive = false;
-        this.isInitialized = false;
-        // Restore original page title
-        document.title = this.originalPageTitle;
-        // Remove overlay if it exists
-        if (this.overlayElement) {
-            this.removeOverlay();
-        }
-        // Stop animations
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
-        }
-        // Stop message changing
-        if (this.messageChangeInterval !== null) {
-            clearTimeout(this.messageChangeInterval);
-            this.messageChangeInterval = null;
-        }
-        // Stop sounds
-        if (this.zelda3Sound) {
-            this.zelda3Sound.pause();
-        }
-        if (this.periodSound) {
-            this.periodSound.pause();
-        }
-        if (this.ambientSound) {
-            this.ambientSound.pause();
-        }
-        if (this.buttonClickSound) {
-            this.buttonClickSound.pause();
-        }
-        if (this.arrowKeySound) {
-            this.arrowKeySound.pause();
-        }
-        if (this.enterKeySound) {
-            this.enterKeySound.pause();
-        }
-        if (this.closeMenuSound) {
-            this.closeMenuSound.pause();
-        }
-        // Remove server selector if it exists
-        if (this.serverSelector) {
-            this.serverSelector.close();
-            this.serverSelector = null;
-        }
-        // Remove server button if it exists
-        if (this.serverButton && this.serverButton.parentNode) {
-            this.serverButton.parentNode.removeChild(this.serverButton);
-            this.serverButton = null;
-        }
-        // Restore original content
-        document.body.innerHTML = this.originalBodyContent;
-        // Restore original styles
-        document.body.style.background = this.originalStyles.bodyBackground || '';
-        document.body.style.color = this.originalStyles.bodyColor || '';
-        document.body.style.overflow = this.originalStyles.bodyOverflow || '';
-        // Re-initialize global event handlers since they may have been lost
-        this.globalEventHandlersInitialized = false;
-        this.initGlobalEventHandlers();
-    }
-}
-
 ;// ./src/creditpage.html?raw
 const creditpageraw_namespaceObject = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\r\n<head>\r\n\t<meta charset=\"UTF-8\">\r\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n\t<title>KxsClient - Credits</title>\r\n\t<style>\r\n\t\t* {\r\n\t\t\tmargin: 0;\r\n\t\t\tpadding: 0;\r\n\t\t\tbox-sizing: border-box;\r\n\t\t}\r\n\r\n\t\tbody {\r\n\t\t\tfont-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;\r\n\t\t\tbackground: #0d1117;\r\n\t\t\tcolor: #c9d1d9;\r\n\t\t\theight: 100vh;\r\n\t\t\tdisplay: flex;\r\n\t\t\tflex-direction: column;\r\n\t\t}\r\n\r\n\t\t.tabs {\r\n\t\t\tdisplay: flex;\r\n\t\t\tbackground: #161b22;\r\n\t\t\tborder-bottom: 1px solid #21262d;\r\n\t\t}\r\n\r\n\t\t.tab {\r\n\t\t\tpadding: 12px 24px;\r\n\t\t\tcursor: pointer;\r\n\t\t\tbackground: transparent;\r\n\t\t\tborder: none;\r\n\t\t\tcolor: #7d8590;\r\n\t\t\tfont: inherit;\r\n\t\t\ttransition: all 0.15s ease;\r\n\t\t\tborder-bottom: 2px solid transparent;\r\n\t\t}\r\n\r\n\t\t.tab:hover {\r\n\t\t\tcolor: #c9d1d9;\r\n\t\t\tbackground: #21262d;\r\n\t\t}\r\n\r\n\t\t.tab.active {\r\n\t\t\tcolor: #58a6ff;\r\n\t\t\tborder-bottom-color: #58a6ff;\r\n\t\t}\r\n\r\n\t\t.content-area {\r\n\t\t\tflex: 1;\r\n\t\t\toverflow: hidden;\r\n\t\t}\r\n\r\n\t\t.content {\r\n\t\t\theight: 100%;\r\n\t\t\tpadding: 24px;\r\n\t\t\toverflow-y: auto;\r\n\t\t\twhite-space: pre-wrap;\r\n\t\t\tfont-size: 13px;\r\n\t\t\tline-height: 1.6;\r\n\t\t\tdisplay: none;\r\n\t\t}\r\n\r\n\t\t.content.active {\r\n\t\t\tdisplay: block;\r\n\t\t}\r\n\r\n\t\t.loading {\r\n\t\t\tdisplay: flex;\r\n\t\t\tjustify-content: center;\r\n\t\t\talign-items: center;\r\n\t\t\theight: 200px;\r\n\t\t\tcolor: #7d8590;\r\n\t\t\tfont-size: 14px;\r\n\t\t}\r\n\r\n\t\t.error {\r\n\t\t\tcolor: #f85149;\r\n\t\t\ttext-align: center;\r\n\t\t\tpadding: 24px;\r\n\t\t\tfont-size: 14px;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar {\r\n\t\t\twidth: 8px;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar-track {\r\n\t\t\tbackground: #0d1117;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar-thumb {\r\n\t\t\tbackground: #30363d;\r\n\t\t\tborder-radius: 4px;\r\n\t\t}\r\n\r\n\t\t::-webkit-scrollbar-thumb:hover {\r\n\t\t\tbackground: #484f58;\r\n\t\t}\r\n\t</style>\r\n</head>\r\n\r\n<body>\r\n\t<div class=\"tabs\">\r\n\t\t<button class=\"tab active\" onclick=\"switchTab('credits')\">credits</button>\r\n\t\t<button class=\"tab\" onclick=\"switchTab('contributors')\">contributors</button>\r\n\t\t<button class=\"tab\" onclick=\"switchTab('changelogs')\">changelogs</button>\r\n\t</div>\r\n\r\n\t<div class=\"content-area\">\r\n\t\t<div id=\"credits-content\" class=\"content active\">\r\n\t\t\t<div class=\"loading\">Loading credits.txt...</div>\r\n\t\t</div>\r\n\t\t<div id=\"contributors-content\" class=\"content\">\r\n\t\t\t<div class=\"loading\">Loading contributors_wall.txt...</div>\r\n\t\t</div>\r\n\t\t<div id=\"changelogs-content\" class=\"content\">\r\n\t\t\t<div class=\"loading\">Loading changelogs.txt...</div>\r\n\t\t</div>\r\n\t</div>\r\n\r\n\t<script>\r\n\t\tlet loadedTabs = new Set();\r\n\r\n\t\tfunction switchTab(tabName) {\r\n\t\t\t// Update tab states\r\n\t\t\tdocument.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));\r\n\t\t\tdocument.querySelectorAll('.content').forEach(content => content.classList.remove('active'));\r\n\r\n\t\t\t// Activate selected tab\r\n\t\t\tevent.target.classList.add('active');\r\n\t\t\tconst contentElement = document.getElementById(`${tabName}-content`);\r\n\t\t\tcontentElement.classList.add('active');\r\n\r\n\t\t\t// Load content if not already loaded\r\n\t\t\tif (!loadedTabs.has(tabName)) {\r\n\t\t\t\tloadContent(tabName);\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\tasync function loadContent(type) {\r\n\t\t\tconst contentElement = document.getElementById(`${type}-content`);\r\n\t\t\tconst urls = {\r\n\t\t\t\t'credits': 'https://kxs.rip/credits.txt',\r\n\t\t\t\t'contributors': 'https://kxs.rip/contributors_wall.txt',\r\n\t\t\t\t'changelogs': 'https://kxs.rip/changelogs.txt'\r\n\t\t\t};\r\n\r\n\t\t\ttry {\r\n\t\t\t\tconst response = await fetch(urls[type]);\r\n\t\t\t\tif (!response.ok) throw new Error(`Failed to load ${type}`);\r\n\t\t\t\tconst text = await response.text();\r\n\t\t\t\tcontentElement.textContent = text;\r\n\t\t\t\tloadedTabs.add(type);\r\n\t\t\t} catch (error) {\r\n\t\t\t\tcontentElement.innerHTML = `<div class=\"error\">Error loading ${type}: ${error.message}</div>`;\r\n\t\t\t}\r\n\t\t}\r\n\r\n\t\t// Load initial content\r\n\t\tloadContent('credits');\r\n\t</script>\r\n</body>\r\n\r\n</html>";
 ;// ./src/UTILS/credits-helper.ts
@@ -11906,6 +12031,7 @@ function openCreditsWindow() {
 
 
 
+
 if (window.location.href === "https://kxs.rip/") {
     /*
         - Injecting Easter Egg
@@ -11922,6 +12048,14 @@ else if (window.location.pathname === "/") {
     }
     ;
     survev_settings.set("language", "en");
+    if (kxs_settings.get("used") === undefined) {
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const onboardingModal = new OnboardingModal();
+                onboardingModal.show();
+            }, 1000);
+        });
+    }
     const loadingScreen = new LoadingScreen(kxs_logo);
     loadingScreen.show();
     const backgroundElement = document.getElementById("background");
