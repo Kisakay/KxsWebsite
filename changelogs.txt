@@ -1,3 +1,13 @@
+<@&1356012705919668284>  `2.4.2`
+
+> *QOL Update*
+
+* Content
+ * *Fixed the KxsClient logo on the main screen*
+ * *SubMenu in RSHIFT menue is reworked* (now can search into, fixed the menu escape when choosing new category in the header)
+
+---
+
 <@&1356012705919668284>  `2.4.1`
 
 > *Beginers Update*
