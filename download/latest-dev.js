@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.4.2
+// @version      2.4.3
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1092,28 +1092,76 @@ const kxs_settings = new SimplifiedDatabase({
 
 const targetLogo = '/img/survev_logo_full.png';
 const replacementLogo = full_logo;
+// Cache to track already processed elements
+const processedElements = new WeakSet();
 const replaceLogo = () => {
-    const elements = document.querySelectorAll('[style*="' + targetLogo + '"]');
+    const elements = document.querySelectorAll(`[style*="${targetLogo}"]`);
     elements.forEach(el => {
+        // Skip if already processed
+        if (processedElements.has(el))
+            return;
         const style = el.getAttribute('style');
         if (style && style.includes(targetLogo)) {
-            el.setAttribute('style', style.replace(targetLogo, replacementLogo));
+            el.setAttribute('style', style.replace(new RegExp(targetLogo, 'g'), replacementLogo));
+            processedElements.add(el); // Mark as processed
         }
     });
 };
+// Initial replacement
 replaceLogo();
+// Throttled function to prevent excessive calls
+let isThrottled = false;
+const throttledReplaceLogo = () => {
+    if (isThrottled)
+        return;
+    isThrottled = true;
+    requestAnimationFrame(() => {
+        replaceLogo();
+        isThrottled = false;
+    });
+};
+// More targeted observer
 const observer = new MutationObserver(mutations => {
+    let shouldReplace = false;
     for (const mutation of mutations) {
-        if (mutation.type === 'childList' || mutation.type === 'attributes') {
-            replaceLogo();
+        if (mutation.type === 'childList') {
+            // Check if added nodes contain potential logo elements
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const element = node;
+                    const htmlElement = element;
+                    const hasTargetLogo = htmlElement.style &&
+                        htmlElement.style.backgroundImage &&
+                        htmlElement.style.backgroundImage.includes(targetLogo);
+                    const hasChildWithLogo = element.querySelector(`[style*="${targetLogo}"]`);
+                    if (hasTargetLogo || hasChildWithLogo) {
+                        shouldReplace = true;
+                        break;
+                    }
+                }
+            }
         }
+        else if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+            // Only check if the style attribute contains our target
+            const target = mutation.target;
+            const style = target.getAttribute('style');
+            if (style && style.includes(targetLogo) && !processedElements.has(target)) {
+                shouldReplace = true;
+            }
+        }
+        if (shouldReplace)
+            break;
+    }
+    if (shouldReplace) {
+        throttledReplaceLogo();
     }
 });
+// Observe with more specific configuration
 observer.observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ['style']
+    attributeFilter: ['style'] // Only observe style changes
 });
 
 ;// ./src/UTILS/favicon.ts
@@ -2864,34 +2912,8 @@ class EasterEgg {
 const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding-styles.css?raw
 const onboarding_stylesraw_namespaceObject = "            /* Reset and base styles */\r\n            .popup-overlay {\r\n                position: fixed;\r\n                top: 0;\r\n                left: 0;\r\n                width: 100%;\r\n                height: 100%;\r\n                background: rgba(0, 0, 0, 0.8);\r\n                display: flex;\r\n                align-items: center;\r\n                justify-content: center;\r\n                z-index: 1000;\r\n                font-family: Arial, sans-serif;\r\n            }\r\n\r\n            .popup-content {\r\n                background: #2c3e50;\r\n                border-radius: 10px;\r\n                max-width: 90%;\r\n                max-height: 90%;\r\n                overflow-y: auto;\r\n                color: white;\r\n                position: relative;\r\n            }\r\n\r\n            /* Header with Discord button */\r\n            .popup-header {\r\n                display: flex;\r\n                justify-content: space-between;\r\n                align-items: center;\r\n                padding: 20px 30px 0;\r\n                margin-bottom: 20px;\r\n            }\r\n\r\n            .discord-button {\r\n                background: #5865F2;\r\n                color: white;\r\n                border: none;\r\n                padding: 10px 20px;\r\n                border-radius: 5px;\r\n                cursor: pointer;\r\n                font-size: 14px;\r\n                font-weight: bold;\r\n                transition: background-color 0.3s ease;\r\n                display: flex;\r\n                align-items: center;\r\n                gap: 8px;\r\n            }\r\n\r\n            .discord-button:hover {\r\n                background: #4752C4;\r\n            }\r\n\r\n            .discord-icon {\r\n                width: 16px;\r\n                height: 16px;\r\n                fill: currentColor;\r\n            }\r\n\r\n            .popup-content .container {\r\n                max-width: 600px;\r\n                margin: 0 auto;\r\n                padding: 0 20px 40px;\r\n                text-align: center;\r\n            }\r\n\r\n            .popup-content h1 {\r\n                color: #3498db;\r\n                font-size: 2.5em;\r\n                margin-bottom: 10px;\r\n            }\r\n\r\n            .popup-content .subtitle {\r\n                font-size: 1.2em;\r\n                margin-bottom: 40px;\r\n                color: #bdc3c7;\r\n            }\r\n\r\n            .popup-content .steps {\r\n                text-align: left;\r\n                margin: 40px 0;\r\n            }\r\n\r\n            .popup-content .step {\r\n                background: #34495e;\r\n                padding: 20px;\r\n                margin: 15px 0;\r\n                border-radius: 8px;\r\n                border-left: 4px solid #3498db;\r\n                display: flex;\r\n                align-items: center;\r\n                gap: 20px;\r\n            }\r\n\r\n            .popup-content .step-large-image {\r\n                margin: 20px 0;\r\n                text-align: center;\r\n                background: #34495e;\r\n                border-radius: 8px;\r\n                padding: 15px;\r\n                border: 2px solid #3498db;\r\n            }\r\n\r\n            .popup-content .step-large-image img {\r\n                width: 100%;\r\n                max-width: 500px;\r\n                height: auto;\r\n                border-radius: 5px;\r\n                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\r\n            }\r\n\r\n            .popup-content .step-content {\r\n                flex: 1;\r\n            }\r\n\r\n            .popup-content .step h3 {\r\n                margin: 0 0 10px 0;\r\n                color: #3498db;\r\n            }\r\n\r\n            .popup-content .step p {\r\n                margin: 0;\r\n                line-height: 1.5;\r\n            }\r\n\r\n            .popup-content .play-button {\r\n                background: #e74c3c;\r\n                color: white;\r\n                border: none;\r\n                padding: 15px 30px;\r\n                font-size: 1.2em;\r\n                border-radius: 5px;\r\n                cursor: pointer;\r\n                margin-top: 30px;\r\n                transition: background-color 0.3s ease;\r\n            }\r\n\r\n            .popup-content .play-button:hover {\r\n                background: #c0392b;\r\n            }\r\n\r\n            @media (max-width: 768px) {\r\n                .popup-header {\r\n                    flex-direction: column;\r\n                    gap: 15px;\r\n                    align-items: stretch;\r\n                }\r\n\r\n                .discord-button {\r\n                    justify-content: center;\r\n                }\r\n\r\n                .popup-content h1 {\r\n                    font-size: 2em;\r\n                }\r\n\r\n                .popup-content .step {\r\n                    flex-direction: column;\r\n                    text-align: center;\r\n                }\r\n            }";
-;// ./src/FUNC/Logger.ts
-class Logger {
-    getHeader(method) {
-        return "[" + "KxsClient" + " - " + method + "]";
-    }
-    展示(...args) {
-        console.log(...args);
-    }
-    ;
-    log(...args) {
-        // Convert args to string and join them
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("LOG"), message);
-    }
-    warn(...args) {
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("WARN"), message);
-    }
-    error(...args) {
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("ERROR"), message);
-    }
-}
-
-
 ;// ./src/FUNC/Felicitations.ts
-
-function felicitation(enable, url_string, time = 5000, text) {
+function felicitation(win_sound_url, text) {
     const goldText = document.createElement("div");
     goldText.textContent = text;
     goldText.style.position = "fixed";
@@ -2950,16 +2972,14 @@ function felicitation(enable, url_string, time = 5000, text) {
             createConfetti();
         }
     }, 100);
-    if (enable) {
-        const audio = new Audio(url_string);
-        audio.play().catch((err) => new Logger().error("Erreur lecture:", err));
-    }
+    const audio = new Audio(win_sound_url);
+    audio.play().catch((err) => console.error("Erreur lecture:", err));
     setTimeout(() => {
         clearInterval(confettiInterval);
         goldText.style.transition = "opacity 1s";
         goldText.style.opacity = "0";
         setTimeout(() => goldText.remove(), 1000);
-    }, time);
+    }, 5000);
 }
 
 ;// ./src/FUNC/Onboarding.ts
@@ -3015,7 +3035,7 @@ class OnboardingModal {
         this.overlay.remove();
         this.overlay = null;
         this.isVisible = false;
-        felicitation(true, "https://kxs.rip/assets/o_sound.mp3", 2000, "Welcome to KxsClient");
+        felicitation("https://kxs.rip/assets/o_sound.mp3", "Welcome to KxsClient");
         localStorage.setItem("on_boarding_complete", "yes");
     }
     // Add event listeners for interactions
@@ -8300,6 +8320,31 @@ class KxsClientHUD {
 }
 
 
+;// ./src/FUNC/Logger.ts
+class Logger {
+    getHeader(method) {
+        return "[" + "KxsClient" + " - " + method + "]";
+    }
+    展示(...args) {
+        console.log(...args);
+    }
+    ;
+    log(...args) {
+        // Convert args to string and join them
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        this.展示(this.getHeader("LOG"), message);
+    }
+    warn(...args) {
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        this.展示(this.getHeader("WARN"), message);
+    }
+    error(...args) {
+        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+        this.展示(this.getHeader("ERROR"), message);
+    }
+}
+
+
 ;// ./src/DATABASE/browser2.ts
 ;
 class Browser2Database {
@@ -10254,7 +10299,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.2","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -10802,7 +10847,7 @@ class KxsClient {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             if (this.isWinningAnimationEnabled) {
-                felicitation(kxsClient.isWinSoundEnabled, this.soundLibrary.win_sound_url, 5000, '#1');
+                felicitation(this.soundLibrary.win_sound_url, '#1');
             }
             const stats = this.getPlayerStats(true);
             const body = {
