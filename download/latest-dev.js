@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.4.3
+// @version      2.4.4
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -2913,7 +2913,7 @@ const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboard
 ;// ./src/assets/onboarding-styles.css?raw
 const onboarding_stylesraw_namespaceObject = "            /* Reset and base styles */\r\n            .popup-overlay {\r\n                position: fixed;\r\n                top: 0;\r\n                left: 0;\r\n                width: 100%;\r\n                height: 100%;\r\n                background: rgba(0, 0, 0, 0.8);\r\n                display: flex;\r\n                align-items: center;\r\n                justify-content: center;\r\n                z-index: 1000;\r\n                font-family: Arial, sans-serif;\r\n            }\r\n\r\n            .popup-content {\r\n                background: #2c3e50;\r\n                border-radius: 10px;\r\n                max-width: 90%;\r\n                max-height: 90%;\r\n                overflow-y: auto;\r\n                color: white;\r\n                position: relative;\r\n            }\r\n\r\n            /* Header with Discord button */\r\n            .popup-header {\r\n                display: flex;\r\n                justify-content: space-between;\r\n                align-items: center;\r\n                padding: 20px 30px 0;\r\n                margin-bottom: 20px;\r\n            }\r\n\r\n            .discord-button {\r\n                background: #5865F2;\r\n                color: white;\r\n                border: none;\r\n                padding: 10px 20px;\r\n                border-radius: 5px;\r\n                cursor: pointer;\r\n                font-size: 14px;\r\n                font-weight: bold;\r\n                transition: background-color 0.3s ease;\r\n                display: flex;\r\n                align-items: center;\r\n                gap: 8px;\r\n            }\r\n\r\n            .discord-button:hover {\r\n                background: #4752C4;\r\n            }\r\n\r\n            .discord-icon {\r\n                width: 16px;\r\n                height: 16px;\r\n                fill: currentColor;\r\n            }\r\n\r\n            .popup-content .container {\r\n                max-width: 600px;\r\n                margin: 0 auto;\r\n                padding: 0 20px 40px;\r\n                text-align: center;\r\n            }\r\n\r\n            .popup-content h1 {\r\n                color: #3498db;\r\n                font-size: 2.5em;\r\n                margin-bottom: 10px;\r\n            }\r\n\r\n            .popup-content .subtitle {\r\n                font-size: 1.2em;\r\n                margin-bottom: 40px;\r\n                color: #bdc3c7;\r\n            }\r\n\r\n            .popup-content .steps {\r\n                text-align: left;\r\n                margin: 40px 0;\r\n            }\r\n\r\n            .popup-content .step {\r\n                background: #34495e;\r\n                padding: 20px;\r\n                margin: 15px 0;\r\n                border-radius: 8px;\r\n                border-left: 4px solid #3498db;\r\n                display: flex;\r\n                align-items: center;\r\n                gap: 20px;\r\n            }\r\n\r\n            .popup-content .step-large-image {\r\n                margin: 20px 0;\r\n                text-align: center;\r\n                background: #34495e;\r\n                border-radius: 8px;\r\n                padding: 15px;\r\n                border: 2px solid #3498db;\r\n            }\r\n\r\n            .popup-content .step-large-image img {\r\n                width: 100%;\r\n                max-width: 500px;\r\n                height: auto;\r\n                border-radius: 5px;\r\n                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\r\n            }\r\n\r\n            .popup-content .step-content {\r\n                flex: 1;\r\n            }\r\n\r\n            .popup-content .step h3 {\r\n                margin: 0 0 10px 0;\r\n                color: #3498db;\r\n            }\r\n\r\n            .popup-content .step p {\r\n                margin: 0;\r\n                line-height: 1.5;\r\n            }\r\n\r\n            .popup-content .play-button {\r\n                background: #e74c3c;\r\n                color: white;\r\n                border: none;\r\n                padding: 15px 30px;\r\n                font-size: 1.2em;\r\n                border-radius: 5px;\r\n                cursor: pointer;\r\n                margin-top: 30px;\r\n                transition: background-color 0.3s ease;\r\n            }\r\n\r\n            .popup-content .play-button:hover {\r\n                background: #c0392b;\r\n            }\r\n\r\n            @media (max-width: 768px) {\r\n                .popup-header {\r\n                    flex-direction: column;\r\n                    gap: 15px;\r\n                    align-items: stretch;\r\n                }\r\n\r\n                .discord-button {\r\n                    justify-content: center;\r\n                }\r\n\r\n                .popup-content h1 {\r\n                    font-size: 2em;\r\n                }\r\n\r\n                .popup-content .step {\r\n                    flex-direction: column;\r\n                    text-align: center;\r\n                }\r\n            }";
 ;// ./src/FUNC/Felicitations.ts
-function felicitation(win_sound_url, text) {
+function felicitation(enable, win_sound_url, text) {
     const goldText = document.createElement("div");
     goldText.textContent = text;
     goldText.style.position = "fixed";
@@ -2972,8 +2972,10 @@ function felicitation(win_sound_url, text) {
             createConfetti();
         }
     }, 100);
-    const audio = new Audio(win_sound_url);
-    audio.play().catch((err) => console.error("Erreur lecture:", err));
+    if (enable) {
+        const audio = new Audio(win_sound_url);
+        audio.play().catch((err) => console.error("Erreur lecture:", err));
+    }
     setTimeout(() => {
         clearInterval(confettiInterval);
         goldText.style.transition = "opacity 1s";
@@ -3035,7 +3037,7 @@ class OnboardingModal {
         this.overlay.remove();
         this.overlay = null;
         this.isVisible = false;
-        felicitation("https://kxs.rip/assets/o_sound.mp3", "Welcome to KxsClient");
+        felicitation(true, "https://kxs.rip/assets/o_sound.mp3", "Welcome to KxsClient");
         localStorage.setItem("on_boarding_complete", "yes");
     }
     // Add event listeners for interactions
@@ -9237,13 +9239,16 @@ class KxsNetwork {
             :
                 this.kxsClient.getUsername();
     }
+    capitalizeFirstLetter(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
     identify() {
         const payload = {
             op: 2,
             d: {
                 username: this.getUsername(),
                 isVoiceChat: this.kxsClient.isVoiceChatEnabled,
-                v: "KxsClient@" + this.kxsClient.pkg.version
+                v: this.capitalizeFirstLetter(this.kxsClient.pkg.name) + "@" + this.kxsClient.pkg.version
             }
         };
         this.send(payload);
@@ -10299,7 +10304,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.4","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -10847,7 +10852,7 @@ class KxsClient {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             if (this.isWinningAnimationEnabled) {
-                felicitation(this.soundLibrary.win_sound_url, '#1');
+                felicitation(this.isWinSoundEnabled, this.soundLibrary.win_sound_url, '#1');
             }
             const stats = this.getPlayerStats(true);
             const body = {
