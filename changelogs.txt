@@ -1,5 +1,14 @@
 <@&1356012705919668284>  `2.4.3`
 
+> *Win Audio Sound Fix*
+
+* Bug Fixe
+ * *Fix when you disable the win audio sound, is now succesfully disabled*
+
+---
+
+<@&1356012705919668284>  `2.4.3`
+
 > *Big Fix Update*
 
 * Content
