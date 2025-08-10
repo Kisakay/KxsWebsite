@@ -1,3 +1,12 @@
+<@&1356012705919668284>  `2.4.5`
+
+> *Win Audio Sound Fix*
+
+* **Add Survev config copy and import options**
+* **Add system message for chat disable instructions**
+
+---
+
 <@&1356012705919668284>  `2.4.4`
 
 > *Win Audio Sound Fix*
