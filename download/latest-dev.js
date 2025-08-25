@@ -19,6 +19,7 @@
 // @match        *://localhost:3000/*
 // @match        *://veldreth.com/*
 // @match        *://eu-comp.net/*
+// @match        *://66.179.92.117/*
 // @grant        none
 // ==/UserScript==
 ;
@@ -1070,7 +1071,7 @@ class SimplifiedDatabase {
 
 
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117"],"grant":["none"]}');
 ;// ./src/UTILS/vars.ts
 
 
