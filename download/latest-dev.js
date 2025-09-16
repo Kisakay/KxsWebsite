@@ -12216,7 +12216,7 @@ function showClickMeAnimation() {
                 styleElement.parentNode.removeChild(styleElement);
             }
         }, 500);
-    }, 8000);
+    }, 4000);
     return animationContainer;
 }
 // Function to create and open the credits window
@@ -12276,7 +12276,9 @@ else if (window.location.pathname === "/") {
     const backgroundElement = document.getElementById("background");
     if (backgroundElement && (!kxs_settings.has("isCustomBackgroundEnabled") ||
         kxs_settings.get("isCustomBackgroundEnabled") === true)) {
-        backgroundElement.style.backgroundImage = `url("${background_image}")`;
+        setTimeout(() => {
+            backgroundElement.style.backgroundImage = `url("${background_image}")`;
+        }, 2900);
     }
     setFavicon(kxs_logo);
     try {
