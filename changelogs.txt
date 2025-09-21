@@ -1,3 +1,11 @@
+<@&1356012705919668284>  `2.4.8`
+
+> *Wallpaper fixes*
+
+* **Fixes the custom background replacement**
+
+---
+
 <@&1356012705919668284>  `2.4.7`
 
 > *HUD fixes*
