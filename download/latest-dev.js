@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.4.10
+// @version      2.4.11
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -6257,13 +6257,17 @@ class KxsClientSecondaryMenu {
             <input type="text" id="kxsSearchInput" placeholder="Search options..." style="
               width: 100%;
               padding: ${isMobile ? '3px 5px 3px 20px' : '8px 12px 8px 32px'};
-              background: rgba(55, 65, 81, 0.8);
+              background: rgba(55, 65, 81, 0.9);
               border: none;
               border-radius: ${isMobile ? '3px' : '6px'};
               color: white;
-              font-size: ${isMobile ? '9px' : '14px'};
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              font-size: ${isMobile ? '10px' : '14px'};
+              font-weight: 500;
+              letter-spacing: 0.2px;
               outline: none;
               box-sizing: border-box;
+              transition: all 0.2s ease-in-out;
             ">
             <div style="
               position: absolute;
@@ -10455,7 +10459,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.10","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.4.11","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11653,15 +11657,72 @@ class KxsClient {
         }
     }
     applyCustomMainMenuStyle() {
-        // Détermine si le mode glassmorphism est activé
+        // Determine if glassmorphism mode is enabled
         const is_glassmorphism_enabled = this.isGlassmorphismEnabled;
-        // Sélectionner le menu principal
+        // Select main menu elements
         const startMenu = document.getElementById('start-menu');
         const playButtons = document.querySelectorAll('.btn-green, #btn-help, .btn-team-option');
         const playerOptions = document.getElementById('player-options');
         const serverSelect = document.getElementById('server-select-main');
         const nameInput = document.getElementById('player-name-input-solo');
         const helpSection = document.getElementById('start-help');
+        const helpButton = document.getElementById('btn-help');
+        if (helpButton)
+            helpButton.innerText = "Really need help? lol";
+        // Remove default cyan/blue effect from team buttons
+        const teamButtons = document.querySelectorAll('#btn-join-team, #btn-create-team');
+        teamButtons.forEach(button => {
+            if (button instanceof HTMLElement) {
+                // Remove any default hover effects
+                button.style.transition = 'none';
+                button.style.boxShadow = 'none';
+                button.style.outline = 'none';
+                // Force remove any pseudo-element effects by overriding with !important via inline style
+                const styleSheet = document.createElement('style');
+                styleSheet.textContent = `
+				#btn-join-team, #btn-create-team {
+					box-shadow: none !important;
+					outline: none !important;
+				}
+				#btn-join-team:hover, #btn-create-team:hover,
+				#btn-join-team:focus, #btn-create-team:focus,
+				#btn-join-team:active, #btn-create-team:active {
+					box-shadow: none !important;
+					outline: none !important;
+					filter: none !important;
+				}
+			`;
+                if (!document.getElementById('team-buttons-override')) {
+                    styleSheet.id = 'team-buttons-override';
+                    document.head.appendChild(styleSheet);
+                }
+            }
+        });
+        // Remove default play button effects (image overlay and bottom border)
+        const playButtonOverrideStyle = document.createElement('style');
+        playButtonOverrideStyle.textContent = `
+		.btn-green, .btn-green.btn-darken {
+			background-image: none !important;
+			border-bottom: none !important;
+			box-shadow: none !important;
+		}
+		.btn-green:hover, .btn-green.btn-darken:hover,
+		.btn-green:focus, .btn-green.btn-darken:focus,
+		.btn-green:active, .btn-green.btn-darken:active {
+			background-image: none !important;
+			border-bottom: none !important;
+		}
+		#btn-help, #btn-help.btn-darken, .menu-option.btn-darken {
+			border-bottom: none !important;
+		}
+		#btn-help:hover, #btn-help:focus, #btn-help:active {
+			border-bottom: none !important;
+		}
+	`;
+        if (!document.getElementById('play-buttons-override')) {
+            playButtonOverrideStyle.id = 'play-buttons-override';
+            document.head.appendChild(playButtonOverrideStyle);
+        }
         if (startMenu) {
             // Apply styles to the main container based on glassmorphism toggle
             Object.assign(startMenu.style, {
@@ -11684,14 +11745,21 @@ class KxsClient {
         // Style the buttons
         playButtons.forEach(button => {
             if (button instanceof HTMLElement) {
+                // Reset all default effects
+                button.style.transition = 'all 0.2s ease';
+                button.style.outline = 'none';
                 if (button.classList.contains('btn-green')) {
-                    // Boutons Play
+                    // Play buttons - remove all default effects
                     Object.assign(button.style, {
                         background: is_glassmorphism_enabled
                             ? 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)'
                             : 'linear-gradient(135deg, rgba(60, 60, 60, 0.9) 0%, rgba(50, 50, 50, 1) 100%)',
+                        backgroundImage: 'none',
                         borderRadius: is_glassmorphism_enabled ? '12px' : '8px',
                         border: is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.18)'
+                            : '1px solid #555',
+                        borderBottom: is_glassmorphism_enabled
                             ? '1px solid rgba(255, 255, 255, 0.18)'
                             : '1px solid #555',
                         boxShadow: is_glassmorphism_enabled
@@ -11705,7 +11773,7 @@ class KxsClient {
                     });
                 }
                 else {
-                    // Autres boutons
+                    // Other buttons (including team buttons and help button)
                     Object.assign(button.style, {
                         background: is_glassmorphism_enabled
                             ? 'rgba(55, 65, 80, 0.15)'
@@ -11714,27 +11782,43 @@ class KxsClient {
                         border: is_glassmorphism_enabled
                             ? '1px solid rgba(255, 255, 255, 0.15)'
                             : '1px solid #444',
+                        borderBottom: is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.15)'
+                            : '1px solid #444',
                         backdropFilter: is_glassmorphism_enabled ? 'blur(10px) saturate(180%)' : 'none',
                         webkitBackdropFilter: is_glassmorphism_enabled ? 'blur(10px) saturate(180%)' : 'none',
                         transition: 'all 0.2s ease',
-                        color: 'white'
+                        color: 'white',
+                        boxShadow: 'none',
+                        outline: 'none'
                     });
                 }
                 // Hover effect for all buttons
                 button.addEventListener('mouseover', () => {
                     button.style.transform = is_glassmorphism_enabled ? 'translateY(-2px)' : 'translateY(-1px)';
-                    button.style.boxShadow = is_glassmorphism_enabled
-                        ? '0 8px 25px rgba(0, 0, 0, 0.4)'
-                        : '0 4px 12px rgba(0, 0, 0, 0.3)';
+                    button.style.outline = 'none';
                     if (button.classList.contains('btn-green')) {
+                        button.style.boxShadow = is_glassmorphism_enabled
+                            ? '0 8px 25px rgba(0, 0, 0, 0.4)'
+                            : '0 4px 12px rgba(0, 0, 0, 0.3)';
                         button.style.background = is_glassmorphism_enabled
                             ? 'linear-gradient(135deg, rgba(60, 75, 95, 0.3) 0%, rgba(50, 65, 85, 0.4) 100%)'
                             : 'linear-gradient(135deg, rgba(70, 70, 70, 0.95) 0%, rgba(60, 60, 60, 1) 100%)';
+                        button.style.backgroundImage = 'none';
+                        button.style.borderBottom = is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.25)'
+                            : '1px solid #666';
                     }
                     else {
+                        button.style.boxShadow = is_glassmorphism_enabled
+                            ? '0 8px 25px rgba(0, 0, 0, 0.4)'
+                            : '0 4px 12px rgba(0, 0, 0, 0.3)';
                         button.style.background = is_glassmorphism_enabled
                             ? 'rgba(55, 65, 80, 0.25)'
                             : 'rgba(65, 65, 65, 1)';
+                        button.style.borderBottom = is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.25)'
+                            : '1px solid #666';
                     }
                     button.style.border = is_glassmorphism_enabled
                         ? '1px solid rgba(255, 255, 255, 0.25)'
@@ -11742,6 +11826,7 @@ class KxsClient {
                 });
                 button.addEventListener('mouseout', () => {
                     button.style.transform = 'translateY(0)';
+                    button.style.outline = 'none';
                     if (button.classList.contains('btn-green')) {
                         button.style.boxShadow = is_glassmorphism_enabled
                             ? '0 4px 12px rgba(0, 0, 0, 0.25)'
@@ -11749,12 +11834,19 @@ class KxsClient {
                         button.style.background = is_glassmorphism_enabled
                             ? 'linear-gradient(135deg, rgba(60, 75, 95, 0.2) 0%, rgba(50, 65, 85, 0.3) 100%)'
                             : 'linear-gradient(135deg, rgba(60, 60, 60, 0.9) 0%, rgba(50, 50, 50, 1) 100%)';
+                        button.style.backgroundImage = 'none';
+                        button.style.borderBottom = is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.18)'
+                            : '1px solid #555';
                     }
                     else {
                         button.style.boxShadow = 'none';
                         button.style.background = is_glassmorphism_enabled
                             ? 'rgba(55, 65, 80, 0.15)'
                             : 'rgba(55, 55, 55, 0.95)';
+                        button.style.borderBottom = is_glassmorphism_enabled
+                            ? '1px solid rgba(255, 255, 255, 0.15)'
+                            : '1px solid #444';
                     }
                     button.style.border = button.classList.contains('btn-green')
                         ? (is_glassmorphism_enabled ? '1px solid rgba(255, 255, 255, 0.18)' : '1px solid #555')
@@ -11762,7 +11854,7 @@ class KxsClient {
                 });
             }
         });
-        // Styliser le sélecteur de serveur
+        // Style the server selector
         if (serverSelect instanceof HTMLSelectElement) {
             Object.assign(serverSelect.style, {
                 background: is_glassmorphism_enabled
@@ -11777,7 +11869,7 @@ class KxsClient {
                 outline: 'none'
             });
         }
-        // Styliser l'input du nom
+        // Style the name input
         if (nameInput instanceof HTMLInputElement) {
             Object.assign(nameInput.style, {
                 background: is_glassmorphism_enabled
@@ -11807,7 +11899,7 @@ class KxsClient {
                 nameInput.style.boxShadow = 'none';
             });
         }
-        // Styliser la section d'aide
+        // Style the help section
         if (helpSection) {
             Object.assign(helpSection.style, {
                 background: is_glassmorphism_enabled
