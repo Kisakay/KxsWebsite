@@ -1,3 +1,15 @@
+<@&1356012705919668284>  `2.4.11`
+
+> *UI beautifer*
+
+* **Fixes the main menue**
+  * *fixes of the border in Join Team, Create Team, How to play bottom*
+  * *fixes of the ugly play solo button when special mode (like desert for ie)*
+  * *help button is more funny now*
+  * *text font in the RSHIFT menu for the Search Options is now the same as the Kxs UI*
+
+---
+
 <@&1356012705919668284>  `2.4.8`
 
 > *Wallpaper fixes*
