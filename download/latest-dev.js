@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.5.1
+// @version      2.5.2
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -904,30 +904,6 @@ module.exports = SemVer
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/global */
 /******/ 	(() => {
 /******/ 		__webpack_require__.g = (function() {
@@ -940,15 +916,8 @@ module.exports = SemVer
 /******/ 		})();
 /******/ 	})();
 /******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-
-// UNUSED EXPORTS: IS_ZURVIV
 
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
@@ -1189,14 +1158,14 @@ class SimplifiedDatabase {
 
 
 ;// ./src/types/clientType.ts
-var ClientType;
+var clientType_ClientType;
 (function (ClientType) {
     ClientType[ClientType["KxsClient"] = 1] = "KxsClient";
     ClientType[ClientType["KxzClient"] = 2] = "KxzClient";
-})(ClientType || (ClientType = {}));
+})(clientType_ClientType || (clientType_ClientType = {}));
 
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"Ay":"https://kxs.rip"}');
 ;// ./src/UTILS/vars.ts
 
 
@@ -1204,7 +1173,7 @@ const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs
 let href = window.location.href;
 let is_z = href.includes("zurviv.io");
 const vars_client = {
-    type: is_z ? ClientType.KxzClient : ClientType.KxsClient,
+    type: is_z ? clientType_ClientType.KxzClient : clientType_ClientType.KxsClient,
     name: is_z ? "KxzClient" : "KxsClient",
     acronym_upper: is_z ? "KXZ" : "KXS",
     acronym_start_upper: is_z ? "Kxz" : "Kxs",
@@ -1212,24 +1181,24 @@ const vars_client = {
     rpc_assets: is_z ? "mp:avatars/1425487439547334808/22119f9c9881a9543159952f481a89be?size=512" : "mp:app-icons/1321193265533550602/bccd2479ec56ed7d4e69fa2fdfb47197.png?size=512"
 };
 __webpack_require__.g.client = vars_client;
-const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
-const gbl_sound = config_namespaceObject.base_url + "/assets/blacklisted.m4a";
-const kxs_logo = vars_client.type === 1 ? config_namespaceObject.base_url + "/assets/KysClientLogo.png" : config_namespaceObject.base_url + "/assets/KxzClientLogo.png";
-const full_logo = vars_client.type === 1 ? config_namespaceObject.base_url + "/assets/KysClient.gif" : config_namespaceObject.base_url + "/assets/KxzLogoFull.png";
-const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
-const win_sound = config_namespaceObject.base_url + "/assets/win.m4a";
-const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
-const survev_settings = new SimplifiedDatabase({
+const vars_background_song = config_namespaceObject.Ay + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
+const vars_gbl_sound = config_namespaceObject.Ay + "/assets/blacklisted.m4a";
+const vars_kxs_logo = vars_client.type === 1 ? config_namespaceObject.Ay + "/assets/KysClientLogo.png" : config_namespaceObject.Ay + "/assets/KxzClientLogo.png";
+const vars_full_logo = vars_client.type === 1 ? config_namespaceObject.Ay + "/assets/KysClient.gif" : config_namespaceObject.Ay + "/assets/KxzLogoFull.png";
+const vars_background_image = config_namespaceObject.Ay + "/assets/background.jpg";
+const vars_win_sound = config_namespaceObject.Ay + "/assets/win.m4a";
+const vars_death_sound = config_namespaceObject.Ay + "/assets/dead.m4a";
+const vars_survev_settings = new SimplifiedDatabase({
     database: "surviv_config",
 });
-const kxs_settings = new SimplifiedDatabase({
+const vars_kxs_settings = new SimplifiedDatabase({
     database: "userSettings"
 });
 
 ;// ./src/HUD/KxsClientLogoReplacer.ts
 
 const targetLogo = '/img/survev_logo_full.png';
-const replacementLogo = full_logo;
+const replacementLogo = vars_full_logo;
 // Cache to track already processed elements
 const processedElements = new WeakSet();
 const replaceLogo = () => {
@@ -1308,46 +1277,13 @@ observer.observe(document.body, {
     attributeFilter: ['style'] // Only observe style changes
 });
 
-;// ./src/UTILS/favicon.ts
-function setFavicon(url) {
-    // Remove existing favicons
-    const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
-    existingFavicons.forEach(favicon => favicon.remove());
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.href = url;
-    // Modern browsers generally pick the best icon format,
-    // so explicitly setting type might not be necessary unless specific formats are used.
-    // link.type = 'image/png'; // Or 'image/x-icon' for .ico files
-    document.head.appendChild(link);
-}
-
-;// ./src/MECHANIC/intercept.ts
-function intercept(link, targetUrl) {
-    const open = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function (method, url) {
-        if (url.includes(link)) {
-            arguments[1] = targetUrl;
-        }
-        open.apply(this, arguments);
-    };
-    const originalFetch = window.fetch;
-    window.fetch = function (url, options) {
-        if (url.includes(link)) {
-            url = targetUrl;
-        }
-        return originalFetch.apply(this, arguments);
-    };
-}
-
-
 ;// ./src/HUD/DesignSystem.ts
 /**
  * KxsClient Modern Design System
  * Implements a modern glassmorphism UI design with blur effects
  * Also supports classic UI styling when glassmorphism is disabled
  */
-class DesignSystem {
+class DesignSystem_DesignSystem {
     // Flag to check if glassmorphism is enabled - retrieved from KxsClient instance
     static isGlassmorphismEnabled() {
         var _a, _b;
@@ -1811,7 +1747,7 @@ class DesignSystem {
     }
 }
 // Color palette
-DesignSystem.colors = {
+DesignSystem_DesignSystem.colors = {
     primary: 'rgba(59, 130, 246, 0.9)', // Blue
     secondary: 'rgba(139, 92, 246, 0.9)', // Purple
     accent: 'rgba(236, 72, 153, 0.9)', // Pink
@@ -1823,7 +1759,7 @@ DesignSystem.colors = {
     info: 'rgba(59, 130, 246, 0.9)', // Blue
 };
 // Glassmorphism effects
-DesignSystem.glass = {
+DesignSystem_DesignSystem.glass = {
     light: {
         background: 'rgba(255, 255, 255, 0.1)',
         blur: '10px',
@@ -1844,7 +1780,7 @@ DesignSystem.glass = {
     },
 };
 // Classic styles (non-glassmorphism)
-DesignSystem.classic = {
+DesignSystem_DesignSystem.classic = {
     light: {
         background: 'rgba(240, 240, 240, 0.9)',
         border: '1px solid #ccc',
@@ -1862,7 +1798,7 @@ DesignSystem.classic = {
     },
 };
 // Font settings
-DesignSystem.fonts = {
+DesignSystem_DesignSystem.fonts = {
     primary: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     secondary: '"Cinzel", serif',
     sizes: {
@@ -1877,7 +1813,7 @@ DesignSystem.fonts = {
     }
 };
 // Border radius
-DesignSystem.radius = {
+DesignSystem_DesignSystem.radius = {
     sm: '0.25rem',
     md: '0.5rem',
     lg: '1rem',
@@ -1885,7 +1821,7 @@ DesignSystem.radius = {
     full: '9999px',
 };
 // Spacing
-DesignSystem.spacing = {
+DesignSystem_DesignSystem.spacing = {
     xs: '0.25rem',
     sm: '0.5rem',
     md: '1rem',
@@ -1894,14 +1830,14 @@ DesignSystem.spacing = {
     '2xl': '3rem',
 };
 // Animation durations
-DesignSystem.animation = {
+DesignSystem_DesignSystem.animation = {
     fast: '0.15s',
     normal: '0.3s',
     slow: '0.5s',
     pulse: 'pulse',
 };
 // Z-index layers
-DesignSystem.layers = {
+DesignSystem_DesignSystem.layers = {
     base: 1,
     menu: 10,
     modal: 20,
@@ -1917,7 +1853,7 @@ DesignSystem.layers = {
  * that displays during the loading of game resources.
  */
 
-class LoadingScreen {
+class LoadingScreen_LoadingScreen {
     /**
      * Creates a new instance of the loading screen
      * @param logoUrl URL of the Kxs logo to display
@@ -2069,285 +2005,10 @@ class LoadingScreen {
     }
 }
 
-;// ./src/HUD/ServerSelector.ts
-class ServerSelector {
-    constructor(servers, onServerSelect) {
-        this.isActive = false;
-        this.serverContainer = null;
-        this.serverCards = [];
-        this.selectedIndex = 0;
-        this.originalBodyContent = '';
-        this.animation = null;
-        this.servers = [];
-        this.onServerSelect = null;
-        this.servers = this.processServerUrls(servers);
-        this.onServerSelect = onServerSelect || null;
-    }
-    /**
-     * Process server URLs from match patterns to display-friendly names
-     */
-    processServerUrls(servers) {
-        return servers.map(server => {
-            // Remove wildcards and protocol
-            return server.replace(/^\*:\/\//, '')
-                // Remove trailing wildcards
-                .replace(/\/\*$/, '')
-                // Handle special case for IP addresses
-                .replace(/\/+$/, '');
-        });
-    }
-    /**
-     * Show the server selection interface
-     */
-    show() {
-        // If already active, close first to reset properly
-        if (this.isActive) {
-            this.close();
-        }
-        this.isActive = true;
-        // Store original content if not already stored
-        if (!this.originalBodyContent) {
-            this.originalBodyContent = document.body.innerHTML;
-        }
-        // Create overlay
-        this.createInterface();
-        // Start animations
-        this.startAnimations();
-        // Add keyboard navigation
-        this.setupKeyboardNavigation();
-    }
-    /**
-     * Create the server selection interface
-     */
-    createInterface() {
-        // Create overlay container
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.top = '0';
-        overlay.style.left = '0';
-        overlay.style.width = '100%';
-        overlay.style.height = '100%';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-        overlay.style.display = 'flex';
-        overlay.style.flexDirection = 'column';
-        overlay.style.justifyContent = 'center';
-        overlay.style.alignItems = 'center';
-        overlay.style.zIndex = '10000';
-        overlay.style.perspective = '1000px';
-        overlay.style.fontFamily = 'Arial, sans-serif';
-        // Create header
-        const header = document.createElement('h1');
-        header.textContent = 'Select Server';
-        header.style.color = '#fff';
-        header.style.marginBottom = '40px';
-        header.style.fontSize = '36px';
-        header.style.textShadow = '0 0 10px rgba(255,0,0,0.8)';
-        overlay.appendChild(header);
-        // Create server container
-        this.serverContainer = document.createElement('div');
-        this.serverContainer.style.position = 'relative';
-        this.serverContainer.style.width = '80%';
-        this.serverContainer.style.height = '300px';
-        this.serverContainer.style.display = 'flex';
-        this.serverContainer.style.justifyContent = 'center';
-        this.serverContainer.style.alignItems = 'center';
-        this.serverContainer.style.transformStyle = 'preserve-3d';
-        overlay.appendChild(this.serverContainer);
-        // Create instructions
-        const instructions = document.createElement('div');
-        instructions.style.position = 'absolute';
-        instructions.style.bottom = '20px';
-        instructions.style.color = '#aaa';
-        instructions.style.fontSize = '16px';
-        instructions.innerHTML = 'Use <strong>←/→</strong> arrows to navigate | <strong>Enter</strong> to select | <strong>Esc</strong> to close';
-        overlay.appendChild(instructions);
-        // Create server cards
-        this.createServerCards();
-        // Add the overlay to the body
-        document.body.appendChild(overlay);
-    }
-    /**
-     * Create 3D rotating cards for each server
-     */
-    createServerCards() {
-        if (!this.serverContainer)
-            return;
-        const totalServers = this.servers.length;
-        const radius = 300; // Radius of the circle
-        const cardWidth = 200;
-        const cardHeight = 120;
-        this.servers.forEach((server, index) => {
-            const card = document.createElement('div');
-            card.className = 'server-card';
-            card.style.position = 'absolute';
-            card.style.width = `${cardWidth}px`;
-            card.style.height = `${cardHeight}px`;
-            card.style.backgroundColor = index === this.selectedIndex ? '#500' : '#333';
-            card.style.color = '#fff';
-            card.style.borderRadius = '10px';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
-            card.style.justifyContent = 'center';
-            card.style.alignItems = 'center';
-            card.style.cursor = 'pointer';
-            card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
-            card.style.transition = 'background-color 0.3s ease';
-            card.style.padding = '15px';
-            card.style.backfaceVisibility = 'hidden';
-            // Create server name
-            const serverName = document.createElement('h2');
-            serverName.textContent = server;
-            serverName.style.margin = '0 0 10px 0';
-            serverName.style.fontSize = '20px';
-            card.appendChild(serverName);
-            // Add status indicator
-            const status = document.createElement('div');
-            status.style.width = '10px';
-            status.style.height = '10px';
-            status.style.borderRadius = '50%';
-            status.style.backgroundColor = '#0f0'; // Green for online
-            status.style.marginTop = '10px';
-            card.appendChild(status);
-            // Add click event
-            card.addEventListener('click', () => {
-                this.selectedIndex = index;
-                this.updateCardPositions();
-                this.selectServer();
-            });
-            this.serverCards.push(card);
-            if (this.serverContainer) {
-                this.serverContainer.appendChild(card);
-            }
-        });
-        // Position the cards in a circle
-        this.updateCardPositions();
-    }
-    /**
-     * Update the positions of all server cards in a 3D circle
-     */
-    updateCardPositions() {
-        const totalServers = this.servers.length;
-        const radius = Math.max(300, totalServers * 40); // Adjust radius based on number of servers
-        this.serverCards.forEach((card, index) => {
-            // Calculate position on the circle
-            const theta = ((index - this.selectedIndex) / totalServers) * 2 * Math.PI;
-            const x = radius * Math.sin(theta);
-            const z = radius * Math.cos(theta) - radius;
-            // Update card style
-            card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-theta * 180 / Math.PI}deg)`;
-            card.style.zIndex = z < 0 ? '-1' : '1';
-            card.style.opacity = (1 - Math.abs(index - this.selectedIndex) / totalServers).toString();
-            card.style.backgroundColor = index === this.selectedIndex ? '#500' : '#333';
-            // Add glow effect to selected card
-            if (index === this.selectedIndex) {
-                card.style.boxShadow = '0 0 20px rgba(255,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5)';
-            }
-            else {
-                card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.5)';
-            }
-        });
-    }
-    /**
-     * Start animations for the 3D carousel
-     */
-    startAnimations() {
-        // Subtle continuous movement for more 3D effect using requestAnimationFrame
-        let angle = 0;
-        let animationId;
-        const animate = () => {
-            angle += 0.005;
-            if (this.serverContainer) {
-                this.serverContainer.style.transform = `rotateY(${Math.sin(angle) * 5}deg) rotateX(${Math.cos(angle) * 3}deg)`;
-            }
-            animationId = requestAnimationFrame(animate);
-        };
-        // Store the animation ID for cleanup
-        this.animation = animationId = requestAnimationFrame(animate);
-    }
-    /**
-     * Set up keyboard navigation
-     */
-    setupKeyboardNavigation() {
-        const keyHandler = (e) => {
-            switch (e.key) {
-                case 'ArrowLeft':
-                    this.navigate(-1);
-                    break;
-                case 'ArrowRight':
-                    this.navigate(1);
-                    break;
-                case 'Enter':
-                    this.selectServer();
-                    break;
-                case 'Escape':
-                    this.close();
-                    break;
-            }
-        };
-        document.addEventListener('keydown', keyHandler);
-        // Store the handler reference so it can be removed when the selector is closed
-        this._keyHandler = keyHandler;
-    }
-    /**
-     * Navigate between servers
-     */
-    navigate(direction) {
-        const totalServers = this.servers.length;
-        this.selectedIndex = (this.selectedIndex + direction + totalServers) % totalServers;
-        this.updateCardPositions();
-    }
-    /**
-     * Select current server and close the selector
-     */
-    selectServer() {
-        const selectedServer = this.servers[this.selectedIndex];
-        if (this.onServerSelect && selectedServer) {
-            this.onServerSelect(selectedServer);
-        }
-        this.close();
-    }
-    /**
-     * Close the server selector
-     */
-    close() {
-        var _a;
-        if (!this.isActive)
-            return;
-        this.isActive = false;
-        // Stop animations
-        if (this.animation !== null) {
-            clearInterval(this.animation);
-            this.animation = null;
-        }
-        // Remove keyboard event listener
-        if (this._keyHandler) {
-            document.removeEventListener('keydown', this._keyHandler);
-            this._keyHandler = null;
-        }
-        // Remove the overlay
-        document.querySelectorAll('div.server-card').forEach(el => el.remove());
-        if (this.serverContainer && this.serverContainer.parentNode) {
-            const parent = this.serverContainer.parentNode;
-            if (parent && parent instanceof HTMLElement) {
-                parent.remove();
-            }
-            else if (parent) {
-                // Fallback if parentNode exists but isn't an HTMLElement
-                const parentEl = parent;
-                (_a = parentEl.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(parentEl);
-            }
-        }
-        // Reset state for next use
-        this.serverContainer = null;
-        this.serverCards = [];
-        this.selectedIndex = 0;
-    }
-}
-
 ;// ./src/HUD/EasterEgg.ts
 
 
-class EasterEgg {
+class EasterEgg_EasterEgg {
     constructor() {
         this.originalStyles = {};
         this.zelda3Sound = null;
@@ -2965,7 +2626,7 @@ class EasterEgg {
                 }
             };
             // Create server selector with our modified redirect function
-            this.serverSelector = new ServerSelector(config_namespaceObject.match, redirectWithSound);
+            this.serverSelector = new ServerSelector(config.match, redirectWithSound);
             // Handle close events to play the close sound
             if (this.serverSelector) {
                 const originalClose = this.serverSelector.close.bind(this.serverSelector);
@@ -3058,78 +2719,6 @@ const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboard
 const onboarding_kxzraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxzClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxz.png\" alt=\"KxzClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxz Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_2.png\" alt=\"Kxz Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding-styles.css?raw
 const onboarding_stylesraw_namespaceObject = "/* Reset and base styles */\r\n.popup-overlay {\r\n\tposition: fixed;\r\n\ttop: 0;\r\n\tleft: 0;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tbackground: rgba(0, 0, 0, 0.8);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tz-index: 1000;\r\n\tfont-family: Arial, sans-serif;\r\n}\r\n\r\n.subtitle-image {\r\n\tdisplay: block;\r\n\tmargin: 0 auto;\r\n\tmax-width: 00px;\r\n\t/* adapte selon ton image */\r\n\theight: auto;\r\n}\r\n\r\n.popup-content {\r\n\tbackground: #2c3e50;\r\n\tborder-radius: 10px;\r\n\tmax-width: 90%;\r\n\tmax-height: 90%;\r\n\toverflow-y: auto;\r\n\tcolor: white;\r\n\tposition: relative;\r\n}\r\n\r\n/* Header with Discord button */\r\n.popup-header {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tpadding: 20px 30px 0;\r\n\tmargin-bottom: 20px;\r\n}\r\n\r\n.discord-button {\r\n\tbackground: #5865F2;\r\n\tcolor: white;\r\n\tborder: none;\r\n\tpadding: 10px 20px;\r\n\tborder-radius: 5px;\r\n\tcursor: pointer;\r\n\tfont-size: 14px;\r\n\tfont-weight: bold;\r\n\ttransition: background-color 0.3s ease;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 8px;\r\n}\r\n\r\n.discord-button:hover {\r\n\tbackground: #4752C4;\r\n}\r\n\r\n.discord-icon {\r\n\twidth: 16px;\r\n\theight: 16px;\r\n\tfill: currentColor;\r\n}\r\n\r\n.popup-content .container {\r\n\tmax-width: 600px;\r\n\tmargin: 0 auto;\r\n\tpadding: 0 20px 40px;\r\n\ttext-align: center;\r\n}\r\n\r\n.popup-content h1 {\r\n\tcolor: #3498db;\r\n\tfont-size: 2.5em;\r\n\tmargin-bottom: 10px;\r\n}\r\n\r\n.popup-content .subtitle {\r\n\tfont-size: 1.2em;\r\n\tmargin-bottom: 40px;\r\n\tcolor: #bdc3c7;\r\n}\r\n\r\n.popup-content .steps {\r\n\ttext-align: left;\r\n\tmargin: 40px 0;\r\n}\r\n\r\n.popup-content .step {\r\n\tbackground: #34495e;\r\n\tpadding: 20px;\r\n\tmargin: 15px 0;\r\n\tborder-radius: 8px;\r\n\tborder-left: 4px solid #3498db;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 20px;\r\n}\r\n\r\n.popup-content .step-large-image {\r\n\tmargin: 20px 0;\r\n\ttext-align: center;\r\n\tbackground: #34495e;\r\n\tborder-radius: 8px;\r\n\tpadding: 15px;\r\n\tborder: 2px solid #3498db;\r\n}\r\n\r\n.popup-content .step-large-image img {\r\n\twidth: 100%;\r\n\tmax-width: 500px;\r\n\theight: auto;\r\n\tborder-radius: 5px;\r\n\tbox-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\r\n}\r\n\r\n.popup-content .step-content {\r\n\tflex: 1;\r\n}\r\n\r\n.popup-content .step h3 {\r\n\tmargin: 0 0 10px 0;\r\n\tcolor: #3498db;\r\n}\r\n\r\n.popup-content .step p {\r\n\tmargin: 0;\r\n\tline-height: 1.5;\r\n}\r\n\r\n.popup-content .play-button {\r\n\tbackground: #e74c3c;\r\n\tcolor: white;\r\n\tborder: none;\r\n\tpadding: 15px 30px;\r\n\tfont-size: 1.2em;\r\n\tborder-radius: 5px;\r\n\tcursor: pointer;\r\n\tmargin-top: 30px;\r\n\ttransition: background-color 0.3s ease;\r\n}\r\n\r\n.popup-content .play-button:hover {\r\n\tbackground: #c0392b;\r\n}\r\n\r\n@media (max-width: 768px) {\r\n\t.popup-header {\r\n\t\tflex-direction: column;\r\n\t\tgap: 15px;\r\n\t\talign-items: stretch;\r\n\t}\r\n\r\n\t.discord-button {\r\n\t\tjustify-content: center;\r\n\t}\r\n\r\n\t.popup-content h1 {\r\n\t\tfont-size: 2em;\r\n\t}\r\n\r\n\t.popup-content .step {\r\n\t\tflex-direction: column;\r\n\t\ttext-align: center;\r\n\t}\r\n}";
-;// ./src/FUNC/Felicitations.ts
-function felicitation(enable, win_sound_url, text) {
-    const goldText = document.createElement("div");
-    goldText.textContent = text;
-    goldText.style.position = "fixed";
-    goldText.style.top = "50%";
-    goldText.style.left = "50%";
-    goldText.style.transform = "translate(-50%, -50%)";
-    goldText.style.fontSize = "80px";
-    goldText.style.color = "gold";
-    goldText.style.textShadow = "2px 2px 4px rgba(0,0,0,0.3)";
-    goldText.style.zIndex = "10000";
-    document.body.appendChild(goldText);
-    function createConfetti() {
-        const colors = [
-            "#ff0000",
-            "#00ff00",
-            "#0000ff",
-            "#ffff00",
-            "#ff00ff",
-            "#00ffff",
-            "gold",
-        ];
-        const confetti = document.createElement("div");
-        confetti.style.position = "fixed";
-        confetti.style.width = Math.random() * 10 + 5 + "px";
-        confetti.style.height = Math.random() * 10 + 5 + "px";
-        confetti.style.backgroundColor =
-            colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.borderRadius = "50%";
-        confetti.style.zIndex = "9999";
-        confetti.style.left = Math.random() * 100 + "vw";
-        confetti.style.top = "-20px";
-        document.body.appendChild(confetti);
-        let posY = -20;
-        let posX = parseFloat(confetti.style.left);
-        let rotation = 0;
-        let speedY = Math.random() * 2 + 1;
-        let speedX = Math.random() * 2 - 1;
-        function fall() {
-            posY += speedY;
-            posX += speedX;
-            rotation += 5;
-            confetti.style.top = posY + "px";
-            confetti.style.left = posX + "vw";
-            confetti.style.transform = `rotate(${rotation}deg)`;
-            if (posY < window.innerHeight) {
-                requestAnimationFrame(fall);
-            }
-            else {
-                confetti.remove();
-            }
-        }
-        fall();
-    }
-    const confettiInterval = setInterval(() => {
-        for (let i = 0; i < 5; i++) {
-            createConfetti();
-        }
-    }, 100);
-    if (enable) {
-        const audio = new Audio(win_sound_url);
-        audio.play().catch((err) => console.error("Erreur lecture:", err));
-    }
-    setTimeout(() => {
-        clearInterval(confettiInterval);
-        goldText.style.transition = "opacity 1s";
-        goldText.style.opacity = "0";
-        setTimeout(() => goldText.remove(), 1000);
-    }, 5000);
-}
-
 ;// ./src/FUNC/Onboarding.ts
 // FUNC/Onboarding.ts
 // @ts-ignore
@@ -3141,7 +2730,7 @@ function felicitation(enable, win_sound_url, text) {
 
 
 
-class OnboardingModal {
+class Onboarding_OnboardingModal {
     constructor() {
         this.overlay = null;
         this.isVisible = false;
@@ -3155,7 +2744,7 @@ class OnboardingModal {
         }
         const styleElement = document.createElement('style');
         styleElement.id = styleId;
-        styleElement.textContent = onboarding_stylesraw_namespaceObject;
+        styleElement.textContent = styles;
         document.head.appendChild(styleElement);
     }
     // Show the onboarding modal
@@ -3167,7 +2756,7 @@ class OnboardingModal {
         this.injectStyles();
         // Create overlay element
         this.overlay = document.createElement('div');
-        this.overlay.innerHTML = vars_client.type === ClientType.KxsClient ? onboardingraw_namespaceObject : onboarding_kxzraw_namespaceObject;
+        this.overlay.innerHTML = client.type === ClientType.KxsClient ? htmlTemplate : htmlTemplate2;
         // Get the actual overlay from the created HTML
         const overlayElement = this.overlay.firstElementChild;
         // Add to document body
@@ -3187,7 +2776,7 @@ class OnboardingModal {
         this.overlay.remove();
         this.overlay = null;
         this.isVisible = false;
-        let welcome_sound = vars_client.type === ClientType.KxsClient ? "https://kxs.rip/assets/o_sound.mp3" : "https://kxs.rip/assets/o_z_sound.mp3";
+        let welcome_sound = client.type === ClientType.KxsClient ? "https://kxs.rip/assets/o_sound.mp3" : "https://kxs.rip/assets/o_z_sound.mp3";
         felicitation(true, welcome_sound, "Welcome to " + __webpack_require__.g.client.name);
         localStorage.setItem("on_boarding_complete", "yes");
     }
@@ -3237,11 +2826,11 @@ class OnboardingModal {
         return this.isVisible;
     }
 }
-/* harmony default export */ const Onboarding = ((/* unused pure expression or super */ null && (OnboardingModal)));
+/* harmony default export */ const Onboarding = ((/* unused pure expression or super */ null && (Onboarding_OnboardingModal)));
 
 ;// ./src/HUD/MOD/HealthWarning.ts
 
-class HealthWarning {
+class HealthWarning_HealthWarning {
     constructor(kxsClient) {
         this.isDraggable = false;
         this.isDragging = false;
@@ -3550,331 +3139,6 @@ class HealthWarning {
 }
 
 
-;// ./src/MECHANIC/KillLeaderTracking.ts
-class KillLeaderTracker {
-    constructor(kxsClient) {
-        this.offsetX = 20;
-        this.offsetY = 20;
-        this.lastKnownKills = 0;
-        this.wasKillLeader = false;
-        this.MINIMUM_KILLS_FOR_LEADER = 3;
-        this.kxsClient = kxsClient;
-        this.warningElement = null;
-        this.encouragementElement = null;
-        this.killLeaderKillCount = 0;
-        this.wasKillLeader = false;
-        this.createEncouragementElement();
-        this.initMouseTracking();
-    }
-    createEncouragementElement() {
-        const encouragement = document.createElement("div");
-        encouragement.style.cssText = `
-            position: fixed;
-            background: rgba(0, 255, 0, 0.1);
-            border: 2px solid #00ff00;
-            border-radius: 5px;
-            padding: 10px 15px;
-            color: #00ff00;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            z-index: 9999;
-            display: none;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            pointer-events: none;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-        `;
-        const content = document.createElement("div");
-        content.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        `;
-        const icon = document.createElement("div");
-        icon.innerHTML = `
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-            </svg>
-        `;
-        const text = document.createElement("span");
-        text.textContent = "Nice Kill!";
-        content.appendChild(icon);
-        content.appendChild(text);
-        encouragement.appendChild(content);
-        document.body.appendChild(encouragement);
-        this.encouragementElement = encouragement;
-        this.addEncouragementAnimation();
-    }
-    initMouseTracking() {
-        document.addEventListener("mousemove", (e) => {
-            this.updateElementPosition(this.warningElement, e);
-            this.updateElementPosition(this.encouragementElement, e);
-        });
-    }
-    updateElementPosition(element, e) {
-        if (!element || element.style.display === "none")
-            return;
-        const x = e.clientX + this.offsetX;
-        const y = e.clientY + this.offsetY;
-        const rect = element.getBoundingClientRect();
-        const maxX = window.innerWidth - rect.width;
-        const maxY = window.innerHeight - rect.height;
-        const finalX = Math.min(Math.max(0, x), maxX);
-        const finalY = Math.min(Math.max(0, y), maxY);
-        element.style.transform = `translate(${finalX}px, ${finalY}px)`;
-    }
-    addEncouragementAnimation() {
-        const keyframes = `
-            @keyframes encouragementPulse {
-                0% { transform: scale(1); opacity: 1; }
-                50% { transform: scale(1.1); opacity: 0.8; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-            @keyframes fadeInOut {
-                0% { opacity: 0; transform: translateY(20px); }
-                10% { opacity: 1; transform: translateY(0); }
-                90% { opacity: 1; transform: translateY(0); }
-                100% { opacity: 0; transform: translateY(-20px); }
-            }
-        `;
-        const style = document.createElement("style");
-        style.textContent = keyframes;
-        document.head.appendChild(style);
-        if (this.encouragementElement) {
-            this.encouragementElement.style.animation = "fadeInOut 3s forwards";
-        }
-    }
-    showEncouragement(killsToLeader, isDethrone = false, noKillLeader = false) {
-        if (!this.encouragementElement)
-            return;
-        let message;
-        if (isDethrone && killsToLeader !== 0) {
-            message = "Oh no! You've been dethroned!";
-            this.encouragementElement.style.borderColor = "#ff0000";
-            this.encouragementElement.style.color = "#ff0000";
-            this.encouragementElement.style.background = "rgba(255, 0, 0, 0.1)";
-        }
-        else if (noKillLeader) {
-            const killsNeeded = this.MINIMUM_KILLS_FOR_LEADER - this.lastKnownKills;
-            message = `Nice Kill! Get ${killsNeeded} more kills to become the first Kill Leader!`;
-        }
-        else {
-            message =
-                killsToLeader <= 0
-                    ? "You're the Kill Leader! 👑"
-                    : `Nice Kill! ${killsToLeader} more to become Kill Leader!`;
-        }
-        const span = this.encouragementElement.querySelector("span");
-        if (span)
-            span.textContent = message;
-        this.encouragementElement.style.display = "block";
-        this.encouragementElement.style.animation = "fadeInOut 3s forwards";
-        setTimeout(() => {
-            if (this.encouragementElement) {
-                this.encouragementElement.style.display = "none";
-                // Reset colors
-                this.encouragementElement.style.borderColor = "#00ff00";
-                this.encouragementElement.style.color = "#00ff00";
-                this.encouragementElement.style.background = "rgba(0, 255, 0, 0.1)";
-            }
-        }, 7000);
-    }
-    isKillLeader() {
-        const killLeaderNameElement = document.querySelector("#ui-kill-leader-name");
-        return this.kxsClient.getUsername() === (killLeaderNameElement === null || killLeaderNameElement === void 0 ? void 0 : killLeaderNameElement.textContent);
-    }
-    update(myKills) {
-        if (!this.kxsClient.isKillLeaderTrackerEnabled)
-            return;
-        if (client.type === 2)
-            return;
-        const killLeaderElement = document.querySelector("#ui-kill-leader-count");
-        this.killLeaderKillCount = parseInt((killLeaderElement === null || killLeaderElement === void 0 ? void 0 : killLeaderElement.textContent) || "0", 10);
-        if (myKills > this.lastKnownKills) {
-            if (this.killLeaderKillCount === 0) {
-                // Pas encore de kill leader, encourager le joueur à atteindre 3 kills
-                this.showEncouragement(0, false, true);
-            }
-            else if (this.killLeaderKillCount < this.MINIMUM_KILLS_FOR_LEADER) {
-                // Ne rien faire si le kill leader n'a pas atteint le minimum requis
-                return;
-            }
-            else if (this.isKillLeader() && myKills > 0) {
-                this.showEncouragement(0);
-                this.wasKillLeader = true;
-            }
-            else {
-                const killsNeeded = this.killLeaderKillCount + 1 - myKills;
-                this.showEncouragement(killsNeeded);
-            }
-        }
-        else if (this.wasKillLeader && !this.isKillLeader()) {
-            // Détroné
-            this.showEncouragement(0, true);
-            this.wasKillLeader = false;
-        }
-        this.lastKnownKills = myKills;
-    }
-}
-
-
-;// ./src/HUD/GridSystem.ts
-class GridSystem {
-    constructor() {
-        this.gridSize = 20; // Size of each grid cell
-        this.snapThreshold = 15; // Distance in pixels to trigger snap
-        this.gridVisible = false;
-        this.magneticEdges = true;
-        this.counterElements = {};
-        this.gridContainer = this.createGridOverlay();
-        this.setupKeyBindings();
-    }
-    createGridOverlay() {
-        const container = document.createElement("div");
-        container.id = "grid-overlay";
-        Object.assign(container.style, {
-            position: "fixed",
-            top: "0",
-            left: "0",
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-            zIndex: "9999",
-            display: "none",
-            opacity: "0.2",
-        });
-        // Create vertical lines
-        for (let x = this.gridSize; x < window.innerWidth; x += this.gridSize) {
-            const vLine = document.createElement("div");
-            Object.assign(vLine.style, {
-                position: "absolute",
-                left: `${x}px`,
-                top: "0",
-                width: "1px",
-                height: "100%",
-                backgroundColor: "#4CAF50",
-            });
-            container.appendChild(vLine);
-        }
-        // Create horizontal lines
-        for (let y = this.gridSize; y < window.innerHeight; y += this.gridSize) {
-            const hLine = document.createElement("div");
-            Object.assign(hLine.style, {
-                position: "absolute",
-                left: "0",
-                top: `${y}px`,
-                width: "100%",
-                height: "1px",
-                backgroundColor: "#4CAF50",
-            });
-            container.appendChild(hLine);
-        }
-        document.body.appendChild(container);
-        return container;
-    }
-    setupKeyBindings() {
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "g" && e.altKey) {
-                this.toggleGrid();
-            }
-        });
-    }
-    toggleGrid() {
-        this.gridVisible = !this.gridVisible;
-        this.gridContainer.style.display = this.gridVisible ? "block" : "none";
-    }
-    registerCounter(id, element) {
-        if (element) {
-            this.counterElements[id] = element;
-        }
-        else {
-            delete this.counterElements[id];
-        }
-    }
-    snapToGrid(element, x, y) {
-        const rect = element.getBoundingClientRect();
-        const elementWidth = rect.width;
-        const elementHeight = rect.height;
-        // Snap to grid
-        let snappedX = Math.round(x / this.gridSize) * this.gridSize;
-        let snappedY = Math.round(y / this.gridSize) * this.gridSize;
-        // Edge snapping
-        if (this.magneticEdges) {
-            const screenEdges = {
-                left: 0,
-                right: window.innerWidth - elementWidth,
-                center: (window.innerWidth - elementWidth) / 2,
-                top: 0,
-                bottom: window.innerHeight - elementHeight,
-                middle: (window.innerHeight - elementHeight) / 2,
-            };
-            // Snap to horizontal edges
-            if (Math.abs(x - screenEdges.left) < this.snapThreshold) {
-                snappedX = screenEdges.left;
-            }
-            else if (Math.abs(x - screenEdges.right) < this.snapThreshold) {
-                snappedX = screenEdges.right;
-            }
-            else if (Math.abs(x - screenEdges.center) < this.snapThreshold) {
-                snappedX = screenEdges.center;
-            }
-            // Snap to vertical edges
-            if (Math.abs(y - screenEdges.top) < this.snapThreshold) {
-                snappedY = screenEdges.top;
-            }
-            else if (Math.abs(y - screenEdges.bottom) < this.snapThreshold) {
-                snappedY = screenEdges.bottom;
-            }
-            else if (Math.abs(y - screenEdges.middle) < this.snapThreshold) {
-                snappedY = screenEdges.middle;
-            }
-        }
-        return { x: snappedX, y: snappedY };
-    }
-    highlightNearestGridLine(x, y) {
-        if (!this.gridVisible)
-            return;
-        // Remove existing highlights
-        const highlights = document.querySelectorAll(".grid-highlight");
-        highlights.forEach((h) => h.remove());
-        // Create highlight for nearest vertical line
-        const nearestX = Math.round(x / this.gridSize) * this.gridSize;
-        if (Math.abs(x - nearestX) < this.snapThreshold) {
-            const vHighlight = document.createElement("div");
-            Object.assign(vHighlight.style, {
-                position: "absolute",
-                left: `${nearestX}px`,
-                top: "0",
-                width: "2px",
-                height: "100%",
-                backgroundColor: "#FFD700",
-                zIndex: "10000",
-                pointerEvents: "none",
-            });
-            vHighlight.classList.add("grid-highlight");
-            this.gridContainer.appendChild(vHighlight);
-        }
-        // Create highlight for nearest horizontal line
-        const nearestY = Math.round(y / this.gridSize) * this.gridSize;
-        if (Math.abs(y - nearestY) < this.snapThreshold) {
-            const hHighlight = document.createElement("div");
-            Object.assign(hHighlight.style, {
-                position: "absolute",
-                left: "0",
-                top: `${nearestY}px`,
-                width: "100%",
-                height: "2px",
-                backgroundColor: "#FFD700",
-                zIndex: "10000",
-                pointerEvents: "none",
-            });
-            hHighlight.classList.add("grid-highlight");
-            this.gridContainer.appendChild(hHighlight);
-        }
-    }
-}
-
-
 ;// ./src/SERVER/DiscordTracking.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -3957,7 +3221,7 @@ class WebhookValidator {
         });
     }
 }
-class DiscordTracking {
+class DiscordTracking_DiscordTracking {
     constructor(kxsClient, webhookUrl) {
         this.kxsClient = kxsClient;
         this.webhookUrl = webhookUrl;
@@ -4064,94 +3328,15 @@ class DiscordTracking {
 }
 
 
-;// ./src/FUNC/StatsParser.ts
-class StatsParser {
-    static cleanNumber(str) {
-        return parseInt(str.replace(/[^\d.-]/g, "")) || 0;
-    }
-    /**
-     * Extract the full duration string including the unit
-     */
-    static extractDuration(str) {
-        const match = str.match(/(\d+\s*[smh])/i);
-        return match ? match[1].trim() : "0s";
-    }
-    static parse(statsText, rankContent) {
-        let stats = {
-            username: "Player",
-            kills: 0,
-            damageDealt: 0,
-            damageTaken: 0,
-            duration: "",
-            position: "#unknown",
-        };
-        // Handle developer format
-        const devPattern = /Developer.*?Kills(\d+).*?Damage Dealt(\d+).*?Damage Taken(\d+).*?Survived(\d+\s*[smh])/i;
-        const devMatch = statsText.match(devPattern);
-        if (devMatch) {
-            return {
-                username: "Player",
-                kills: this.cleanNumber(devMatch[1]),
-                damageDealt: this.cleanNumber(devMatch[2]),
-                damageTaken: this.cleanNumber(devMatch[3]),
-                duration: devMatch[4].trim(), // Keep the full duration string with unit
-                position: rankContent.replace("##", "#"),
-            };
-        }
-        // Handle template format
-        const templatePattern = /%username%.*?Kills%kills_number%.*?Dealt%number_dealt%.*?Taken%damage_taken%.*?Survived%duration%/;
-        const templateMatch = statsText.match(templatePattern);
-        if (templateMatch) {
-            const parts = statsText.split(/Kills|Dealt|Taken|Survived/);
-            if (parts.length >= 5) {
-                return {
-                    username: parts[0].trim(),
-                    kills: this.cleanNumber(parts[1]),
-                    damageDealt: this.cleanNumber(parts[2]),
-                    damageTaken: this.cleanNumber(parts[3]),
-                    duration: this.extractDuration(parts[4]), // Extract full duration with unit
-                    position: rankContent.replace("##", "#"),
-                };
-            }
-        }
-        // Generic parsing as fallback
-        const usernameMatch = statsText.match(/^([^0-9]+)/);
-        if (usernameMatch) {
-            stats.username = usernameMatch[1].trim();
-        }
-        const killsMatch = statsText.match(/Kills[^0-9]*(\d+)/i);
-        if (killsMatch) {
-            stats.kills = this.cleanNumber(killsMatch[1]);
-        }
-        const dealtMatch = statsText.match(/Dealt[^0-9]*(\d+)/i);
-        if (dealtMatch) {
-            stats.damageDealt = this.cleanNumber(dealtMatch[1]);
-        }
-        const takenMatch = statsText.match(/Taken[^0-9]*(\d+)/i);
-        if (takenMatch) {
-            stats.damageTaken = this.cleanNumber(takenMatch[1]);
-        }
-        // Extract survival time with unit
-        const survivalMatch = statsText.match(/Survived[^0-9]*(\d+\s*[smh])/i);
-        if (survivalMatch) {
-            stats.duration = survivalMatch[1].trim();
-        }
-        stats.position = rankContent.replace("##", "#");
-        return stats;
-    }
-}
-
-
 // EXTERNAL MODULE: ./node_modules/semver/functions/gt.js
-var gt = __webpack_require__(580);
-var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
+var functions_gt = __webpack_require__(580);
 ;// ./src/creditpage.html?raw
 const creditpageraw_namespaceObject = "<!DOCTYPE html>\n<html lang=\"en\">\n\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>KxsClient - Credits</title>\n\t<style>\n\t\t* {\n\t\t\tmargin: 0;\n\t\t\tpadding: 0;\n\t\t\tbox-sizing: border-box;\n\t\t}\n\n\t\tbody {\n\t\t\tfont-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;\n\t\t\tbackground: #0d1117;\n\t\t\tcolor: #c9d1d9;\n\t\t\theight: 100vh;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t}\n\n\t\t.tabs {\n\t\t\tdisplay: flex;\n\t\t\tbackground: #161b22;\n\t\t\tborder-bottom: 1px solid #21262d;\n\t\t}\n\n\t\t.tab {\n\t\t\tpadding: 12px 24px;\n\t\t\tcursor: pointer;\n\t\t\tbackground: transparent;\n\t\t\tborder: none;\n\t\t\tcolor: #7d8590;\n\t\t\tfont: inherit;\n\t\t\ttransition: all 0.15s ease;\n\t\t\tborder-bottom: 2px solid transparent;\n\t\t}\n\n\t\t.tab:hover {\n\t\t\tcolor: #c9d1d9;\n\t\t\tbackground: #21262d;\n\t\t}\n\n\t\t.tab.active {\n\t\t\tcolor: #58a6ff;\n\t\t\tborder-bottom-color: #58a6ff;\n\t\t}\n\n\t\t.content-area {\n\t\t\tflex: 1;\n\t\t\toverflow: hidden;\n\t\t}\n\n\t\t.content {\n\t\t\theight: 100%;\n\t\t\tpadding: 24px;\n\t\t\toverflow-y: auto;\n\t\t\twhite-space: pre-wrap;\n\t\t\tfont-size: 13px;\n\t\t\tline-height: 1.6;\n\t\t\tdisplay: none;\n\t\t}\n\n\t\t.content.active {\n\t\t\tdisplay: block;\n\t\t}\n\n\t\t.loading {\n\t\t\tdisplay: flex;\n\t\t\tjustify-content: center;\n\t\t\talign-items: center;\n\t\t\theight: 200px;\n\t\t\tcolor: #7d8590;\n\t\t\tfont-size: 14px;\n\t\t}\n\n\t\t.error {\n\t\t\tcolor: #f85149;\n\t\t\ttext-align: center;\n\t\t\tpadding: 24px;\n\t\t\tfont-size: 14px;\n\t\t}\n\n\t\t::-webkit-scrollbar {\n\t\t\twidth: 8px;\n\t\t}\n\n\t\t::-webkit-scrollbar-track {\n\t\t\tbackground: #0d1117;\n\t\t}\n\n\t\t::-webkit-scrollbar-thumb {\n\t\t\tbackground: #30363d;\n\t\t\tborder-radius: 4px;\n\t\t}\n\n\t\t::-webkit-scrollbar-thumb:hover {\n\t\t\tbackground: #484f58;\n\t\t}\n\t</style>\n</head>\n\n<body>\n\t<div class=\"tabs\">\n\t\t<button class=\"tab active\" onclick=\"switchTab('credits', this)\">credits</button>\n\t\t<button class=\"tab\" onclick=\"switchTab('contributors', this)\">contributors</button>\n\t\t<button class=\"tab\" onclick=\"switchTab('changelogs', this)\">changelogs</button>\n\t</div>\n\n\t<div class=\"content-area\">\n\t\t<div id=\"credits-content\" class=\"content active\">\n\t\t\t<div class=\"loading\">Loading credits.txt...</div>\n\t\t</div>\n\t\t<div id=\"contributors-content\" class=\"content\">\n\t\t\t<div class=\"loading\">Loading contributors_wall.txt...</div>\n\t\t</div>\n\t\t<div id=\"changelogs-content\" class=\"content\">\n\t\t\t<div class=\"loading\">Loading changelogs.txt...</div>\n\t\t</div>\n\t</div>\n\n\t<script>\n\t\tlet loadedTabs = new Set();\n\n\t\tfunction switchTab(tabName) {\n\t\t\t// Update tab states\n\t\t\tdocument.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));\n\t\t\tdocument.querySelectorAll('.content').forEach(content => content.classList.remove('active'));\n\n\t\t\t// Activate selected tab\n\t\t\tconst tabButton = Array.from(document.querySelectorAll('.tab'))\n\t\t\t\t.find(btn => btn.textContent.toLowerCase() === tabName);\n\t\t\tif (tabButton) tabButton.classList.add('active');\n\t\t\tconst contentElement = document.getElementById(`${tabName}-content`);\n\t\t\tcontentElement.classList.add('active');\n\n\t\t\t// Load content if not already loaded\n\t\t\tif (!loadedTabs.has(tabName)) {\n\t\t\t\tloadContent(tabName);\n\t\t\t}\n\t\t}\n\n\t\tasync function loadContent(type) {\n\t\t\tconst contentElement = document.getElementById(`${type}-content`);\n\t\t\tconst urls = {\n\t\t\t\t'credits': 'https://kxs.rip/credits.txt',\n\t\t\t\t'contributors': 'https://kxs.rip/contributors_wall.txt',\n\t\t\t\t'changelogs': 'https://kxs.rip/changelogs.txt'\n\t\t\t};\n\n\t\t\ttry {\n\t\t\t\tconst response = await fetch(urls[type]);\n\t\t\t\tif (!response.ok) throw new Error(`Failed to load ${type}`);\n\t\t\t\tconst text = await response.text();\n\t\t\t\tcontentElement.textContent = text;\n\t\t\t\tloadedTabs.add(type);\n\t\t\t} catch (error) {\n\t\t\t\tcontentElement.innerHTML = `<div class=\"error\">Error loading ${type}: ${error.message}</div>`;\n\t\t\t}\n\t\t}\n\n\t\t// Load initial content\n\t\tswitchTab('%%FOCUS_TAB%%');\n\t</script>\n</body>\n\n</html>";
 ;// ./src/UTILS/credits-helper.ts
 // @ts-ignore
 
 // Function to create and show the "Click on me" animation above the version link
-function showClickMeAnimation() {
+function credits_helper_showClickMeAnimation() {
     // Get the position of the version link to position the animation above it
     const startBottomMiddle = document.getElementById("start-bottom-middle");
     if (!startBottomMiddle)
@@ -4275,9 +3460,9 @@ function showClickMeAnimation() {
     return animationContainer;
 }
 // Function to create and open the credits window
-function openCreditsWindow(focusTab = "credits") {
+function credits_helper_openCreditsWindow(focusTab = "credits") {
     // Use the imported HTML content
-    const htmlContent = creditpageraw_namespaceObject.replace('%%FOCUS_TAB%%', focusTab);
+    const htmlContent = creditsWindowHtml.replace('%%FOCUS_TAB%%', focusTab);
     // Create a blob URL from the HTML content
     const blob = new Blob([htmlContent], { type: 'text/html' });
     const blobUrl = URL.createObjectURL(blob);
@@ -4308,9 +3493,9 @@ var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (this
 
 
 
-class UpdateChecker {
+class UpdateChecker_UpdateChecker {
     constructor(kxsClient) {
-        this.remoteScriptUrl = `${config_namespaceObject.api_url}/cors/${encodeURIComponent(config_namespaceObject.base_url + "/download/latest-dev.js")}`;
+        this.remoteScriptUrl = `${config.api_url}/cors/${encodeURIComponent(config.base_url + "/download/latest-dev.js")}`;
         this.kxsClient = kxsClient;
         if (this.kxsClient.isAutoUpdateEnabled && client.type === 1) {
             this.checkForUpdate();
@@ -4373,7 +3558,7 @@ class UpdateChecker {
             const hostedScriptVersion = yield this.getNewScriptVersion();
             this.hostedScriptVersion = hostedScriptVersion;
             // Vérifie si la version hébergée est supérieure à la version locale
-            if (gt_default()(hostedScriptVersion, localScriptVersion)) {
+            if (gt(hostedScriptVersion, localScriptVersion)) {
                 this.displayUpdateNotification();
             }
             else {
@@ -4496,7 +3681,7 @@ class UpdateChecker {
 
 ;// ./src/SERVER/DiscordRichPresence.ts
 
-class DiscordWebSocket {
+class DiscordRichPresence_DiscordWebSocket {
     constructor(kxsClient, token) {
         this.ws = null;
         this.heartbeatInterval = 0;
@@ -4534,12 +3719,12 @@ class DiscordWebSocket {
                 },
                 presence: {
                     activities: [{
-                            name: vars_client.name,
+                            name: client.name,
                             type: 0,
-                            application_id: vars_client.application_id,
+                            application_id: client.application_id,
                             assets: {
-                                large_image: vars_client.rpc_assets,
-                                large_text: vars_client.name + " v" + this.kxsClient.pkg.version,
+                                large_image: client.rpc_assets,
+                                large_text: client.name + " v" + this.kxsClient.pkg.version,
                             }
                         }],
                     status: 'online',
@@ -4593,17 +3778,17 @@ class DiscordWebSocket {
 
 ;// ./src/HUD/MOD/NotificationManager.ts
 
-class NotificationManager {
+class NotificationManager_NotificationManager {
     constructor() {
         this.notifications = [];
         this.NOTIFICATION_HEIGHT = 65; // Height + margin
         this.addGlobalStyles();
     }
     static getInstance() {
-        if (!NotificationManager.instance) {
-            NotificationManager.instance = new NotificationManager();
+        if (!NotificationManager_NotificationManager.instance) {
+            NotificationManager_NotificationManager.instance = new NotificationManager_NotificationManager();
         }
-        return NotificationManager.instance;
+        return NotificationManager_NotificationManager.instance;
     }
     addGlobalStyles() {
         const styleSheet = document.createElement("style");
@@ -4762,8 +3947,8 @@ class NotificationManager {
 
 ;// ./src/types/hudMenu.ts
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "$MISC", "$CONFIG"];
-const X0 = ["Kxs Network", "Developer Options"];
-var ModType;
+const hudMenu_X0 = (/* unused pure expression or super */ null && (["Kxs Network", "Developer Options"]));
+var hudMenu_ModType;
 (function (ModType) {
     ModType[ModType["Toggle"] = 1] = "Toggle";
     ModType[ModType["Input"] = 2] = "Input";
@@ -4771,7 +3956,7 @@ var ModType;
     ModType[ModType["Info"] = 4] = "Info";
     ModType[ModType["Slider"] = 5] = "Slider";
     ModType[ModType["Sub"] = 6] = "Sub";
-})(ModType || (ModType = {}));
+})(hudMenu_ModType || (hudMenu_ModType = {}));
 
 ;// ./src/HUD/ClientSecondaryMenu.ts
 var ClientSecondaryMenu_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4793,7 +3978,7 @@ const ClientSecondaryMenu_category = category.filter(x => {
     }
     return true;
 });
-class KxsClientSecondaryMenu {
+class ClientSecondaryMenu_KxsClientSecondaryMenu {
     constructor(kxsClient) {
         this.searchTerm = '';
         // Fonction pour fermer un sous-menu
@@ -4919,7 +4104,7 @@ class KxsClientSecondaryMenu {
         let MISC = this.addSection("$MISC");
         let CONFIG = this.addSection("$CONFIG");
         this.addOption(SERVER, {
-            label: vars_client.acronym_start_upper + " Network",
+            label: client.acronym_start_upper + " Network",
             value: true,
             type: ModType.Sub,
             icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>network</title> <path d="M27 21.75c-0.795 0.004-1.538 0.229-2.169 0.616l0.018-0.010-2.694-2.449c0.724-1.105 1.154-2.459 1.154-3.913 0-1.572-0.503-3.027-1.358-4.212l0.015 0.021 3.062-3.062c0.57 0.316 1.249 0.503 1.971 0.508h0.002c2.347 0 4.25-1.903 4.25-4.25s-1.903-4.25-4.25-4.25c-2.347 0-4.25 1.903-4.25 4.25v0c0.005 0.724 0.193 1.403 0.519 1.995l-0.011-0.022-3.062 3.062c-1.147-0.84-2.587-1.344-4.144-1.344-0.868 0-1.699 0.157-2.467 0.443l0.049-0.016-0.644-1.17c0.726-0.757 1.173-1.787 1.173-2.921 0-2.332-1.891-4.223-4.223-4.223s-4.223 1.891-4.223 4.223c0 2.332 1.891 4.223 4.223 4.223 0.306 0 0.605-0.033 0.893-0.095l-0.028 0.005 0.642 1.166c-1.685 1.315-2.758 3.345-2.758 5.627 0 0.605 0.076 1.193 0.218 1.754l-0.011-0.049-0.667 0.283c-0.78-0.904-1.927-1.474-3.207-1.474-2.334 0-4.226 1.892-4.226 4.226s1.892 4.226 4.226 4.226c2.334 0 4.226-1.892 4.226-4.226 0-0.008-0-0.017-0-0.025v0.001c-0.008-0.159-0.023-0.307-0.046-0.451l0.003 0.024 0.667-0.283c1.303 2.026 3.547 3.349 6.1 3.349 1.703 0 3.268-0.589 4.503-1.574l-0.015 0.011 2.702 2.455c-0.258 0.526-0.41 1.144-0.414 1.797v0.001c0 2.347 1.903 4.25 4.25 4.25s4.25-1.903 4.25-4.25c0-2.347-1.903-4.25-4.25-4.25v0zM8.19 5c0-0.966 0.784-1.75 1.75-1.75s1.75 0.784 1.75 1.75c0 0.966-0.784 1.75-1.75 1.75v0c-0.966-0.001-1.749-0.784-1.75-1.75v-0zM5 22.42c-0.966-0.001-1.748-0.783-1.748-1.749s0.783-1.749 1.749-1.749c0.966 0 1.748 0.782 1.749 1.748v0c-0.001 0.966-0.784 1.749-1.75 1.75h-0zM27 3.25c0.966 0 1.75 0.784 1.75 1.75s-0.784 1.75-1.75 1.75c-0.966 0-1.75-0.784-1.75-1.75v0c0.001-0.966 0.784-1.749 1.75-1.75h0zM11.19 16c0-0.001 0-0.002 0-0.003 0-2.655 2.152-4.807 4.807-4.807 1.328 0 2.53 0.539 3.4 1.409l0.001 0.001 0.001 0.001c0.87 0.87 1.407 2.072 1.407 3.399 0 2.656-2.153 4.808-4.808 4.808s-4.808-2.153-4.808-4.808c0-0 0-0 0-0v0zM27 27.75c-0.966 0-1.75-0.784-1.75-1.75s0.784-1.75 1.75-1.75c0.966 0 1.75 0.784 1.75 1.75v0c-0.001 0.966-0.784 1.749-1.75 1.75h-0z"></path> </g></svg>',
@@ -4958,7 +4143,7 @@ class KxsClientSecondaryMenu {
                 }
             ],
         });
-        vars_client.type === 1 && this.addOption(MISC, {
+        client.type === 1 && this.addOption(MISC, {
             label: "Game History",
             value: true,
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.52786 16.7023C6.6602 18.2608 8.3169 19.3584 10.1936 19.7934C12.0703 20.2284 14.0409 19.9716 15.7434 19.0701C17.446 18.1687 18.766 16.6832 19.4611 14.8865C20.1562 13.0898 20.1796 11.1027 19.527 9.29011C18.8745 7.47756 17.5898 5.96135 15.909 5.02005C14.2282 4.07875 12.2641 3.77558 10.3777 4.16623C8.49129 4.55689 6.80919 5.61514 5.64045 7.14656C4.47171 8.67797 3.89482 10.5797 4.01579 12.5023M4.01579 12.5023L2.51579 11.0023M4.01579 12.5023L5.51579 11.0023" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 8V12L15 15" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
@@ -5025,7 +4210,7 @@ class KxsClientSecondaryMenu {
                 }
             ]
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        client.type === 1 && this.addOption(MECHANIC, {
             label: "Background Music",
             value: this.kxsClient.soundLibrary.background_sound_url,
             type: ModType.Input,
@@ -5047,7 +4232,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Counters",
             value: true,
             type: ModType.Sub,
@@ -5088,7 +4273,7 @@ class KxsClientSecondaryMenu {
                 }
             ],
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Weapon Border",
             value: this.kxsClient.isGunOverlayColored,
             type: ModType.Toggle,
@@ -5099,7 +4284,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.hud.toggleWeaponBorderHandler();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Chromatic Weapon Border",
             value: this.kxsClient.isGunBorderChromatic,
             type: ModType.Toggle,
@@ -5110,7 +4295,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.hud.toggleChromaticWeaponBorder();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Focus Mode",
             value: true,
             type: ModType.Sub,
@@ -5141,7 +4326,7 @@ class KxsClientSecondaryMenu {
                 }
             ],
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Health Bar Indicator",
             value: this.kxsClient.isHealBarIndicatorEnabled,
             type: ModType.Toggle,
@@ -5161,7 +4346,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(SERVER, {
+        client.type === 1 && this.addOption(SERVER, {
             label: "Webhook URL",
             value: this.kxsClient.discordWebhookUrl || "",
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12.52 3.046a3 3 0 0 0-2.13 5.486 1 1 0 0 1 .306 1.38l-3.922 6.163a2 2 0 1 1-1.688-1.073l3.44-5.405a5 5 0 1 1 8.398-2.728 1 1 0 1 1-1.97-.348 3 3 0 0 0-2.433-3.475zM10 6a2 2 0 1 1 3.774.925l3.44 5.405a5 5 0 1 1-1.427 8.5 1 1 0 0 1 1.285-1.532 3 3 0 1 0 .317-4.83 1 1 0 0 1-1.38-.307l-3.923-6.163A2 2 0 0 1 10 6zm-5.428 6.9a1 1 0 0 1-.598 1.281A3 3 0 1 0 8.001 17a1 1 0 0 1 1-1h8.266a2 2 0 1 1 0 2H9.9a5 5 0 1 1-6.61-5.698 1 1 0 0 1 1.282.597Z" fill="#000000"></path> </g></svg>',
@@ -5174,7 +4359,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        client.type === 1 && this.addOption(MECHANIC, {
             label: "Custom Crosshair",
             value: this.kxsClient.customCrosshair || "",
             type: ModType.Input,
@@ -5204,7 +4389,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(SERVER, {
+        client.type === 1 && this.addOption(SERVER, {
             label: "Update Checker",
             value: this.kxsClient.isAutoUpdateEnabled,
             type: ModType.Toggle,
@@ -5256,7 +4441,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: `Spotify Player`,
             value: this.kxsClient.isSpotifyPlayerEnabled,
             icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>spotify</title> <path d="M24.849 14.35c-3.206-1.616-6.988-2.563-10.991-2.563-2.278 0-4.484 0.306-6.58 0.881l0.174-0.041c-0.123 0.040-0.265 0.063-0.412 0.063-0.76 0-1.377-0.616-1.377-1.377 0-0.613 0.401-1.132 0.954-1.311l0.010-0.003c5.323-1.575 14.096-1.275 19.646 2.026 0.426 0.258 0.706 0.719 0.706 1.245 0 0.259-0.068 0.502-0.186 0.712l0.004-0.007c-0.29 0.345-0.721 0.563-1.204 0.563-0.273 0-0.529-0.070-0.752-0.192l0.008 0.004zM24.699 18.549c-0.201 0.332-0.561 0.55-0.971 0.55-0.225 0-0.434-0.065-0.61-0.178l0.005 0.003c-2.739-1.567-6.021-2.49-9.518-2.49-1.925 0-3.784 0.28-5.539 0.801l0.137-0.035c-0.101 0.032-0.217 0.051-0.337 0.051-0.629 0-1.139-0.51-1.139-1.139 0-0.509 0.333-0.939 0.793-1.086l0.008-0.002c1.804-0.535 3.878-0.843 6.023-0.843 3.989 0 7.73 1.064 10.953 2.925l-0.106-0.056c0.297 0.191 0.491 0.52 0.491 0.894 0 0.227-0.071 0.437-0.192 0.609l0.002-0.003zM22.899 22.673c-0.157 0.272-0.446 0.452-0.777 0.452-0.186 0-0.359-0.057-0.502-0.154l0.003 0.002c-2.393-1.346-5.254-2.139-8.299-2.139-1.746 0-3.432 0.261-5.020 0.745l0.122-0.032c-0.067 0.017-0.145 0.028-0.224 0.028-0.512 0-0.927-0.415-0.927-0.927 0-0.432 0.296-0.795 0.696-0.898l0.006-0.001c1.581-0.47 3.397-0.74 5.276-0.74 3.402 0 6.596 0.886 9.366 2.44l-0.097-0.050c0.302 0.15 0.506 0.456 0.506 0.809 0 0.172-0.048 0.333-0.132 0.469l0.002-0.004zM16 1.004c0 0 0 0-0 0-8.282 0-14.996 6.714-14.996 14.996s6.714 14.996 14.996 14.996c8.282 0 14.996-6.714 14.996-14.996v0c-0.025-8.272-6.724-14.971-14.993-14.996h-0.002z"></path> </g></svg>',
@@ -5267,7 +4452,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.toggleSpotifyMenu();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Brightness",
             value: this.kxsClient.brightness,
             icon: '<svg fill="#000000" viewBox="-5.5 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>light</title> <path d="M11.875 6v2.469c0 0.844-0.375 1.25-1.156 1.25s-1.156-0.406-1.156-1.25v-2.469c0-0.813 0.375-1.219 1.156-1.219s1.156 0.406 1.156 1.219zM14.219 9.25l1.438-2.031c0.469-0.625 1.063-0.75 1.656-0.313s0.656 1 0.188 1.688l-1.438 2c-0.469 0.688-1.031 0.75-1.656 0.313-0.594-0.438-0.656-0.969-0.188-1.656zM5.781 7.25l1.469 2c0.469 0.688 0.406 1.219-0.219 1.656-0.594 0.469-1.156 0.375-1.625-0.313l-1.469-2c-0.469-0.688-0.406-1.219 0.219-1.656 0.594-0.469 1.156-0.375 1.625 0.313zM10.719 11.125c2.688 0 4.875 2.188 4.875 4.875 0 2.656-2.188 4.813-4.875 4.813s-4.875-2.156-4.875-4.813c0-2.688 2.188-4.875 4.875-4.875zM1.594 11.813l2.375 0.75c0.781 0.25 1.063 0.719 0.813 1.469-0.219 0.75-0.75 0.969-1.563 0.719l-2.313-0.75c-0.781-0.25-1.063-0.75-0.844-1.5 0.25-0.719 0.75-0.938 1.531-0.688zM17.5 12.563l2.344-0.75c0.813-0.25 1.313-0.031 1.531 0.688 0.25 0.75-0.031 1.25-0.844 1.469l-2.313 0.781c-0.781 0.25-1.281 0.031-1.531-0.719-0.219-0.75 0.031-1.219 0.813-1.469zM10.719 18.688c1.5 0 2.719-1.219 2.719-2.688 0-1.5-1.219-2.719-2.719-2.719s-2.688 1.219-2.688 2.719c0 1.469 1.188 2.688 2.688 2.688zM0.906 17.969l2.344-0.75c0.781-0.25 1.313-0.063 1.531 0.688 0.25 0.75-0.031 1.219-0.813 1.469l-2.375 0.781c-0.781 0.25-1.281 0.031-1.531-0.719-0.219-0.75 0.063-1.219 0.844-1.469zM18.219 17.219l2.344 0.75c0.781 0.25 1.063 0.719 0.813 1.469-0.219 0.75-0.719 0.969-1.531 0.719l-2.344-0.781c-0.813-0.25-1.031-0.719-0.813-1.469 0.25-0.75 0.75-0.938 1.531-0.688zM3.938 23.344l1.469-1.969c0.469-0.688 1.031-0.781 1.625-0.313 0.625 0.438 0.688 0.969 0.219 1.656l-1.469 1.969c-0.469 0.688-1.031 0.813-1.656 0.375-0.594-0.438-0.656-1.031-0.188-1.719zM16.063 21.375l1.438 1.969c0.469 0.688 0.406 1.281-0.188 1.719s-1.188 0.281-1.656-0.344l-1.438-2c-0.469-0.688-0.406-1.219 0.188-1.656 0.625-0.438 1.188-0.375 1.656 0.313zM11.875 23.469v2.469c0 0.844-0.375 1.25-1.156 1.25s-1.156-0.406-1.156-1.25v-2.469c0-0.844 0.375-1.25 1.156-1.25s1.156 0.406 1.156 1.25z"></path> </g></svg>',
@@ -5279,7 +4464,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.applyBrightness(value);
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             label: "Kill Feed Chroma",
             value: this.kxsClient.isKillFeedBlint,
             icon: `<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g data-name="Layer 2" id="Layer_2"> <path d="M18,11a1,1,0,0,1-1,1,5,5,0,0,0-5,5,1,1,0,0,1-2,0,5,5,0,0,0-5-5,1,1,0,0,1,0-2,5,5,0,0,0,5-5,1,1,0,0,1,2,0,5,5,0,0,0,5,5A1,1,0,0,1,18,11Z"></path> <path d="M19,24a1,1,0,0,1-1,1,2,2,0,0,0-2,2,1,1,0,0,1-2,0,2,2,0,0,0-2-2,1,1,0,0,1,0-2,2,2,0,0,0,2-2,1,1,0,0,1,2,0,2,2,0,0,0,2,2A1,1,0,0,1,19,24Z"></path> <path d="M28,17a1,1,0,0,1-1,1,4,4,0,0,0-4,4,1,1,0,0,1-2,0,4,4,0,0,0-4-4,1,1,0,0,1,0-2,4,4,0,0,0,4-4,1,1,0,0,1,2,0,4,4,0,0,0,4,4A1,1,0,0,1,28,17Z"></path> </g> </g></svg>`,
@@ -5304,7 +4489,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        client.type === 1 && this.addOption(MECHANIC, {
             label: `Kill Leader Tracking`,
             icon: '<svg fill="#000000" viewBox="-4 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>crown</title> <path d="M12 10.938c-1.375 0-2.5-1.125-2.5-2.5 0-1.406 1.125-2.5 2.5-2.5s2.5 1.094 2.5 2.5c0 1.375-1.125 2.5-2.5 2.5zM2.031 9.906c1.094 0 1.969 0.906 1.969 2 0 1.125-0.875 2-1.969 2-1.125 0-2.031-0.875-2.031-2 0-1.094 0.906-2 2.031-2zM22.031 9.906c1.094 0 1.969 0.906 1.969 2 0 1.125-0.875 2-1.969 2-1.125 0-2.031-0.875-2.031-2 0-1.094 0.906-2 2.031-2zM4.219 23.719l-1.656-9.063c0.5-0.094 0.969-0.375 1.344-0.688 1.031 0.938 2.344 1.844 3.594 1.844 1.5 0 2.719-2.313 3.563-4.25 0.281 0.094 0.625 0.188 0.938 0.188s0.656-0.094 0.938-0.188c0.844 1.938 2.063 4.25 3.563 4.25 1.25 0 2.563-0.906 3.594-1.844 0.375 0.313 0.844 0.594 1.344 0.688l-1.656 9.063h-15.563zM3.875 24.5h16.25v1.531h-16.25v-1.531z"></path> </g></svg>',
             value: this.kxsClient.isKillLeaderTrackerEnabled,
@@ -5314,7 +4499,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        client.type === 1 && this.addOption(MECHANIC, {
             label: `Friends Detector (separe with ',')`,
             icon: '<svg fill="#000000" viewBox="0 -6 44 44" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M42.001,32.000 L14.010,32.000 C12.908,32.000 12.010,31.104 12.010,30.001 L12.010,28.002 C12.010,27.636 12.211,27.300 12.532,27.124 L22.318,21.787 C19.040,18.242 19.004,13.227 19.004,12.995 L19.010,7.002 C19.010,6.946 19.015,6.891 19.024,6.837 C19.713,2.751 24.224,0.007 28.005,0.007 C28.006,0.007 28.008,0.007 28.009,0.007 C31.788,0.007 36.298,2.749 36.989,6.834 C36.998,6.889 37.003,6.945 37.003,7.000 L37.006,12.994 C37.006,13.225 36.970,18.240 33.693,21.785 L43.479,27.122 C43.800,27.298 44.000,27.634 44.000,28.000 L44.000,30.001 C44.000,31.104 43.103,32.000 42.001,32.000 ZM31.526,22.880 C31.233,22.720 31.039,22.425 31.008,22.093 C30.978,21.761 31.116,21.436 31.374,21.226 C34.971,18.310 35.007,13.048 35.007,12.995 L35.003,7.089 C34.441,4.089 30.883,2.005 28.005,2.005 C25.126,2.006 21.570,4.091 21.010,7.091 L21.004,12.997 C21.004,13.048 21.059,18.327 24.636,21.228 C24.895,21.438 25.033,21.763 25.002,22.095 C24.972,22.427 24.778,22.722 24.485,22.882 L14.010,28.596 L14.010,30.001 L41.999,30.001 L42.000,28.595 L31.526,22.880 ZM18.647,2.520 C17.764,2.177 16.848,1.997 15.995,1.997 C13.116,1.998 9.559,4.083 8.999,7.083 L8.993,12.989 C8.993,13.041 9.047,18.319 12.625,21.220 C12.884,21.430 13.022,21.755 12.992,22.087 C12.961,22.419 12.767,22.714 12.474,22.874 L1.999,28.588 L1.999,29.993 L8.998,29.993 C9.550,29.993 9.997,30.441 9.997,30.993 C9.997,31.545 9.550,31.993 8.998,31.993 L1.999,31.993 C0.897,31.993 -0.000,31.096 -0.000,29.993 L-0.000,27.994 C-0.000,27.629 0.200,27.292 0.521,27.117 L10.307,21.779 C7.030,18.234 6.993,13.219 6.993,12.988 L6.999,6.994 C6.999,6.939 7.004,6.883 7.013,6.829 C7.702,2.744 12.213,-0.000 15.995,-0.000 C15.999,-0.000 16.005,-0.000 16.010,-0.000 C17.101,-0.000 18.262,0.227 19.369,0.656 C19.885,0.856 20.140,1.435 19.941,1.949 C19.740,2.464 19.158,2.720 18.647,2.520 Z"></path> </g></svg>',
             value: this.kxsClient.all_friends,
@@ -5325,7 +4510,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        client.type === 1 && this.addOption(HUD, {
             icon: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect width="48" height="48" fill="white" fill-opacity="0.01"></rect> <path fill-rule="evenodd" clip-rule="evenodd" d="M37 37C39.2091 37 41 35.2091 41 33C41 31.5272 39.6667 29.5272 37 27C34.3333 29.5272 33 31.5272 33 33C33 35.2091 34.7909 37 37 37Z" fill="#000000"></path> <path d="M20.8535 5.50439L24.389 9.03993" stroke="#000000" stroke-width="4" stroke-linecap="round"></path> <path d="M23.6818 8.33281L8.12549 23.8892L19.4392 35.2029L34.9955 19.6465L23.6818 8.33281Z" stroke="#000000" stroke-width="4" stroke-linejoin="round"></path> <path d="M12 20.0732L28.961 25.6496" stroke="#000000" stroke-width="4" stroke-linecap="round"></path> <path d="M4 43H44" stroke="#000000" stroke-width="4" stroke-linecap="round"></path> </g></svg>',
             label: "Background Modifiction",
             type: ModType.Sub,
@@ -5355,7 +4540,7 @@ class KxsClientSecondaryMenu {
                             alert("Element with id 'background' not found.");
                             return;
                         }
-                        const choice = prompt(`Enter '0' to default ${vars_client.acronym_start_upper} background, '1' to provide a URL or '2' to upload a local image:`);
+                        const choice = prompt(`Enter '0' to default ${client.acronym_start_upper} background, '1' to provide a URL or '2' to upload a local image:`);
                         if (choice === "0") {
                             localStorage.removeItem("lastBackgroundUrl");
                             localStorage.removeItem("lastBackgroundFile");
@@ -5395,7 +4580,7 @@ class KxsClientSecondaryMenu {
             ],
             value: true
         });
-        vars_client.type === 1 && this.addOption(MISC, {
+        client.type === 1 && this.addOption(MISC, {
             label: "Developer Options",
             value: true,
             icon: '<svg fill="#000000" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="m 9.095305,2.8613212 -8.0953049,1.257035 1.3073163,8.3969928 4.3242001,-0.70394 C 6.5812355,11.45944 7.7377073,8.4425562 7.9388329,7.8894612 l -2.2123815,0.351969 0.3016884,-0.905065 1.5587233,-0.251407 0.4022512,0.502814 c 0,0 0.1005628,-0.251407 0.1005628,-0.35197 L 5.927577,4.5708882 C 5.8270142,4.4200442 5.8270142,4.2189192 5.9778584,4.1183562 l 0.1005628,-0.100563 c 0.1508442,-0.100563 0.3519698,-0.100563 0.4525326,0.05028 l 1.910693,2.212382 c 0.4022512,-1.206754 0.754221,-2.262663 0.754221,-2.614633 0.050281,-0.100563 0.050281,-0.452532 -0.1005628,-0.804502 z M 3.0615374,7.8391792 4.4191351,7.5877722 4.0671653,8.4928372 3.1621002,8.6436812 3.0615374,7.8391792 Z m 2.916321,-2.564351 0.1508442,0.05028 c 0.2011256,0.05028 0.251407,0.251407 0.2011256,0.452533 L 4.8213863,9.8001542 3.9163211,11.006907 4.0168839,9.4984652 5.5253258,5.4759532 c 0.050281,-0.201125 0.251407,-0.251407 0.4525326,-0.201125 z m 5.4303906,-1.407879 c -0.201125,0.201125 -0.452532,0.854784 -0.955346,2.765477 l 0.05028,0 0.150844,0.804502 -0.402251,0.05028 c -0.05028,0.251407 -0.100563,0.502814 -0.201126,0.804503 0.854784,0.452532 0.402251,1.558723 0.35197,1.558723 -0.05028,0 -0.05028,0 -0.05028,-0.05028 0,-0.05028 0.05028,-0.201126 -0.100563,-0.251407 C 10.151214,9.4984652 9.9500887,9.4481842 9.7992445,9.3476212 9.6484004,9.9509982 9.4975562,10.654937 9.346712,11.409158 l 3.167728,-0.502814 -1.055909,-7.0896768 -0.05028,0.05028 z m -0.35197,-0.502814 c 0.201126,-0.100563 0.301689,-0.201126 0.452533,-0.201126 0.251407,0 0.402251,0.150844 0.452533,0.251407 0.100562,0.150844 0.452532,0.251407 0.603376,0.251407 0.100563,0 0.251407,-0.35197 0.35197,-0.653658 0.100563,-0.301688 0.100563,-0.653658 0.05028,-0.70394 -0.05028,-0.05028 -0.452532,-0.150844 -0.553095,-0.150844 -0.05028,0.05028 -0.150844,0.100563 -0.35197,0.100563 -0.201125,0 -0.402251,-0.150844 -0.553095,-0.301688 -0.251406,-0.251407 -0.553094,-0.35197 -0.854783,-0.452533 -0.301688,-0.100563 -0.653658,-0.100563 -0.9553462,-0.100563 -0.4525326,-0.05028 -0.9553466,-0.05028 -1.4078792,0.100563 -0.2011255,0.05028 -0.3519697,0.100563 -0.5530953,0.201126 -0.050281,0.05028 -0.2011256,0.100562 -0.251407,0.100562 -0.050281,0.05028 -0.050281,0.100563 0,0.100563 0.050281,0 0.251407,-0.05028 0.251407,-0.05028 0,0 -0.251407,0.100563 -0.251407,0.201125 0,0.05028 0.050281,0.05028 0.050281,0.05028 0,0 0.1508442,-0.05028 0.251407,-0.05028 0.2011256,0 0.5028139,-0.100562 0.7542209,-0.100562 0.3016884,0 0.6033768,0.100562 0.9050652,0.402251 0.4525325,0.553095 0.4022511,1.257035 0.4022511,1.407879 -0.1005627,1.055909 -2.4637884,7.4919278 -2.5643512,7.9444608 -0.1005628,0.452532 -0.1005628,0.703939 0.4525326,0.854783 0.5530953,0.150845 0.7542209,0 0.8547837,-0.201125 0.050281,-0.35197 1.5587234,-8.2964308 2.4637884,-9.0003698 z"></path></g></svg>',
@@ -5437,19 +4622,19 @@ class KxsClientSecondaryMenu {
             ],
         });
         // KXS CLIENT CONFIG
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        client.type === 1 && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M19.53 8L14 2.47C13.8595 2.32931 13.6688 2.25018 13.47 2.25H11C10.2707 2.25 9.57118 2.53973 9.05546 3.05546C8.53973 3.57118 8.25 4.27065 8.25 5V6.25H7C6.27065 6.25 5.57118 6.53973 5.05546 7.05546C4.53973 7.57118 4.25 8.27065 4.25 9V19C4.25 19.7293 4.53973 20.4288 5.05546 20.9445C5.57118 21.4603 6.27065 21.75 7 21.75H14C14.7293 21.75 15.4288 21.4603 15.9445 20.9445C16.4603 20.4288 16.75 19.7293 16.75 19V17.75H17C17.7293 17.75 18.4288 17.4603 18.9445 16.9445C19.4603 16.4288 19.75 15.7293 19.75 15V8.5C19.7421 8.3116 19.6636 8.13309 19.53 8ZM14.25 4.81L17.19 7.75H14.25V4.81ZM15.25 19C15.25 19.3315 15.1183 19.6495 14.8839 19.8839C14.6495 20.1183 14.3315 20.25 14 20.25H7C6.66848 20.25 6.35054 20.1183 6.11612 19.8839C5.8817 19.6495 5.75 19.3315 5.75 19V9C5.75 8.66848 5.8817 8.35054 6.11612 8.11612C6.35054 7.8817 6.66848 7.75 7 7.75H8.25V15C8.25 15.7293 8.53973 16.4288 9.05546 16.9445C9.57118 17.4603 10.2707 17.75 11 17.75H15.25V19ZM17 16.25H11C10.6685 16.25 10.3505 16.1183 10.1161 15.8839C9.8817 15.6495 9.75 15.3315 9.75 15V5C9.75 4.66848 9.8817 4.35054 10.1161 4.11612C10.3505 3.8817 10.6685 3.75 11 3.75H12.75V8.5C12.7526 8.69811 12.8324 8.88737 12.9725 9.02747C13.1126 9.16756 13.3019 9.24741 13.5 9.25H18.25V15C18.25 15.3315 18.1183 15.6495 17.8839 15.8839C17.6495 16.1183 17.3315 16.25 17 16.25Z" fill="#000000"></path> </g></svg>',
-            label: `Copy ${vars_client.acronym_start_upper} Config`,
+            label: `Copy ${client.acronym_start_upper} Config`,
             type: ModType.Click,
             value: true,
             onChange: () => ClientSecondaryMenu_awaiter(this, void 0, void 0, function* () {
                 yield navigator.clipboard.writeText(this.kxsClient.getKxsJSONConfig());
-                this.kxsClient.nm.showNotification(vars_client.acronym_start_upper + " Config copied to clipboard", "success", 3000);
+                this.kxsClient.nm.showNotification(client.acronym_start_upper + " Config copied to clipboard", "success", 3000);
             })
         });
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        client.type === 1 && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 14L11.2929 14.7071L12 15.4142L12.7071 14.7071L12 14ZM13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44771 11 5L13 5ZM6.29289 9.70711L11.2929 14.7071L12.7071 13.2929L7.70711 8.29289L6.29289 9.70711ZM12.7071 14.7071L17.7071 9.70711L16.2929 8.29289L11.2929 13.2929L12.7071 14.7071ZM13 14L13 5L11 5L11 14L13 14Z" fill="#000000"></path> <path d="M5 16L5 17C5 18.1046 5.89543 19 7 19L17 19C18.1046 19 19 18.1046 19 17V16" stroke="#000000" stroke-width="2"></path> </g></svg>',
-            label: `Import ${vars_client.acronym_start_upper} Config`,
+            label: `Import ${client.acronym_start_upper} Config`,
             type: ModType.Click,
             value: true,
             onChange: () => ClientSecondaryMenu_awaiter(this, void 0, void 0, function* () {
@@ -5458,9 +4643,9 @@ class KxsClientSecondaryMenu {
                     const parse_data = JSON.parse(data);
                     if (parse_data["userSettings"]) {
                         this.kxsClient.setKxsJSONConfig(parse_data);
-                        this.kxsClient.nm.showNotification(`${vars_client.acronym_start_upper} Config imported`, "success", 4000);
+                        this.kxsClient.nm.showNotification(`${client.acronym_start_upper} Config imported`, "success", 4000);
                         setInterval(() => {
-                            this.kxsClient.nm.showNotification(`${vars_client.acronym_start_upper} reloading soon...`, "info", 4000);
+                            this.kxsClient.nm.showNotification(`${client.acronym_start_upper} reloading soon...`, "info", 4000);
                         }, 1000);
                         // Reload the webpage
                         setTimeout(() => {
@@ -5469,12 +4654,12 @@ class KxsClientSecondaryMenu {
                     }
                 }
                 catch (_a) {
-                    this.kxsClient.nm.showNotification(`The current configuration in the clipboard is not a valid ${vars_client.acronym_start_upper} Config`, "error", 4000);
+                    this.kxsClient.nm.showNotification(`The current configuration in the clipboard is not a valid ${client.acronym_start_upper} Config`, "error", 4000);
                 }
             })
         });
         // SURVEV CONFIG
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        client.type === 1 && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M19.53 8L14 2.47C13.8595 2.32931 13.6688 2.25018 13.47 2.25H11C10.2707 2.25 9.57118 2.53973 9.05546 3.05546C8.53973 3.57118 8.25 4.27065 8.25 5V6.25H7C6.27065 6.25 5.57118 6.53973 5.05546 7.05546C4.53973 7.57118 4.25 8.27065 4.25 9V19C4.25 19.7293 4.53973 20.4288 5.05546 20.9445C5.57118 21.4603 6.27065 21.75 7 21.75H14C14.7293 21.75 15.4288 21.4603 15.9445 20.9445C16.4603 20.4288 16.75 19.7293 16.75 19V17.75H17C17.7293 17.75 18.4288 17.4603 18.9445 16.9445C19.4603 16.4288 19.75 15.7293 19.75 15V8.5C19.7421 8.3116 19.6636 8.13309 19.53 8ZM14.25 4.81L17.19 7.75H14.25V4.81ZM15.25 19C15.25 19.3315 15.1183 19.6495 14.8839 19.8839C14.6495 20.1183 14.3315 20.25 14 20.25H7C6.66848 20.25 6.35054 20.1183 6.11612 19.8839C5.8817 19.6495 5.75 19.3315 5.75 19V9C5.75 8.66848 5.8817 8.35054 6.11612 8.11612C6.35054 7.8817 6.66848 7.75 7 7.75H8.25V15C8.25 15.7293 8.53973 16.4288 9.05546 16.9445C9.57118 17.4603 10.2707 17.75 11 17.75H15.25V19ZM17 16.25H11C10.6685 16.25 10.3505 16.1183 10.1161 15.8839C9.8817 15.6495 9.75 15.3315 9.75 15V5C9.75 4.66848 9.8817 4.35054 10.1161 4.11612C10.3505 3.8817 10.6685 3.75 11 3.75H12.75V8.5C12.7526 8.69811 12.8324 8.88737 12.9725 9.02747C13.1126 9.16756 13.3019 9.24741 13.5 9.25H18.25V15C18.25 15.3315 18.1183 15.6495 17.8839 15.8839C17.6495 16.1183 17.3315 16.25 17 16.25Z" fill="#000000"></path> </g></svg>',
             label: "Copy Survev Config",
             type: ModType.Click,
@@ -5484,7 +4669,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.nm.showNotification("Survev Config copied to clipboard", "success", 3000);
             })
         });
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        client.type === 1 && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 14L11.2929 14.7071L12 15.4142L12.7071 14.7071L12 14ZM13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44771 11 5L13 5ZM6.29289 9.70711L11.2929 14.7071L12.7071 13.2929L7.70711 8.29289L6.29289 9.70711ZM12.7071 14.7071L17.7071 9.70711L16.2929 8.29289L11.2929 13.2929L12.7071 14.7071ZM13 14L13 5L11 5L11 14L13 14Z" fill="#000000"></path> <path d="M5 16L5 17C5 18.1046 5.89543 19 7 19L17 19C18.1046 19 19 18.1046 19 17V16" stroke="#000000" stroke-width="2"></path> </g></svg>',
             label: "Import Survev Config",
             type: ModType.Click,
@@ -6418,7 +5603,7 @@ class KxsClientSecondaryMenu {
         <div style="display: flex; align-items: center; gap: ${headerGap}px;">
             <img src="${kxs_logo}" 
                 alt="Logo" style="width: ${logoSize}px; height: ${logoSize}px;">
-            <span style="font-size: ${titleFontSize}px; font-weight: bold;">${vars_client.acronym_upper} CLIENT <span style="
+            <span style="font-size: ${titleFontSize}px; font-weight: bold;">${client.acronym_upper} CLIENT <span style="
              font-size: ${isMobile ? 10 : 14}px;
              font-weight: 700;
              color: #3B82F6;
@@ -6692,241 +5877,10 @@ class KxsClientSecondaryMenu {
 }
 
 
-;// ./src/SERVER/Ping.ts
-class PingTest {
-    constructor() {
-        this.ping = 0;
-        this.ws = null;
-        this.sendTime = 0;
-        this.retryCount = 0;
-        this.isConnecting = false;
-        this.isWebSocket = true;
-        this.url = "";
-        this.region = "";
-        this.hasPing = false;
-        this.reconnectTimer = null;
-        this.keepAliveTimer = null;
-        this.connectionCheckTimer = null;
-        this.ptcDataBuf = new ArrayBuffer(1);
-        this.waitForServerSelectElements();
-        this.startKeepAlive();
-    }
-    startKeepAlive() {
-        // Annuler l'ancien timer si existant
-        if (this.keepAliveTimer) {
-            clearInterval(this.keepAliveTimer);
-        }
-        this.keepAliveTimer = setInterval(() => {
-            var _a, _b, _c;
-            if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
-                this.ws.send(this.ptcDataBuf);
-            }
-            else if (((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSED || ((_c = this.ws) === null || _c === void 0 ? void 0 : _c.readyState) === WebSocket.CLOSING) {
-                // Redémarrer la connexion si elle est fermée
-                this.restart();
-            }
-        }, 5000); // envoie toutes les 5s
-    }
-    waitForServerSelectElements() {
-        const checkInterval = setInterval(() => {
-            const teamSelect = document.getElementById("team-server-select");
-            const mainSelect = document.getElementById("server-select-main");
-            const selectedValue = (teamSelect === null || teamSelect === void 0 ? void 0 : teamSelect.value) || (mainSelect === null || mainSelect === void 0 ? void 0 : mainSelect.value);
-            if ((teamSelect || mainSelect) && selectedValue) {
-                clearInterval(checkInterval);
-                this.setServerFromDOM();
-                this.attachRegionChangeListener();
-            }
-        }, 100); // Vérifie toutes les 100ms
-    }
-    setServerFromDOM() {
-        const selectedServer = this.detectSelectedServer();
-        if (!selectedServer)
-            return;
-        const { region, url } = selectedServer;
-        this.region = region;
-        this.url = `wss://${url}/ptc`;
-        this.start();
-    }
-    detectSelectedServer() {
-        const currentUrl = window.location.href;
-        const isSpecialUrl = /\/#\w+/.test(currentUrl);
-        const teamSelectElement = document.getElementById("team-server-select");
-        const mainSelectElement = document.getElementById("server-select-main");
-        const region = isSpecialUrl && teamSelectElement
-            ? teamSelectElement.value
-            : (mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.value) || "NA";
-        const servers = [
-            { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
-            { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
-            { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
-            { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
-        ];
-        const selectedServer = servers.find((s) => s.region.toUpperCase() === region.toUpperCase());
-        if (!selectedServer)
-            return undefined;
-        return selectedServer;
-    }
-    attachRegionChangeListener() {
-        const teamSelectElement = document.getElementById("team-server-select");
-        const mainSelectElement = document.getElementById("server-select-main");
-        const onChange = () => {
-            const selectedServer = this.detectSelectedServer();
-            if (!selectedServer)
-                return;
-            const { region } = selectedServer;
-            if (region !== this.region) {
-                this.restart();
-            }
-        };
-        teamSelectElement === null || teamSelectElement === void 0 ? void 0 : teamSelectElement.addEventListener("change", onChange);
-        mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.addEventListener("change", onChange);
-    }
-    start() {
-        if (this.isConnecting)
-            return;
-        this.isConnecting = true;
-        this.startWebSocketPing();
-        // Vérifier régulièrement l'état de la connexion
-        this.startConnectionCheck();
-    }
-    startConnectionCheck() {
-        // Annuler l'ancien timer si existant
-        if (this.connectionCheckTimer) {
-            clearInterval(this.connectionCheckTimer);
-        }
-        // Vérifier l'état de la connexion toutes les 10 secondes
-        this.connectionCheckTimer = setInterval(() => {
-            // Si on n'a pas de ping valide ou que la connexion est fermée, on tente de reconnecter
-            if (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                this.restart();
-            }
-        }, 10000);
-    }
-    startWebSocketPing() {
-        if (this.ws || !this.url)
-            return;
-        const ws = new WebSocket(this.url);
-        ws.binaryType = "arraybuffer";
-        ws.onopen = () => {
-            this.ws = ws;
-            this.retryCount = 0;
-            this.isConnecting = false;
-            this.sendPing();
-            setTimeout(() => {
-                var _a;
-                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
-                    this.restart();
-                }
-            }, 3000); // 3s pour sécuriser
-        };
-        ws.onmessage = () => {
-            this.hasPing = true;
-            const elapsed = (Date.now() - this.sendTime) / 1e3;
-            this.ping = Math.round(elapsed * 1000);
-            setTimeout(() => this.sendPing(), 1000);
-        };
-        ws.onerror = (error) => {
-            this.ping = 0;
-            this.hasPing = false;
-            this.retryCount++;
-            // Tentative immédiate mais avec backoff exponentiel
-            const retryDelay = Math.min(1000 * Math.pow(2, this.retryCount - 1), 10000);
-            // Annuler tout timer de reconnexion existant
-            if (this.reconnectTimer) {
-                clearTimeout(this.reconnectTimer);
-            }
-            this.reconnectTimer = setTimeout(() => {
-                this.ws = null; // S'assurer que l'ancienne connexion est effacée
-                this.startWebSocketPing();
-            }, retryDelay);
-        };
-        ws.onclose = (event) => {
-            this.hasPing = false;
-            this.ws = null;
-            this.isConnecting = false;
-            // Tentative de reconnexion après une fermeture
-            if (this.reconnectTimer) {
-                clearTimeout(this.reconnectTimer);
-            }
-            this.reconnectTimer = setTimeout(() => {
-                this.start();
-            }, 2000); // Attendre 2 secondes avant de reconnecter
-        };
-    }
-    sendPing() {
-        var _a, _b;
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.sendTime = Date.now();
-            this.ws.send(this.ptcDataBuf);
-        }
-        else if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED || ((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSING) {
-            // Si la WebSocket est fermée au moment d'envoyer le ping, on tente de reconnecter
-            this.restart();
-        }
-    }
-    stop() {
-        // Annuler tous les timers
-        if (this.reconnectTimer) {
-            clearTimeout(this.reconnectTimer);
-            this.reconnectTimer = null;
-        }
-        if (this.keepAliveTimer) {
-            clearInterval(this.keepAliveTimer);
-            this.keepAliveTimer = null;
-        }
-        if (this.connectionCheckTimer) {
-            clearInterval(this.connectionCheckTimer);
-            this.connectionCheckTimer = null;
-        }
-        if (this.ws) {
-            this.ws.onclose = null;
-            this.ws.onerror = null;
-            this.ws.onmessage = null;
-            this.ws.onopen = null;
-            this.ws.close();
-            this.ws = null;
-        }
-        this.isConnecting = false;
-        this.retryCount = 0;
-        this.hasPing = false;
-    }
-    restart() {
-        this.stop();
-        setTimeout(() => {
-            this.setServerFromDOM();
-        }, 500); // Petit délai pour éviter les problèmes de rebond
-    }
-    /**
-     * Retourne le ping actuel. Ne touche jamais à la websocket ici !
-     * Si le ping n'est pas dispo, retourne -1 (jamais null).
-     * La reconnexion doit être gérée ailleurs (timer, event, etc).
-     */
-    getPingResult() {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing) {
-            return {
-                region: this.region,
-                ping: this.ping,
-            };
-        }
-        else {
-            // Si on détecte un problème ici, planifier une reconnexion
-            if (!this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
-                this.reconnectTimer = setTimeout(() => this.restart(), 1000);
-            }
-            return {
-                region: this.region,
-                ping: -1, // -1 indique que le ping n'est pas dispo, mais jamais null
-            };
-        }
-    }
-}
-
-
 ;// ./src/HUD/ClientHUD.ts
 
 
-class KxsClientHUD {
+class ClientHUD_KxsClientHUD {
     constructor(kxsClient) {
         this.healthAnimations = [];
         this.lastHealthValue = 100;
@@ -8705,261 +7659,6 @@ class KxsClientHUD {
 }
 
 
-;// ./src/FUNC/Logger.ts
-class Logger {
-    getHeader(method) {
-        return "[" + __webpack_require__.g.client.name + " - " + method + "]";
-    }
-    展示(...args) {
-        console.log(...args);
-    }
-    ;
-    log(...args) {
-        // Convert args to string and join them
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("LOG"), message);
-    }
-    warn(...args) {
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("WARN"), message);
-    }
-    error(...args) {
-        const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
-        this.展示(this.getHeader("ERROR"), message);
-    }
-}
-
-
-;// ./src/DATABASE/browser2.ts
-;
-class Browser2Database {
-    constructor(options) {
-        this.setNestedProperty = (object, key, value) => {
-            const properties = key.split('.');
-            let currentObject = object;
-            for (let i = 0; i < properties.length - 1; i++) {
-                const property = properties[i];
-                if (typeof currentObject[property] !== 'object' || currentObject[property] === null) {
-                    currentObject[property] = {};
-                }
-                currentObject = currentObject[property];
-            }
-            currentObject[properties[properties.length - 1]] = value;
-        };
-        this.getNestedProperty = (object, key) => {
-            const properties = key.split('.');
-            let index = 0;
-            for (; index < properties.length; ++index) {
-                object = object && object[properties[index]];
-            }
-            return object;
-        };
-        this.currentTable = (options === null || options === void 0 ? void 0 : options.tableName) || "json";
-        this.database = (options === null || options === void 0 ? void 0 : options.database) || "kxs";
-        this.data = {
-            [this.currentTable]: []
-        };
-        this.fetchDataFromFile();
-    }
-    read() { return localStorage.getItem(this.database) || this.data; }
-    write() { return localStorage.setItem(this.database, JSON.stringify(this.data)); }
-    fetchDataFromFile() {
-        try {
-            const content = this.read();
-            this.data = JSON.parse(content);
-        }
-        catch (error) {
-            this.data = { [this.currentTable]: [] };
-        }
-    }
-    updateNestedProperty(key, operation, value) {
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        let currentValue = this.data[this.currentTable].find((entry) => entry.id === id);
-        if (!currentValue && operation !== 'get') {
-            currentValue = { id, value: {} };
-            this.data[this.currentTable].push(currentValue);
-        }
-        if (!currentValue && operation === 'get') {
-            return undefined;
-        }
-        switch (operation) {
-            case 'get':
-                return nestedPath ? this.getNestedProperty(currentValue.value, nestedPath) : currentValue.value;
-            case 'set':
-                if (nestedPath) {
-                    this.setNestedProperty(currentValue.value, nestedPath, value);
-                }
-                else {
-                    currentValue.value = value;
-                }
-                this.write();
-                break;
-            case 'add':
-                if (!nestedPath) {
-                    currentValue.value = (typeof currentValue.value === 'number' ? currentValue.value : 0) + value;
-                }
-                else {
-                    const existingValue = this.getNestedProperty(currentValue.value, nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(currentValue.value, nestedPath, (typeof existingValue === 'number' ? existingValue : 0) + value);
-                }
-                this.write();
-                break;
-            case 'sub':
-                if (!nestedPath) {
-                    currentValue.value = (typeof currentValue.value === 'number' ? currentValue.value : 0) - value;
-                }
-                else {
-                    const existingValue = this.getNestedProperty(currentValue.value, nestedPath);
-                    if (typeof existingValue !== 'number' && existingValue !== undefined && existingValue !== null) {
-                        throw new TypeError('The existing value is not a number.');
-                    }
-                    this.setNestedProperty(currentValue.value, nestedPath, (typeof existingValue === 'number' ? existingValue : 0) - value);
-                }
-                this.write();
-                break;
-            case 'delete':
-                if (nestedPath) {
-                    const properties = nestedPath.split('.');
-                    let currentObject = currentValue.value;
-                    for (let i = 0; i < properties.length - 1; i++) {
-                        const property = properties[i];
-                        if (!currentObject[property]) {
-                            return;
-                        }
-                        currentObject = currentObject[property];
-                    }
-                    delete currentObject[properties[properties.length - 1]];
-                }
-                else {
-                    const index = this.data[this.currentTable].findIndex((entry) => entry.id === id);
-                    if (index !== -1) {
-                        this.data[this.currentTable].splice(index, 1);
-                    }
-                }
-                this.write();
-                break;
-            case 'pull':
-                const existingArray = nestedPath ? this.getNestedProperty(currentValue.value, nestedPath) : currentValue.value;
-                if (!Array.isArray(existingArray)) {
-                    throw new Error('The stored value is not an array');
-                }
-                const newArray = existingArray.filter((item) => item !== value);
-                if (nestedPath) {
-                    this.setNestedProperty(currentValue.value, nestedPath, newArray);
-                }
-                else {
-                    currentValue.value = newArray;
-                }
-                this.write();
-                break;
-        }
-    }
-    table(tableName) {
-        if (tableName.includes(" ") || !tableName || tableName === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (!this.data[tableName]) {
-            this.data[tableName] = [];
-        }
-        return new Browser2Database(this.options);
-    }
-    get(key) {
-        return this.updateNestedProperty(key, 'get');
-    }
-    set(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'set', value);
-    }
-    pull(key, value) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        this.updateNestedProperty(key, 'pull', value);
-    }
-    add(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'add', count);
-    }
-    sub(key, count) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        if (isNaN(count)) {
-            throw new SyntaxError("The value is NaN.");
-        }
-        this.updateNestedProperty(key, 'sub', count);
-    }
-    delete(key) {
-        this.updateNestedProperty(key, 'delete');
-    }
-    cache(key, value, time) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null ou contain a space.");
-        }
-        if (!time || isNaN(time)) {
-            throw new SyntaxError("The time needs to be a number. (ms)");
-        }
-        this.updateNestedProperty(key, 'set', value);
-        setTimeout(() => {
-            this.updateNestedProperty(key, 'delete');
-        }, time);
-    }
-    push(key, element) {
-        if (key.includes(" ") || !key || key === "") {
-            throw new SyntaxError("Key can't be null or contain a space.");
-        }
-        const [id, ...rest] = key.split('.');
-        const nestedPath = rest.join('.');
-        let currentValue = this.data[this.currentTable].find((entry) => entry.id === id);
-        if (!currentValue) {
-            currentValue = { id, value: nestedPath ? {} : [] };
-            this.data[this.currentTable].push(currentValue);
-        }
-        if (nestedPath) {
-            const existingArray = this.getNestedProperty(currentValue.value, nestedPath);
-            if (!existingArray) {
-                this.setNestedProperty(currentValue.value, nestedPath, [element]);
-            }
-            else if (!Array.isArray(existingArray)) {
-                throw new Error('The stored value is not an array');
-            }
-            else {
-                existingArray.push(element);
-                this.setNestedProperty(currentValue.value, nestedPath, existingArray);
-            }
-        }
-        else {
-            if (!Array.isArray(currentValue.value)) {
-                currentValue.value = [];
-            }
-            currentValue.value.push(element);
-        }
-        this.write();
-    }
-    has(key) {
-        return (this.get(key)) != null;
-    }
-    deleteAll() {
-        this.data[this.currentTable] = [];
-        this.write();
-    }
-    all() {
-        return this.data[this.currentTable];
-    }
-}
-
-
 ;// ./src/HUD/HistoryManager.ts
 var HistoryManager_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -8970,7 +7669,7 @@ var HistoryManager_awaiter = (undefined && undefined.__awaiter) || function (thi
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class GameHistoryMenu {
+class HistoryManager_GameHistoryMenu {
     constructor(kxsClient) {
         this.kxsClient = kxsClient;
         this.container = document.createElement('div');
@@ -9308,17 +8007,17 @@ class GameHistoryMenu {
  * BroadcastHUD - Displays broadcast messages in a glassmorphism HUD
  * matching the online menu style from KxsClient
  */
-class BroadcastHUD {
+class BroadcastHUD_BroadcastHUD {
     /**
      * Get the singleton instance of BroadcastHUD
      * @param kxsClient Reference to the KxsClient instance
      * @returns BroadcastHUD instance
      */
     static getInstance(kxsClient) {
-        if (!BroadcastHUD.instance) {
-            BroadcastHUD.instance = new BroadcastHUD(kxsClient);
+        if (!BroadcastHUD_BroadcastHUD.instance) {
+            BroadcastHUD_BroadcastHUD.instance = new BroadcastHUD_BroadcastHUD(kxsClient);
         }
-        return BroadcastHUD.instance;
+        return BroadcastHUD_BroadcastHUD.instance;
     }
     /**
      * Private constructor to enforce singleton pattern
@@ -9527,17 +8226,17 @@ class BroadcastHUD {
         this.progressBar.style.transform = "scaleX(0)";
     }
 }
-BroadcastHUD.instance = null;
+BroadcastHUD_BroadcastHUD.instance = null;
 
 ;// ./src/NETWORK/KxsNetwork.ts
 
 
-class KxsNetwork {
+class KxsNetwork_KxsNetwork {
     constructor(kxsClient) {
         this.currentGamePlayers = [];
         this.ws = null;
         this.heartbeatInterval = 0;
-        this.HOST = config_namespaceObject.api_url;
+        this.HOST = config.api_url;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 3;
         this.reconnectTimeout = 0;
@@ -9789,351 +8488,6 @@ class KxsNetwork {
 }
 
 
-;// ./src/UTILS/KxsChat.ts
-class KxsChat {
-    constructor(kxsClient) {
-        this.chatInput = null;
-        this.chatBox = null;
-        this.messagesContainer = null;
-        this.chatMessages = [];
-        this.chatOpen = false;
-        this.resizeObserver = null;
-        this.handleKeyDown = (e) => {
-            if (e.key === 'Enter' && !this.chatOpen && document.activeElement !== this.chatInput) {
-                e.preventDefault();
-                this.openChatInput();
-            }
-            else if (e.key === 'Escape' && this.chatOpen) {
-                this.closeChatInput();
-            }
-        };
-        // Gestionnaire de clic sur le document pour fermer le chat quand on clique ailleurs
-        this.handleDocumentClick = (e) => {
-            // Si le chat est ouvert et qu'on clique en dehors du chat
-            if (this.chatOpen && this.chatBox && this.chatInput) {
-                // Vérifie si le clic est en dehors du chatBox
-                const target = e.target;
-                if (!this.chatBox.contains(target) && target !== this.chatInput) {
-                    // Ferme le chat si on clique ailleurs
-                    this.closeChatInput();
-                }
-            }
-        };
-        this.kxsClient = kxsClient;
-        this.initGlobalChat();
-        // Initialize chat visibility based on the current setting
-        if (this.chatBox && !this.kxsClient.isKxsChatEnabled) {
-            this.chatBox.style.display = 'none';
-            window.removeEventListener('keydown', this.handleKeyDown);
-        }
-        // Ajouter un gestionnaire de clic global pour fermer le chat lorsqu'on clique ailleurs
-        document.addEventListener('mousedown', this.handleDocumentClick);
-    }
-    initGlobalChat() {
-        const area = document.getElementById('game-touch-area');
-        if (!area)
-            return;
-        // Chat box
-        const chatBox = document.createElement('div');
-        chatBox.id = 'kxs-chat-box';
-        // Messages container
-        const messagesContainer = document.createElement('div');
-        messagesContainer.id = 'kxs-chat-messages';
-        messagesContainer.style.display = 'flex';
-        messagesContainer.style.flexDirection = 'column';
-        messagesContainer.style.gap = '3px';
-        messagesContainer.style.flexGrow = '1'; // Prend tout l'espace disponible
-        messagesContainer.style.overflow = 'hidden'; // Masque le contenu qui dépasse au lieu d'afficher une barre de défilement
-        messagesContainer.style.minHeight = '100px'; // Hauteur minimale pour assurer l'espace
-        messagesContainer.style.maxHeight = '300px'; // Hauteur maximale pour éviter qu'il ne devienne trop grand
-        chatBox.appendChild(messagesContainer);
-        this.messagesContainer = messagesContainer;
-        chatBox.style.position = 'absolute';
-        chatBox.style.left = '50%';
-        chatBox.style.bottom = '38px';
-        chatBox.style.transform = 'translateX(-50%)';
-        chatBox.style.minWidth = '260px';
-        chatBox.style.maxWidth = '480px';
-        chatBox.style.minHeight = '150px'; // Hauteur minimale pour le chat box
-        chatBox.style.height = '200px'; // Hauteur par défaut
-        // Apply styling based on glassmorphism toggle
-        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
-        if (is_glassmorphism_enabled) {
-            // Glassmorphism style
-            chatBox.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
-            chatBox.style.backdropFilter = 'blur(40px) saturate(180%)';
-            chatBox.style['-webkitBackdropFilter'] = 'blur(40px) saturate(180%)';
-            chatBox.style.border = '1px solid rgba(255, 255, 255, 0.3)';
-            chatBox.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)';
-        }
-        else {
-            // Classic style - solid gray background without blur
-            chatBox.style.background = 'rgba(50, 50, 50, 0.95)';
-            chatBox.style.backdropFilter = 'none';
-            chatBox.style['-webkitBackdropFilter'] = 'none';
-            chatBox.style.border = '1px solid #555';
-            chatBox.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-        }
-        chatBox.style.color = '#fff';
-        chatBox.style.borderRadius = '15px';
-        chatBox.style.padding = '7px 14px 4px 14px';
-        chatBox.style.fontSize = '15px';
-        chatBox.style.fontFamily = 'inherit';
-        chatBox.style.zIndex = '1002';
-        chatBox.style.pointerEvents = 'auto';
-        chatBox.style.cursor = 'move'; // Indique que c'est déplaçable
-        chatBox.style.display = 'flex';
-        chatBox.style.flexDirection = 'column';
-        chatBox.style.gap = '3px';
-        chatBox.style.opacity = '0.5';
-        chatBox.style.overflow = 'hidden'; // Nécessaire pour le redimensionnement
-        // Charger la position sauvegardée dès l'initialisation
-        const savedPosition = localStorage.getItem('kxs-chat-box-position');
-        if (savedPosition) {
-            try {
-                const { x, y } = JSON.parse(savedPosition);
-                chatBox.style.left = `${x}px`;
-                chatBox.style.top = `${y}px`;
-                chatBox.style.position = 'absolute';
-            }
-            catch (e) { }
-        }
-        area.appendChild(chatBox);
-        this.chatBox = chatBox;
-        // Configurer un ResizeObserver pour détecter les changements de taille de la chatBox
-        this.resizeObserver = new ResizeObserver(() => {
-            // Quand la taille change, mettre à jour l'affichage des messages
-            this.renderMessages();
-        });
-        // Observer la chatBox pour les changements de dimensions
-        if (this.chatBox) {
-            this.resizeObserver.observe(this.chatBox);
-        }
-        // Rendre la chatbox draggable et resizable UNIQUEMENT si le menu secondaire est ouvert
-        const updateChatDraggable = () => {
-            const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
-            if (isMenuOpen) {
-                chatBox.style.pointerEvents = 'auto';
-                chatBox.style.cursor = 'move';
-                chatBox.style.resize = 'both'; // Active le redimensionnement avec l'indicateur gris
-                this.kxsClient.makeDraggable(chatBox, 'kxs-chat-box-position');
-            }
-            else {
-                chatBox.style.pointerEvents = 'none';
-                chatBox.style.cursor = 'default';
-                chatBox.style.resize = 'none'; // Désactive le redimensionnement
-            }
-        };
-        // Initial state
-        updateChatDraggable();
-        // Observe menu changes
-        const observer = new MutationObserver(updateChatDraggable);
-        if (this.kxsClient.secondaryMenu && this.kxsClient.secondaryMenu.menu) {
-            observer.observe(this.kxsClient.secondaryMenu.menu, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-        // Optionnel : timer pour fallback (si le menu est modifié autrement)
-        setInterval(updateChatDraggable, 500);
-        // Input
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Press Enter to write...';
-        input.id = 'kxs-chat-input';
-        input.style.width = '100%';
-        input.style.boxSizing = 'border-box';
-        input.style.padding = '8px 12px';
-        input.style.borderRadius = '8px';
-        input.style.border = 'none';
-        // Apply styling based on glassmorphism toggle for input
-        if (this.kxsClient.isGlassmorphismEnabled) {
-            // Glassmorphism style
-            input.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04))';
-            input.style.backdropFilter = 'blur(25px) saturate(150%)';
-            input.style['-webkit-backdrop-filter'] = 'blur(25px) saturate(150%)';
-            input.style.border = '1px solid rgba(255, 255, 255, 0.35)';
-            input.style.boxShadow = '0 4px 20px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)';
-        }
-        else {
-            // Classic style - solid gray background without blur
-            input.style.background = 'rgba(60, 60, 60, 0.95)';
-            input.style.backdropFilter = 'none';
-            input.style['-webkit-backdrop-filter'] = 'none';
-            input.style.border = '1px solid #666';
-            input.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-        }
-        input.style.color = '#fff';
-        input.style.fontSize = '15px';
-        input.style.fontFamily = 'inherit';
-        input.style.zIndex = '1003';
-        input.style.outline = 'none';
-        input.style.display = this.chatOpen ? 'block' : 'none';
-        input.style.opacity = '0.5';
-        input.style.marginTop = 'auto'; // Pour coller l'input en bas
-        chatBox.appendChild(input); // Ajoute l'input dans la chatBox
-        this.chatInput = input;
-        // Ajuste le style de chatBox pour le layout
-        chatBox.style.display = 'flex';
-        chatBox.style.flexDirection = 'column';
-        chatBox.style.gap = '3px';
-        chatBox.style.justifyContent = 'flex-end'; // S'assure que l'input est en bas
-        // Focus automatique sur l'input quand on clique dessus ou sur la chatBox
-        input.addEventListener('focus', () => {
-            // Rien de spécial, mais peut servir à customiser plus tard
-        });
-        chatBox.addEventListener('mousedown', (e) => {
-            // Focus l'input si clic sur la chatBox (hors drag)
-            if (e.target === chatBox) {
-                input.focus();
-            }
-        });
-        input.addEventListener('mousedown', () => {
-            input.focus();
-        });
-        ['keydown', 'keypress', 'keyup'].forEach(eventType => {
-            input.addEventListener(eventType, (e) => {
-                const ke = e;
-                if (eventType === 'keydown') {
-                    if (ke.key === 'Enter') {
-                        const txt = input.value.trim();
-                        if (txt) {
-                            this.kxsClient.kxsNetwork.sendGlobalChatMessage(txt);
-                            input.value = '';
-                            this.closeChatInput();
-                        }
-                        else {
-                            // Ne ferme pas l'input si rien n'a été écrit
-                            input.value = '';
-                        }
-                    }
-                    else if (ke.key === 'Escape') {
-                        this.closeChatInput();
-                    }
-                }
-                e.stopImmediatePropagation();
-                e.stopPropagation();
-            }, true);
-        });
-        // Gestion clavier
-        window.addEventListener('keydown', this.handleKeyDown);
-        this.addSystemMessage(`Wanna disable the chat ? Right Shift => ${client.acronym_start_upper} Network => Chat 🙂`);
-    }
-    openChatInput() {
-        if (!this.chatInput)
-            return;
-        this.chatInput.placeholder = 'Press Enter to write...';
-        this.chatInput.value = '';
-        this.chatInput.style.display = 'block';
-        this.chatInput.focus();
-        this.chatOpen = true;
-    }
-    closeChatInput() {
-        if (!this.chatInput)
-            return;
-        this.chatInput.style.display = 'none';
-        this.chatInput.blur();
-        this.chatOpen = false;
-    }
-    addChatMessage(user, text) {
-        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
-            return;
-        this.chatMessages.push({ user, text, isSystem: false, isError: false });
-        this.renderMessages();
-    }
-    /**
-     * Ajoute un message système dans le chat
-     * @param text Texte du message système
-     */
-    addSystemMessage(text) {
-        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
-            return;
-        // Ajouter le message système avec un marqueur spécifique isSystem = true
-        this.chatMessages.push({ user: "", text, isSystem: true, isError: false });
-        this.renderMessages();
-    }
-    /**
-     * Ajoute un message système dans le chat
-     * @param text Texte du message système
-     */
-    addErrorMessage(text) {
-        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
-            return;
-        // Ajouter le message système avec un marqueur spécifique isSystem = true
-        this.chatMessages.push({ user: "", text, isSystem: true, isError: true });
-        this.renderMessages();
-    }
-    /**
-     * Calcule le nombre de messages qui peuvent s'afficher dans la division du chat
-     * @returns Le nombre de messages qui peuvent s'afficher
-     */
-    calculateVisibleMessageCount() {
-        if (!this.chatBox || !this.messagesContainer)
-            return 5; // Valeur par défaut
-        // Obtenir les dimensions réelles du conteneur de messages
-        const rect = this.messagesContainer.getBoundingClientRect();
-        const container_height = rect.height;
-        // Si la hauteur est toujours trop petite, utiliser une valeur par défaut
-        if (container_height < 50) {
-            // Utiliser la hauteur du chatBox comme base et soustraire l'espace pour l'input
-            const chat_box_height = this.chatBox.clientHeight;
-            const input_height = this.chatInput ? this.chatInput.clientHeight : 40; // Valeur par défaut si input n'est pas disponible
-            const padding = 20; // Estimation du padding total
-            const estimated_container_height = chat_box_height - input_height - padding;
-            // Estimation de la hauteur moyenne d'un message (en pixels)
-            const average_message_height = 22; // ~22px par message avec la taille de police actuelle
-            // Calcul du nombre de messages qui peuvent s'afficher
-            const visible_count = Math.max(1, Math.floor(estimated_container_height / average_message_height));
-            return visible_count;
-        }
-        // Estimation de la hauteur moyenne d'un message (en pixels)
-        const average_message_height = 22; // ~22px par message avec la taille de police actuelle
-        // Calcul du nombre de messages qui peuvent s'afficher
-        const visible_count = Math.max(1, Math.floor(container_height / average_message_height));
-        return visible_count;
-    }
-    /**
-     * Rend les messages du chat avec leur style approprié
-     */
-    renderMessages() {
-        if (!this.messagesContainer)
-            return;
-        // Calcule combien de messages peuvent s'afficher
-        const visible_count = this.calculateVisibleMessageCount();
-        // Sélectionne les messages les plus récents qui peuvent s'afficher
-        const visible_messages = this.chatMessages.slice(-visible_count);
-        // Rend les messages visibles
-        this.messagesContainer.innerHTML = visible_messages.map(m => {
-            if (m.isSystem && m.isError) {
-                return `< div style = 'color:#EB3023; font-style:italic; margin-bottom:4px;' > ${m.text} </div>`;
-            }
-            else if (m.isSystem) {
-                return `<div style='color:#3B82F6; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
-            }
-            else {
-                return `<div style='margin-bottom:4px;'><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</div>`;
-            }
-        }).join('');
-    }
-    toggleChat() {
-        if (this.chatBox) {
-            this.chatBox.style.display = this.kxsClient.isKxsChatEnabled ? 'flex' : 'none';
-        }
-        if (this.kxsClient.isKxsChatEnabled) {
-            window.addEventListener('keydown', this.handleKeyDown);
-            // S'assurer que le gestionnaire de clic est actif
-            document.addEventListener('mousedown', this.handleDocumentClick);
-        }
-        else {
-            this.closeChatInput();
-            window.removeEventListener('keydown', this.handleKeyDown);
-            // Retirer le gestionnaire de clic si le chat est désactivé
-            document.removeEventListener('mousedown', this.handleDocumentClick);
-        }
-        const message = this.kxsClient.isKxsChatEnabled ? 'Chat enabled' : 'Chat disabled';
-        const type = this.kxsClient.isKxsChatEnabled ? 'success' : 'info';
-        this.kxsClient.nm.showNotification(message, type, 600);
-    }
-}
-
-
 ;// ./src/UTILS/KxsVoiceChat.ts
 var KxsVoiceChat_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -10144,7 +8498,7 @@ var KxsVoiceChat_awaiter = (undefined && undefined.__awaiter) || function (thisA
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class KxsVoiceChat {
+class KxsVoiceChat_KxsVoiceChat {
     constructor(kxsClient, kxsNetwork) {
         this.audioCtx = null;
         this.micStream = null;
@@ -10688,12 +9042,12 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.5.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = {};
 ;// ./src/SERVER/exchangeManager.ts
 
-class ExchangeManager {
+class exchangeManager_ExchangeManager {
     constructor(kxsClient) {
-        this.HOST_URL = config_namespaceObject.api_url;
+        this.HOST_URL = config.api_url;
         this.kxsClient = kxsClient;
     }
     sendGameInfo(gameId) {
@@ -10739,16 +9093,16 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
-class KxsClient {
+class KxsClient_KxsClient {
     constructor() {
         this.onlineMenuElement = null;
         this.onlineMenuInterval = null;
         this.deathObserver = null;
         this.adBlockObserver = null;
         globalThis.kxsClient = this;
-        this.pkg = package_namespaceObject;
+        this.pkg = pkg;
         this.logger = new Logger();
-        this.config = config_namespaceObject;
+        this.config = config;
         this.menu = document.createElement("div");
         this.lastFrameTime = performance.now();
         this.isFpsUncapped = false;
@@ -12528,14 +10882,7 @@ class KxsClient {
 }
 
 ;// ./src/index.ts
-// Be sure than kxs client load only in zurvev with specific VAR
-let IS_ZURVIV = 0x00;
 let src_href = window.location.href;
-/* */ if (src_href.includes("zurviv.io") && IS_ZURVIV !== 0x10f) {
-    __webpack_require__.g.x = true;
-}
-else
-    loadKxs();
 
 
 
@@ -12548,7 +10895,7 @@ else
 
 
 function loadKxs() {
-    if (vars_client.type === 2)
+    if (client.type === 2)
         localStorage.setItem("popupHidden", String(true));
     if (src_href === "https://kxs.rip/") {
         /*
@@ -12577,7 +10924,7 @@ function loadKxs() {
         const backgroundElement = document.getElementById("background");
         if (backgroundElement && (!kxs_settings.has("isCustomBackgroundEnabled") ||
             kxs_settings.get("isCustomBackgroundEnabled") === true
-                && vars_client.type === 1)) {
+                && client.type === 1)) {
             setTimeout(() => {
                 backgroundElement.style.backgroundImage = `url("${background_image}")`;
             }, 2900);
@@ -12632,4 +10979,4 @@ function loadKxs() {
 
 /******/ })()
 ;
-// Last modified code: 2025-10-08 20:29:30
+// Last modified code: 2025-10-11 19:02:04
