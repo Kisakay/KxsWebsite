@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.5.3
+// @version      2.6.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -21,6 +21,7 @@
 // @match        *://eu-comp.net/*
 // @match        *://66.179.92.117/*
 // @match        *://zurviv.io/*
+// @match        *://cursev.io/*
 // @grant        none
 // ==/UserScript==
 ;
@@ -1186,34 +1187,148 @@ class SimplifiedDatabase {
 }
 
 
-;// ./src/types/clientType.ts
-var ClientType;
-(function (ClientType) {
-    ClientType[ClientType["KxsClient"] = 1] = "KxsClient";
-    ClientType[ClientType["KxzClient"] = 2] = "KxzClient";
-})(ClientType || (ClientType = {}));
-
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io","cursev.io"],"grant":["none"]}');
+;// ./src/assets/onboarding.html?raw
+const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+;// ./src/assets/onboarding_kxz.html?raw
+const onboarding_kxzraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxzClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxz.png\" alt=\"KxzClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxzClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxz Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_2.png\" alt=\"Kxz Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+;// ./src/assets/onboarding_kxc.html?raw
+const onboarding_kxcraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxcClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxc.png\" alt=\"KxcClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_3.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxcClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxc Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_3.png\" alt=\"Kxc Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/UTILS/vars.ts
 
 
+// @ts-ignore
 
-let href = window.location.href;
-let is_z = href.includes("zurviv.io");
-const vars_client = {
-    type: is_z ? ClientType.KxzClient : ClientType.KxsClient,
-    name: is_z ? "KxzClient" : "KxsClient",
-    acronym_upper: is_z ? "KXZ" : "KXS",
-    acronym_start_upper: is_z ? "Kxz" : "Kxs",
-    application_id: is_z ? "1425487439547334808" : "1321193265533550602",
-    rpc_assets: is_z ? "mp:avatars/1425487439547334808/22119f9c9881a9543159952f481a89be?size=512" : "mp:app-icons/1321193265533550602/bccd2479ec56ed7d4e69fa2fdfb47197.png?size=512"
+// @ts-ignore
+
+// @ts-ignore
+
+const CLIENT_REGISTRY = {
+    kxz: {
+        name: "KxzClient",
+        acronym_upper: "KXZ",
+        acronym_start_upper: "Kxz",
+        application_id: "1425487439547334808",
+        rpc_assets: "mp:avatars/1425487439547334808/22119f9c9881a9543159952f481a89be?size=512",
+        domains: ["zurviv.io"],
+        full_logo: config_namespaceObject.base_url + "/assets/KxzLogoFull.png",
+        icon_logo: config_namespaceObject.base_url + "/assets/KxzClientLogo.png",
+        welcome_sound: "https://kxs.rip/assets/o_z_sound.mp3",
+        options: {
+            is_custom_background_enabled: false,
+            is_dollar_sub_category_enable: false,
+            is_background_music_enabled: false,
+            is_game_history_enabled: false,
+            is_counters_enable: false,
+            is_waepon_border_enable: false,
+            is_focus_mode_emable: false,
+            is_health_bar_enable: false,
+            is_discord_related_things_enable: true,
+            is_spotify_player_enable: false,
+            is_custom_crosshair_enabled: false,
+            is_chroma_thingy_enabled: false,
+            is_import_thingy_enabled: false,
+            is_developer_options: false,
+            is_friends_detector_enable: false,
+            is_kill_leader_tracking_enable: true,
+            is_brightness_enable: false
+        },
+        htmlCode: onboarding_kxzraw_namespaceObject
+    },
+    kxc: {
+        name: "KxcClient",
+        acronym_upper: "KXC",
+        acronym_start_upper: "Kxc",
+        application_id: "1429750717450686535",
+        rpc_assets: "mp:avatars/1429750717450686535/fa4d8b71aa1ecd6518ad6fbc456f63ee?size=512",
+        domains: ["cursev.io"],
+        full_logo: config_namespaceObject.base_url + "/assets/KxcLogoFull.png",
+        icon_logo: config_namespaceObject.base_url + "/assets/KxcClientLogo.png",
+        welcome_sound: "https://kxs.rip/assets/o_c_sound.mp3",
+        options: {
+            is_custom_background_enabled: true,
+            is_dollar_sub_category_enable: true,
+            is_background_music_enabled: true,
+            is_game_history_enabled: true,
+            is_counters_enable: true,
+            is_waepon_border_enable: true,
+            is_focus_mode_emable: true,
+            is_health_bar_enable: true,
+            is_discord_related_things_enable: true,
+            is_spotify_player_enable: true,
+            is_custom_crosshair_enabled: true,
+            is_chroma_thingy_enabled: true,
+            is_import_thingy_enabled: true,
+            is_developer_options: true,
+            is_friends_detector_enable: true,
+            is_kill_leader_tracking_enable: true,
+            is_brightness_enable: true
+        },
+        htmlCode: onboarding_kxcraw_namespaceObject
+    },
+    kxs: {
+        name: "KxsClient",
+        acronym_upper: "KXS",
+        acronym_start_upper: "Kxs",
+        application_id: "1321193265533550602",
+        rpc_assets: "mp:app-icons/1321193265533550602/bccd2479ec56ed7d4e69fa2fdfb47197.png?size=512",
+        domains: true,
+        full_logo: config_namespaceObject.base_url + "/assets/KysClient.gif",
+        icon_logo: config_namespaceObject.base_url + "/assets/KysClientLogo.png",
+        welcome_sound: "https://kxs.rip/assets/o_sound.mp3",
+        options: {
+            is_custom_background_enabled: true,
+            is_dollar_sub_category_enable: true,
+            is_background_music_enabled: true,
+            is_game_history_enabled: true,
+            is_counters_enable: true,
+            is_waepon_border_enable: true,
+            is_focus_mode_emable: true,
+            is_health_bar_enable: true,
+            is_discord_related_things_enable: true,
+            is_spotify_player_enable: true,
+            is_custom_crosshair_enabled: true,
+            is_chroma_thingy_enabled: true,
+            is_import_thingy_enabled: true,
+            is_developer_options: true,
+            is_friends_detector_enable: true,
+            is_kill_leader_tracking_enable: true,
+            is_brightness_enable: true
+        },
+        htmlCode: onboardingraw_namespaceObject
+    },
 };
+function detectClientFromUrl() {
+    const href = window.location.href;
+    let defaultClient = null;
+    // Extract the hostname from the URL
+    const hostname = new URL(href).hostname;
+    // First pass: look for clients with specific domains
+    for (const config of Object.values(CLIENT_REGISTRY)) {
+        // Identify the default client but don't return it yet
+        if (config.domains === true) {
+            defaultClient = config;
+            continue; // Skip to next without returning
+        }
+        // Check if the hostname matches any of the specific domains
+        if (Array.isArray(config.domains) && config.domains.some(domain => hostname.includes(domain))) {
+            return config; // Return immediately if a domain matches
+        }
+    }
+    // Second pass: if no specific domain matches, use the default
+    if (defaultClient) {
+        return defaultClient;
+    }
+    // If no default client is configured
+    throw new Error("No client configured as default (domains: true)");
+}
+const vars_client = detectClientFromUrl();
 __webpack_require__.g.client = vars_client;
 const background_song = config_namespaceObject.base_url + "/assets/Stranger_Things_Theme_Song_C418_REMIX.mp3";
 const gbl_sound = config_namespaceObject.base_url + "/assets/blacklisted.m4a";
-const kxs_logo = vars_client.type === 1 ? config_namespaceObject.base_url + "/assets/KysClientLogo.png" : config_namespaceObject.base_url + "/assets/KxzClientLogo.png";
-const full_logo = vars_client.type === 1 ? config_namespaceObject.base_url + "/assets/KysClient.gif" : config_namespaceObject.base_url + "/assets/KxzLogoFull.png";
+const kxs_logo = vars_client.icon_logo;
+const full_logo = vars_client.full_logo;
 const background_image = config_namespaceObject.base_url + "/assets/background.jpg";
 const win_sound = config_namespaceObject.base_url + "/assets/win.m4a";
 const death_sound = config_namespaceObject.base_url + "/assets/dead.m4a";
@@ -3050,10 +3165,6 @@ class EasterEgg {
     }
 }
 
-;// ./src/assets/onboarding.html?raw
-const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
-;// ./src/assets/onboarding_kxz.html?raw
-const onboarding_kxzraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxzClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxz.png\" alt=\"KxzClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxz Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_2.png\" alt=\"Kxz Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding-styles.css?raw
 const onboarding_stylesraw_namespaceObject = "/* Reset and base styles */\r\n.popup-overlay {\r\n\tposition: fixed;\r\n\ttop: 0;\r\n\tleft: 0;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tbackground: rgba(0, 0, 0, 0.8);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tz-index: 1000;\r\n\tfont-family: Arial, sans-serif;\r\n}\r\n\r\n.subtitle-image {\r\n\tdisplay: block;\r\n\tmargin: 0 auto;\r\n\tmax-width: 00px;\r\n\t/* adapte selon ton image */\r\n\theight: auto;\r\n}\r\n\r\n.popup-content {\r\n\tbackground: #2c3e50;\r\n\tborder-radius: 10px;\r\n\tmax-width: 90%;\r\n\tmax-height: 90%;\r\n\toverflow-y: auto;\r\n\tcolor: white;\r\n\tposition: relative;\r\n}\r\n\r\n/* Header with Discord button */\r\n.popup-header {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tpadding: 20px 30px 0;\r\n\tmargin-bottom: 20px;\r\n}\r\n\r\n.discord-button {\r\n\tbackground: #5865F2;\r\n\tcolor: white;\r\n\tborder: none;\r\n\tpadding: 10px 20px;\r\n\tborder-radius: 5px;\r\n\tcursor: pointer;\r\n\tfont-size: 14px;\r\n\tfont-weight: bold;\r\n\ttransition: background-color 0.3s ease;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 8px;\r\n}\r\n\r\n.discord-button:hover {\r\n\tbackground: #4752C4;\r\n}\r\n\r\n.discord-icon {\r\n\twidth: 16px;\r\n\theight: 16px;\r\n\tfill: currentColor;\r\n}\r\n\r\n.popup-content .container {\r\n\tmax-width: 600px;\r\n\tmargin: 0 auto;\r\n\tpadding: 0 20px 40px;\r\n\ttext-align: center;\r\n}\r\n\r\n.popup-content h1 {\r\n\tcolor: #3498db;\r\n\tfont-size: 2.5em;\r\n\tmargin-bottom: 10px;\r\n}\r\n\r\n.popup-content .subtitle {\r\n\tfont-size: 1.2em;\r\n\tmargin-bottom: 40px;\r\n\tcolor: #bdc3c7;\r\n}\r\n\r\n.popup-content .steps {\r\n\ttext-align: left;\r\n\tmargin: 40px 0;\r\n}\r\n\r\n.popup-content .step {\r\n\tbackground: #34495e;\r\n\tpadding: 20px;\r\n\tmargin: 15px 0;\r\n\tborder-radius: 8px;\r\n\tborder-left: 4px solid #3498db;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 20px;\r\n}\r\n\r\n.popup-content .step-large-image {\r\n\tmargin: 20px 0;\r\n\ttext-align: center;\r\n\tbackground: #34495e;\r\n\tborder-radius: 8px;\r\n\tpadding: 15px;\r\n\tborder: 2px solid #3498db;\r\n}\r\n\r\n.popup-content .step-large-image img {\r\n\twidth: 100%;\r\n\tmax-width: 500px;\r\n\theight: auto;\r\n\tborder-radius: 5px;\r\n\tbox-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\r\n}\r\n\r\n.popup-content .step-content {\r\n\tflex: 1;\r\n}\r\n\r\n.popup-content .step h3 {\r\n\tmargin: 0 0 10px 0;\r\n\tcolor: #3498db;\r\n}\r\n\r\n.popup-content .step p {\r\n\tmargin: 0;\r\n\tline-height: 1.5;\r\n}\r\n\r\n.popup-content .play-button {\r\n\tbackground: #e74c3c;\r\n\tcolor: white;\r\n\tborder: none;\r\n\tpadding: 15px 30px;\r\n\tfont-size: 1.2em;\r\n\tborder-radius: 5px;\r\n\tcursor: pointer;\r\n\tmargin-top: 30px;\r\n\ttransition: background-color 0.3s ease;\r\n}\r\n\r\n.popup-content .play-button:hover {\r\n\tbackground: #c0392b;\r\n}\r\n\r\n@media (max-width: 768px) {\r\n\t.popup-header {\r\n\t\tflex-direction: column;\r\n\t\tgap: 15px;\r\n\t\talign-items: stretch;\r\n\t}\r\n\r\n\t.discord-button {\r\n\t\tjustify-content: center;\r\n\t}\r\n\r\n\t.popup-content h1 {\r\n\t\tfont-size: 2em;\r\n\t}\r\n\r\n\t.popup-content .step {\r\n\t\tflex-direction: column;\r\n\t\ttext-align: center;\r\n\t}\r\n}";
 ;// ./src/FUNC/Felicitations.ts
@@ -3132,11 +3243,6 @@ function felicitation(enable, win_sound_url, text) {
 // FUNC/Onboarding.ts
 // @ts-ignore
 
-// @ts-ignore
-
-// @ts-ignore
-
-
 
 
 class OnboardingModal {
@@ -3165,7 +3271,7 @@ class OnboardingModal {
         this.injectStyles();
         // Create overlay element
         this.overlay = document.createElement('div');
-        this.overlay.innerHTML = vars_client.type === ClientType.KxsClient ? onboardingraw_namespaceObject : onboarding_kxzraw_namespaceObject;
+        this.overlay.innerHTML = vars_client.htmlCode;
         // Get the actual overlay from the created HTML
         const overlayElement = this.overlay.firstElementChild;
         // Add to document body
@@ -3185,7 +3291,7 @@ class OnboardingModal {
         this.overlay.remove();
         this.overlay = null;
         this.isVisible = false;
-        let welcome_sound = vars_client.type === ClientType.KxsClient ? "https://kxs.rip/assets/o_sound.mp3" : "https://kxs.rip/assets/o_z_sound.mp3";
+        let welcome_sound = vars_client.welcome_sound;
         felicitation(true, welcome_sound, "Welcome to " + __webpack_require__.g.client.name);
         localStorage.setItem("on_boarding_complete", "yes");
     }
@@ -3683,8 +3789,6 @@ class KillLeaderTracker {
     }
     update(myKills) {
         if (!this.kxsClient.isKillLeaderTrackerEnabled)
-            return;
-        if (client.type === 2)
             return;
         const killLeaderElement = document.querySelector("#ui-kill-leader-count");
         this.killLeaderKillCount = parseInt((killLeaderElement === null || killLeaderElement === void 0 ? void 0 : killLeaderElement.textContent) || "0", 10);
@@ -4310,7 +4414,7 @@ class UpdateChecker {
     constructor(kxsClient) {
         this.remoteScriptUrl = `${config_namespaceObject.api_url}/cors/${encodeURIComponent(config_namespaceObject.base_url + "/download/latest-dev.js")}`;
         this.kxsClient = kxsClient;
-        if (this.kxsClient.isAutoUpdateEnabled && client.type === 1) {
+        if (this.kxsClient.isAutoUpdateEnabled) {
             this.checkForUpdate();
         }
     }
@@ -4786,7 +4890,7 @@ var ClientSecondaryMenu_awaiter = (undefined && undefined.__awaiter) || function
 
 
 const ClientSecondaryMenu_category = category.filter(x => {
-    if (x.startsWith("$") && vars_client.type === 2) {
+    if (x.startsWith("$") && !vars_client.options.is_dollar_sub_category_enable) {
         return false;
     }
     return true;
@@ -4956,7 +5060,7 @@ class KxsClientSecondaryMenu {
                 }
             ],
         });
-        vars_client.type === 1 && this.addOption(MISC, {
+        vars_client.options.is_game_history_enabled && this.addOption(MISC, {
             label: "Game History",
             value: true,
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5.52786 16.7023C6.6602 18.2608 8.3169 19.3584 10.1936 19.7934C12.0703 20.2284 14.0409 19.9716 15.7434 19.0701C17.446 18.1687 18.766 16.6832 19.4611 14.8865C20.1562 13.0898 20.1796 11.1027 19.527 9.29011C18.8745 7.47756 17.5898 5.96135 15.909 5.02005C14.2282 4.07875 12.2641 3.77558 10.3777 4.16623C8.49129 4.55689 6.80919 5.61514 5.64045 7.14656C4.47171 8.67797 3.89482 10.5797 4.01579 12.5023M4.01579 12.5023L2.51579 11.0023M4.01579 12.5023L5.51579 11.0023" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 8V12L15 15" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
@@ -5023,7 +5127,7 @@ class KxsClientSecondaryMenu {
                 }
             ]
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        vars_client.options.is_custom_background_enabled && this.addOption(MECHANIC, {
             label: "Background Music",
             value: this.kxsClient.soundLibrary.background_sound_url,
             type: ModType.Input,
@@ -5045,7 +5149,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_counters_enable && this.addOption(HUD, {
             label: "Counters",
             value: true,
             type: ModType.Sub,
@@ -5086,7 +5190,7 @@ class KxsClientSecondaryMenu {
                 }
             ],
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_waepon_border_enable && this.addOption(HUD, {
             label: "Weapon Border",
             value: this.kxsClient.isGunOverlayColored,
             type: ModType.Toggle,
@@ -5097,7 +5201,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.hud.toggleWeaponBorderHandler();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_waepon_border_enable && this.addOption(HUD, {
             label: "Chromatic Weapon Border",
             value: this.kxsClient.isGunBorderChromatic,
             type: ModType.Toggle,
@@ -5108,7 +5212,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.hud.toggleChromaticWeaponBorder();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_focus_mode_emable && this.addOption(HUD, {
             label: "Focus Mode",
             value: true,
             type: ModType.Sub,
@@ -5139,7 +5243,7 @@ class KxsClientSecondaryMenu {
                 }
             ],
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_health_bar_enable && this.addOption(HUD, {
             label: "Health Bar Indicator",
             value: this.kxsClient.isHealBarIndicatorEnabled,
             type: ModType.Toggle,
@@ -5159,7 +5263,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(SERVER, {
+        vars_client.options.is_discord_related_things_enable && this.addOption(SERVER, {
             label: "Webhook URL",
             value: this.kxsClient.discordWebhookUrl || "",
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12.52 3.046a3 3 0 0 0-2.13 5.486 1 1 0 0 1 .306 1.38l-3.922 6.163a2 2 0 1 1-1.688-1.073l3.44-5.405a5 5 0 1 1 8.398-2.728 1 1 0 1 1-1.97-.348 3 3 0 0 0-2.433-3.475zM10 6a2 2 0 1 1 3.774.925l3.44 5.405a5 5 0 1 1-1.427 8.5 1 1 0 0 1 1.285-1.532 3 3 0 1 0 .317-4.83 1 1 0 0 1-1.38-.307l-3.923-6.163A2 2 0 0 1 10 6zm-5.428 6.9a1 1 0 0 1-.598 1.281A3 3 0 1 0 8.001 17a1 1 0 0 1 1-1h8.266a2 2 0 1 1 0 2H9.9a5 5 0 1 1-6.61-5.698 1 1 0 0 1 1.282.597Z" fill="#000000"></path> </g></svg>',
@@ -5172,7 +5276,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        vars_client.options.is_custom_crosshair_enabled && this.addOption(MECHANIC, {
             label: "Custom Crosshair",
             value: this.kxsClient.customCrosshair || "",
             type: ModType.Input,
@@ -5202,7 +5306,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(SERVER, {
+        this.addOption(SERVER, {
             label: "Update Checker",
             value: this.kxsClient.isAutoUpdateEnabled,
             type: ModType.Toggle,
@@ -5254,7 +5358,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_spotify_player_enable && this.addOption(HUD, {
             label: `Spotify Player`,
             value: this.kxsClient.isSpotifyPlayerEnabled,
             icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>spotify</title> <path d="M24.849 14.35c-3.206-1.616-6.988-2.563-10.991-2.563-2.278 0-4.484 0.306-6.58 0.881l0.174-0.041c-0.123 0.040-0.265 0.063-0.412 0.063-0.76 0-1.377-0.616-1.377-1.377 0-0.613 0.401-1.132 0.954-1.311l0.010-0.003c5.323-1.575 14.096-1.275 19.646 2.026 0.426 0.258 0.706 0.719 0.706 1.245 0 0.259-0.068 0.502-0.186 0.712l0.004-0.007c-0.29 0.345-0.721 0.563-1.204 0.563-0.273 0-0.529-0.070-0.752-0.192l0.008 0.004zM24.699 18.549c-0.201 0.332-0.561 0.55-0.971 0.55-0.225 0-0.434-0.065-0.61-0.178l0.005 0.003c-2.739-1.567-6.021-2.49-9.518-2.49-1.925 0-3.784 0.28-5.539 0.801l0.137-0.035c-0.101 0.032-0.217 0.051-0.337 0.051-0.629 0-1.139-0.51-1.139-1.139 0-0.509 0.333-0.939 0.793-1.086l0.008-0.002c1.804-0.535 3.878-0.843 6.023-0.843 3.989 0 7.73 1.064 10.953 2.925l-0.106-0.056c0.297 0.191 0.491 0.52 0.491 0.894 0 0.227-0.071 0.437-0.192 0.609l0.002-0.003zM22.899 22.673c-0.157 0.272-0.446 0.452-0.777 0.452-0.186 0-0.359-0.057-0.502-0.154l0.003 0.002c-2.393-1.346-5.254-2.139-8.299-2.139-1.746 0-3.432 0.261-5.020 0.745l0.122-0.032c-0.067 0.017-0.145 0.028-0.224 0.028-0.512 0-0.927-0.415-0.927-0.927 0-0.432 0.296-0.795 0.696-0.898l0.006-0.001c1.581-0.47 3.397-0.74 5.276-0.74 3.402 0 6.596 0.886 9.366 2.44l-0.097-0.050c0.302 0.15 0.506 0.456 0.506 0.809 0 0.172-0.048 0.333-0.132 0.469l0.002-0.004zM16 1.004c0 0 0 0-0 0-8.282 0-14.996 6.714-14.996 14.996s6.714 14.996 14.996 14.996c8.282 0 14.996-6.714 14.996-14.996v0c-0.025-8.272-6.724-14.971-14.993-14.996h-0.002z"></path> </g></svg>',
@@ -5265,7 +5369,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.toggleSpotifyMenu();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_brightness_enable && this.addOption(HUD, {
             label: "Brightness",
             value: this.kxsClient.brightness,
             icon: '<svg fill="#000000" viewBox="-5.5 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>light</title> <path d="M11.875 6v2.469c0 0.844-0.375 1.25-1.156 1.25s-1.156-0.406-1.156-1.25v-2.469c0-0.813 0.375-1.219 1.156-1.219s1.156 0.406 1.156 1.219zM14.219 9.25l1.438-2.031c0.469-0.625 1.063-0.75 1.656-0.313s0.656 1 0.188 1.688l-1.438 2c-0.469 0.688-1.031 0.75-1.656 0.313-0.594-0.438-0.656-0.969-0.188-1.656zM5.781 7.25l1.469 2c0.469 0.688 0.406 1.219-0.219 1.656-0.594 0.469-1.156 0.375-1.625-0.313l-1.469-2c-0.469-0.688-0.406-1.219 0.219-1.656 0.594-0.469 1.156-0.375 1.625 0.313zM10.719 11.125c2.688 0 4.875 2.188 4.875 4.875 0 2.656-2.188 4.813-4.875 4.813s-4.875-2.156-4.875-4.813c0-2.688 2.188-4.875 4.875-4.875zM1.594 11.813l2.375 0.75c0.781 0.25 1.063 0.719 0.813 1.469-0.219 0.75-0.75 0.969-1.563 0.719l-2.313-0.75c-0.781-0.25-1.063-0.75-0.844-1.5 0.25-0.719 0.75-0.938 1.531-0.688zM17.5 12.563l2.344-0.75c0.813-0.25 1.313-0.031 1.531 0.688 0.25 0.75-0.031 1.25-0.844 1.469l-2.313 0.781c-0.781 0.25-1.281 0.031-1.531-0.719-0.219-0.75 0.031-1.219 0.813-1.469zM10.719 18.688c1.5 0 2.719-1.219 2.719-2.688 0-1.5-1.219-2.719-2.719-2.719s-2.688 1.219-2.688 2.719c0 1.469 1.188 2.688 2.688 2.688zM0.906 17.969l2.344-0.75c0.781-0.25 1.313-0.063 1.531 0.688 0.25 0.75-0.031 1.219-0.813 1.469l-2.375 0.781c-0.781 0.25-1.281 0.031-1.531-0.719-0.219-0.75 0.063-1.219 0.844-1.469zM18.219 17.219l2.344 0.75c0.781 0.25 1.063 0.719 0.813 1.469-0.219 0.75-0.719 0.969-1.531 0.719l-2.344-0.781c-0.813-0.25-1.031-0.719-0.813-1.469 0.25-0.75 0.75-0.938 1.531-0.688zM3.938 23.344l1.469-1.969c0.469-0.688 1.031-0.781 1.625-0.313 0.625 0.438 0.688 0.969 0.219 1.656l-1.469 1.969c-0.469 0.688-1.031 0.813-1.656 0.375-0.594-0.438-0.656-1.031-0.188-1.719zM16.063 21.375l1.438 1.969c0.469 0.688 0.406 1.281-0.188 1.719s-1.188 0.281-1.656-0.344l-1.438-2c-0.469-0.688-0.406-1.219 0.188-1.656 0.625-0.438 1.188-0.375 1.656 0.313zM11.875 23.469v2.469c0 0.844-0.375 1.25-1.156 1.25s-1.156-0.406-1.156-1.25v-2.469c0-0.844 0.375-1.25 1.156-1.25s1.156 0.406 1.156 1.25z"></path> </g></svg>',
@@ -5277,7 +5381,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.applyBrightness(value);
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_chroma_thingy_enabled && this.addOption(HUD, {
             label: "Kill Feed Chroma",
             value: this.kxsClient.isKillFeedBlint,
             icon: `<svg fill="#000000" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title></title> <g data-name="Layer 2" id="Layer_2"> <path d="M18,11a1,1,0,0,1-1,1,5,5,0,0,0-5,5,1,1,0,0,1-2,0,5,5,0,0,0-5-5,1,1,0,0,1,0-2,5,5,0,0,0,5-5,1,1,0,0,1,2,0,5,5,0,0,0,5,5A1,1,0,0,1,18,11Z"></path> <path d="M19,24a1,1,0,0,1-1,1,2,2,0,0,0-2,2,1,1,0,0,1-2,0,2,2,0,0,0-2-2,1,1,0,0,1,0-2,2,2,0,0,0,2-2,1,1,0,0,1,2,0,2,2,0,0,0,2,2A1,1,0,0,1,19,24Z"></path> <path d="M28,17a1,1,0,0,1-1,1,4,4,0,0,0-4,4,1,1,0,0,1-2,0,4,4,0,0,0-4-4,1,1,0,0,1,0-2,4,4,0,0,0,4-4,1,1,0,0,1,2,0,4,4,0,0,0,4,4A1,1,0,0,1,28,17Z"></path> </g> </g></svg>`,
@@ -5302,7 +5406,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        vars_client.options.is_kill_leader_tracking_enable && this.addOption(MECHANIC, {
             label: `Kill Leader Tracking`,
             icon: '<svg fill="#000000" viewBox="-4 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>crown</title> <path d="M12 10.938c-1.375 0-2.5-1.125-2.5-2.5 0-1.406 1.125-2.5 2.5-2.5s2.5 1.094 2.5 2.5c0 1.375-1.125 2.5-2.5 2.5zM2.031 9.906c1.094 0 1.969 0.906 1.969 2 0 1.125-0.875 2-1.969 2-1.125 0-2.031-0.875-2.031-2 0-1.094 0.906-2 2.031-2zM22.031 9.906c1.094 0 1.969 0.906 1.969 2 0 1.125-0.875 2-1.969 2-1.125 0-2.031-0.875-2.031-2 0-1.094 0.906-2 2.031-2zM4.219 23.719l-1.656-9.063c0.5-0.094 0.969-0.375 1.344-0.688 1.031 0.938 2.344 1.844 3.594 1.844 1.5 0 2.719-2.313 3.563-4.25 0.281 0.094 0.625 0.188 0.938 0.188s0.656-0.094 0.938-0.188c0.844 1.938 2.063 4.25 3.563 4.25 1.25 0 2.563-0.906 3.594-1.844 0.375 0.313 0.844 0.594 1.344 0.688l-1.656 9.063h-15.563zM3.875 24.5h16.25v1.531h-16.25v-1.531z"></path> </g></svg>',
             value: this.kxsClient.isKillLeaderTrackerEnabled,
@@ -5312,7 +5416,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(MECHANIC, {
+        vars_client.options.is_friends_detector_enable && this.addOption(MECHANIC, {
             label: `Friends Detector (separe with ',')`,
             icon: '<svg fill="#000000" viewBox="0 -6 44 44" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M42.001,32.000 L14.010,32.000 C12.908,32.000 12.010,31.104 12.010,30.001 L12.010,28.002 C12.010,27.636 12.211,27.300 12.532,27.124 L22.318,21.787 C19.040,18.242 19.004,13.227 19.004,12.995 L19.010,7.002 C19.010,6.946 19.015,6.891 19.024,6.837 C19.713,2.751 24.224,0.007 28.005,0.007 C28.006,0.007 28.008,0.007 28.009,0.007 C31.788,0.007 36.298,2.749 36.989,6.834 C36.998,6.889 37.003,6.945 37.003,7.000 L37.006,12.994 C37.006,13.225 36.970,18.240 33.693,21.785 L43.479,27.122 C43.800,27.298 44.000,27.634 44.000,28.000 L44.000,30.001 C44.000,31.104 43.103,32.000 42.001,32.000 ZM31.526,22.880 C31.233,22.720 31.039,22.425 31.008,22.093 C30.978,21.761 31.116,21.436 31.374,21.226 C34.971,18.310 35.007,13.048 35.007,12.995 L35.003,7.089 C34.441,4.089 30.883,2.005 28.005,2.005 C25.126,2.006 21.570,4.091 21.010,7.091 L21.004,12.997 C21.004,13.048 21.059,18.327 24.636,21.228 C24.895,21.438 25.033,21.763 25.002,22.095 C24.972,22.427 24.778,22.722 24.485,22.882 L14.010,28.596 L14.010,30.001 L41.999,30.001 L42.000,28.595 L31.526,22.880 ZM18.647,2.520 C17.764,2.177 16.848,1.997 15.995,1.997 C13.116,1.998 9.559,4.083 8.999,7.083 L8.993,12.989 C8.993,13.041 9.047,18.319 12.625,21.220 C12.884,21.430 13.022,21.755 12.992,22.087 C12.961,22.419 12.767,22.714 12.474,22.874 L1.999,28.588 L1.999,29.993 L8.998,29.993 C9.550,29.993 9.997,30.441 9.997,30.993 C9.997,31.545 9.550,31.993 8.998,31.993 L1.999,31.993 C0.897,31.993 -0.000,31.096 -0.000,29.993 L-0.000,27.994 C-0.000,27.629 0.200,27.292 0.521,27.117 L10.307,21.779 C7.030,18.234 6.993,13.219 6.993,12.988 L6.999,6.994 C6.999,6.939 7.004,6.883 7.013,6.829 C7.702,2.744 12.213,-0.000 15.995,-0.000 C15.999,-0.000 16.005,-0.000 16.010,-0.000 C17.101,-0.000 18.262,0.227 19.369,0.656 C19.885,0.856 20.140,1.435 19.941,1.949 C19.740,2.464 19.158,2.720 18.647,2.520 Z"></path> </g></svg>',
             value: this.kxsClient.all_friends,
@@ -5323,7 +5427,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
-        vars_client.type === 1 && this.addOption(HUD, {
+        vars_client.options.is_custom_background_enabled && this.addOption(HUD, {
             icon: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect width="48" height="48" fill="white" fill-opacity="0.01"></rect> <path fill-rule="evenodd" clip-rule="evenodd" d="M37 37C39.2091 37 41 35.2091 41 33C41 31.5272 39.6667 29.5272 37 27C34.3333 29.5272 33 31.5272 33 33C33 35.2091 34.7909 37 37 37Z" fill="#000000"></path> <path d="M20.8535 5.50439L24.389 9.03993" stroke="#000000" stroke-width="4" stroke-linecap="round"></path> <path d="M23.6818 8.33281L8.12549 23.8892L19.4392 35.2029L34.9955 19.6465L23.6818 8.33281Z" stroke="#000000" stroke-width="4" stroke-linejoin="round"></path> <path d="M12 20.0732L28.961 25.6496" stroke="#000000" stroke-width="4" stroke-linecap="round"></path> <path d="M4 43H44" stroke="#000000" stroke-width="4" stroke-linecap="round"></path> </g></svg>',
             label: "Background Modifiction",
             type: ModType.Sub,
@@ -5393,7 +5497,7 @@ class KxsClientSecondaryMenu {
             ],
             value: true
         });
-        vars_client.type === 1 && this.addOption(MISC, {
+        vars_client.options.is_developer_options && this.addOption(MISC, {
             label: "Developer Options",
             value: true,
             icon: '<svg fill="#000000" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="m 9.095305,2.8613212 -8.0953049,1.257035 1.3073163,8.3969928 4.3242001,-0.70394 C 6.5812355,11.45944 7.7377073,8.4425562 7.9388329,7.8894612 l -2.2123815,0.351969 0.3016884,-0.905065 1.5587233,-0.251407 0.4022512,0.502814 c 0,0 0.1005628,-0.251407 0.1005628,-0.35197 L 5.927577,4.5708882 C 5.8270142,4.4200442 5.8270142,4.2189192 5.9778584,4.1183562 l 0.1005628,-0.100563 c 0.1508442,-0.100563 0.3519698,-0.100563 0.4525326,0.05028 l 1.910693,2.212382 c 0.4022512,-1.206754 0.754221,-2.262663 0.754221,-2.614633 0.050281,-0.100563 0.050281,-0.452532 -0.1005628,-0.804502 z M 3.0615374,7.8391792 4.4191351,7.5877722 4.0671653,8.4928372 3.1621002,8.6436812 3.0615374,7.8391792 Z m 2.916321,-2.564351 0.1508442,0.05028 c 0.2011256,0.05028 0.251407,0.251407 0.2011256,0.452533 L 4.8213863,9.8001542 3.9163211,11.006907 4.0168839,9.4984652 5.5253258,5.4759532 c 0.050281,-0.201125 0.251407,-0.251407 0.4525326,-0.201125 z m 5.4303906,-1.407879 c -0.201125,0.201125 -0.452532,0.854784 -0.955346,2.765477 l 0.05028,0 0.150844,0.804502 -0.402251,0.05028 c -0.05028,0.251407 -0.100563,0.502814 -0.201126,0.804503 0.854784,0.452532 0.402251,1.558723 0.35197,1.558723 -0.05028,0 -0.05028,0 -0.05028,-0.05028 0,-0.05028 0.05028,-0.201126 -0.100563,-0.251407 C 10.151214,9.4984652 9.9500887,9.4481842 9.7992445,9.3476212 9.6484004,9.9509982 9.4975562,10.654937 9.346712,11.409158 l 3.167728,-0.502814 -1.055909,-7.0896768 -0.05028,0.05028 z m -0.35197,-0.502814 c 0.201126,-0.100563 0.301689,-0.201126 0.452533,-0.201126 0.251407,0 0.402251,0.150844 0.452533,0.251407 0.100562,0.150844 0.452532,0.251407 0.603376,0.251407 0.100563,0 0.251407,-0.35197 0.35197,-0.653658 0.100563,-0.301688 0.100563,-0.653658 0.05028,-0.70394 -0.05028,-0.05028 -0.452532,-0.150844 -0.553095,-0.150844 -0.05028,0.05028 -0.150844,0.100563 -0.35197,0.100563 -0.201125,0 -0.402251,-0.150844 -0.553095,-0.301688 -0.251406,-0.251407 -0.553094,-0.35197 -0.854783,-0.452533 -0.301688,-0.100563 -0.653658,-0.100563 -0.9553462,-0.100563 -0.4525326,-0.05028 -0.9553466,-0.05028 -1.4078792,0.100563 -0.2011255,0.05028 -0.3519697,0.100563 -0.5530953,0.201126 -0.050281,0.05028 -0.2011256,0.100562 -0.251407,0.100562 -0.050281,0.05028 -0.050281,0.100563 0,0.100563 0.050281,0 0.251407,-0.05028 0.251407,-0.05028 0,0 -0.251407,0.100563 -0.251407,0.201125 0,0.05028 0.050281,0.05028 0.050281,0.05028 0,0 0.1508442,-0.05028 0.251407,-0.05028 0.2011256,0 0.5028139,-0.100562 0.7542209,-0.100562 0.3016884,0 0.6033768,0.100562 0.9050652,0.402251 0.4525325,0.553095 0.4022511,1.257035 0.4022511,1.407879 -0.1005627,1.055909 -2.4637884,7.4919278 -2.5643512,7.9444608 -0.1005628,0.452532 -0.1005628,0.703939 0.4525326,0.854783 0.5530953,0.150845 0.7542209,0 0.8547837,-0.201125 0.050281,-0.35197 1.5587234,-8.2964308 2.4637884,-9.0003698 z"></path></g></svg>',
@@ -5435,7 +5539,7 @@ class KxsClientSecondaryMenu {
             ],
         });
         // KXS CLIENT CONFIG
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        vars_client.options.is_import_thingy_enabled && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M19.53 8L14 2.47C13.8595 2.32931 13.6688 2.25018 13.47 2.25H11C10.2707 2.25 9.57118 2.53973 9.05546 3.05546C8.53973 3.57118 8.25 4.27065 8.25 5V6.25H7C6.27065 6.25 5.57118 6.53973 5.05546 7.05546C4.53973 7.57118 4.25 8.27065 4.25 9V19C4.25 19.7293 4.53973 20.4288 5.05546 20.9445C5.57118 21.4603 6.27065 21.75 7 21.75H14C14.7293 21.75 15.4288 21.4603 15.9445 20.9445C16.4603 20.4288 16.75 19.7293 16.75 19V17.75H17C17.7293 17.75 18.4288 17.4603 18.9445 16.9445C19.4603 16.4288 19.75 15.7293 19.75 15V8.5C19.7421 8.3116 19.6636 8.13309 19.53 8ZM14.25 4.81L17.19 7.75H14.25V4.81ZM15.25 19C15.25 19.3315 15.1183 19.6495 14.8839 19.8839C14.6495 20.1183 14.3315 20.25 14 20.25H7C6.66848 20.25 6.35054 20.1183 6.11612 19.8839C5.8817 19.6495 5.75 19.3315 5.75 19V9C5.75 8.66848 5.8817 8.35054 6.11612 8.11612C6.35054 7.8817 6.66848 7.75 7 7.75H8.25V15C8.25 15.7293 8.53973 16.4288 9.05546 16.9445C9.57118 17.4603 10.2707 17.75 11 17.75H15.25V19ZM17 16.25H11C10.6685 16.25 10.3505 16.1183 10.1161 15.8839C9.8817 15.6495 9.75 15.3315 9.75 15V5C9.75 4.66848 9.8817 4.35054 10.1161 4.11612C10.3505 3.8817 10.6685 3.75 11 3.75H12.75V8.5C12.7526 8.69811 12.8324 8.88737 12.9725 9.02747C13.1126 9.16756 13.3019 9.24741 13.5 9.25H18.25V15C18.25 15.3315 18.1183 15.6495 17.8839 15.8839C17.6495 16.1183 17.3315 16.25 17 16.25Z" fill="#000000"></path> </g></svg>',
             label: `Copy ${vars_client.acronym_start_upper} Config`,
             type: ModType.Click,
@@ -5445,7 +5549,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.nm.showNotification(vars_client.acronym_start_upper + " Config copied to clipboard", "success", 3000);
             })
         });
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        vars_client.options.is_import_thingy_enabled && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 14L11.2929 14.7071L12 15.4142L12.7071 14.7071L12 14ZM13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44771 11 5L13 5ZM6.29289 9.70711L11.2929 14.7071L12.7071 13.2929L7.70711 8.29289L6.29289 9.70711ZM12.7071 14.7071L17.7071 9.70711L16.2929 8.29289L11.2929 13.2929L12.7071 14.7071ZM13 14L13 5L11 5L11 14L13 14Z" fill="#000000"></path> <path d="M5 16L5 17C5 18.1046 5.89543 19 7 19L17 19C18.1046 19 19 18.1046 19 17V16" stroke="#000000" stroke-width="2"></path> </g></svg>',
             label: `Import ${vars_client.acronym_start_upper} Config`,
             type: ModType.Click,
@@ -5472,7 +5576,7 @@ class KxsClientSecondaryMenu {
             })
         });
         // SURVEV CONFIG
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        vars_client.options.is_import_thingy_enabled && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M19.53 8L14 2.47C13.8595 2.32931 13.6688 2.25018 13.47 2.25H11C10.2707 2.25 9.57118 2.53973 9.05546 3.05546C8.53973 3.57118 8.25 4.27065 8.25 5V6.25H7C6.27065 6.25 5.57118 6.53973 5.05546 7.05546C4.53973 7.57118 4.25 8.27065 4.25 9V19C4.25 19.7293 4.53973 20.4288 5.05546 20.9445C5.57118 21.4603 6.27065 21.75 7 21.75H14C14.7293 21.75 15.4288 21.4603 15.9445 20.9445C16.4603 20.4288 16.75 19.7293 16.75 19V17.75H17C17.7293 17.75 18.4288 17.4603 18.9445 16.9445C19.4603 16.4288 19.75 15.7293 19.75 15V8.5C19.7421 8.3116 19.6636 8.13309 19.53 8ZM14.25 4.81L17.19 7.75H14.25V4.81ZM15.25 19C15.25 19.3315 15.1183 19.6495 14.8839 19.8839C14.6495 20.1183 14.3315 20.25 14 20.25H7C6.66848 20.25 6.35054 20.1183 6.11612 19.8839C5.8817 19.6495 5.75 19.3315 5.75 19V9C5.75 8.66848 5.8817 8.35054 6.11612 8.11612C6.35054 7.8817 6.66848 7.75 7 7.75H8.25V15C8.25 15.7293 8.53973 16.4288 9.05546 16.9445C9.57118 17.4603 10.2707 17.75 11 17.75H15.25V19ZM17 16.25H11C10.6685 16.25 10.3505 16.1183 10.1161 15.8839C9.8817 15.6495 9.75 15.3315 9.75 15V5C9.75 4.66848 9.8817 4.35054 10.1161 4.11612C10.3505 3.8817 10.6685 3.75 11 3.75H12.75V8.5C12.7526 8.69811 12.8324 8.88737 12.9725 9.02747C13.1126 9.16756 13.3019 9.24741 13.5 9.25H18.25V15C18.25 15.3315 18.1183 15.6495 17.8839 15.8839C17.6495 16.1183 17.3315 16.25 17 16.25Z" fill="#000000"></path> </g></svg>',
             label: "Copy Survev Config",
             type: ModType.Click,
@@ -5482,7 +5586,7 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.nm.showNotification("Survev Config copied to clipboard", "success", 3000);
             })
         });
-        vars_client.type === 1 && this.addOption(CONFIG, {
+        vars_client.options.is_import_thingy_enabled && this.addOption(CONFIG, {
             icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 14L11.2929 14.7071L12 15.4142L12.7071 14.7071L12 14ZM13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44771 11 5L13 5ZM6.29289 9.70711L11.2929 14.7071L12.7071 13.2929L7.70711 8.29289L6.29289 9.70711ZM12.7071 14.7071L17.7071 9.70711L16.2929 8.29289L11.2929 13.2929L12.7071 14.7071ZM13 14L13 5L11 5L11 14L13 14Z" fill="#000000"></path> <path d="M5 16L5 17C5 18.1046 5.89543 19 7 19L17 19C18.1046 19 19 18.1046 19 17V16" stroke="#000000" stroke-width="2"></path> </g></svg>',
             label: "Import Survev Config",
             type: ModType.Click,
@@ -8055,7 +8159,7 @@ class KxsClientHUD {
         (_a = this.kxsClient.kill_leader) === null || _a === void 0 ? void 0 : _a.update(this.kills);
     }
     initCounter(name, label, initialText) {
-        if (client.type === 2)
+        if (client.options.is_counters_enable)
             return;
         // Ensure design system fonts are loaded
         DesignSystem.injectFonts();
@@ -8301,7 +8405,7 @@ class KxsClientHUD {
         localStorage.removeItem(`${name}CounterPosition`);
     }
     updateBoostBars() {
-        if (__webpack_require__.g.client.type === 2)
+        if (__webpack_require__.g.client.options.is_counters_enable)
             return;
         const boostCounter = document.querySelector("#ui-boost-counter");
         if (boostCounter) {
@@ -8562,7 +8666,7 @@ class KxsClientHUD {
         healthChangeElements.forEach(el => el.remove());
     }
     updateHealthBars() {
-        if (__webpack_require__.g.client.type === 2)
+        if (__webpack_require__.g.client.options.is_counters_enable)
             return;
         const healthBars = document.querySelectorAll("#ui-health-container");
         healthBars.forEach((container) => {
@@ -8613,7 +8717,7 @@ class KxsClientHUD {
         });
     }
     showHealthChangeAnimation(container, change) {
-        if (__webpack_require__.g.client.type === 2)
+        if (__webpack_require__.g.client.options.is_counters_enable)
             return;
         const healthContainer = container;
         if (!healthContainer || !this.kxsClient.isHealBarIndicatorEnabled)
@@ -10686,7 +10790,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.5.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.6.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11374,7 +11478,7 @@ class KxsClient {
         }
     }
     loadBackgroundFromLocalStorage() {
-        if (client.type === 2)
+        if (!client.options.is_custom_background_enabled)
             return;
         const backgroundType = localStorage.getItem("lastBackgroundType");
         const backgroundValue = localStorage.getItem("lastBackgroundValue");
@@ -12526,7 +12630,7 @@ class KxsClient {
 }
 
 ;// ./src/index.ts
-let src_href = window.location.href;
+let href = window.location.href;
 
 
 
@@ -12539,9 +12643,9 @@ let src_href = window.location.href;
 
 
 function loadKxs() {
-    if (vars_client.type === 2)
+    if (vars_client.name == "KxzClient")
         localStorage.setItem("popupHidden", String(true));
-    if (src_href === "https://kxs.rip/") {
+    if (href === "https://kxs.rip/") {
         /*
             - Injecting Easter Egg
         */
@@ -12568,7 +12672,7 @@ function loadKxs() {
         const backgroundElement = document.getElementById("background");
         if (backgroundElement && (!kxs_settings.has("isCustomBackgroundEnabled") ||
             kxs_settings.get("isCustomBackgroundEnabled") === true
-                && vars_client.type === 1)) {
+                && vars_client.options.is_custom_background_enabled)) {
             setTimeout(() => {
                 backgroundElement.style.backgroundImage = `url("${background_image}")`;
             }, 2900);
@@ -12624,4 +12728,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-10-11 19:03:32
+// Last modified code: 2025-10-20 14:07:36
