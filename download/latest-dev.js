@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.6.3
+// @version      2.7.0
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -458,8 +458,20 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
             : new OriginalWebSocket(url);
         if (typeof url === "string" && url.includes("gameId=")) {
             const gameId = url.split("gameId=")[1];
+            // do things
             globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
             globalThis.kxsClient.exchangeManager.sendGameInfo(gameId);
+            __webpack_require__.g.kxsClient.pingManager.setServerFromWebsocketHooking(new URL(url));
+            globalThis.kxsClient.aliveplayer.startObserving((newValue) => {
+                globalThis.kxsClient.kxsNetwork.PlayerAlive_ExchangeKey(newValue !== null && newValue !== void 0 ? newValue : "");
+            });
+            const originalClose = ws.close.bind(ws);
+            ws.close = function (code, reason) {
+                __webpack_require__.g.kxsClient.kxsNetwork.gameEnded();
+                __webpack_require__.g.kxsClient.kxsNetwork.gameEnded_ExchangeKey(__webpack_require__.g.kxsClient.getFinalGameBody() || {});
+                globalThis.kxsClient.aliveplayer.stopObserving();
+                return originalClose(code, reason);
+            };
         }
         if (!globalThis.kxsClient.kxsNetwork[1])
             return ws;
@@ -6794,239 +6806,7 @@ class KxsClientSecondaryMenu {
 }
 
 
-;// ./src/SERVER/Ping.ts
-class PingTest {
-    constructor() {
-        this.ping = 0;
-        this.ws = null;
-        this.sendTime = 0;
-        this.retryCount = 0;
-        this.isConnecting = false;
-        this.isWebSocket = true;
-        this.url = "";
-        this.region = "";
-        this.hasPing = false;
-        this.reconnectTimer = null;
-        this.keepAliveTimer = null;
-        this.connectionCheckTimer = null;
-        this.ptcDataBuf = new ArrayBuffer(1);
-        this.waitForServerSelectElements();
-        this.startKeepAlive();
-    }
-    startKeepAlive() {
-        // Annuler l'ancien timer si existant
-        if (this.keepAliveTimer) {
-            clearInterval(this.keepAliveTimer);
-        }
-        this.keepAliveTimer = setInterval(() => {
-            var _a, _b, _c;
-            if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
-                this.ws.send(this.ptcDataBuf);
-            }
-            else if (((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSED || ((_c = this.ws) === null || _c === void 0 ? void 0 : _c.readyState) === WebSocket.CLOSING) {
-                // Redémarrer la connexion si elle est fermée
-                this.restart();
-            }
-        }, 5000); // envoie toutes les 5s
-    }
-    waitForServerSelectElements() {
-        const checkInterval = setInterval(() => {
-            const teamSelect = document.getElementById("team-server-select");
-            const mainSelect = document.getElementById("server-select-main");
-            const selectedValue = (teamSelect === null || teamSelect === void 0 ? void 0 : teamSelect.value) || (mainSelect === null || mainSelect === void 0 ? void 0 : mainSelect.value);
-            if ((teamSelect || mainSelect) && selectedValue) {
-                clearInterval(checkInterval);
-                this.setServerFromDOM();
-                this.attachRegionChangeListener();
-            }
-        }, 100); // Vérifie toutes les 100ms
-    }
-    setServerFromDOM() {
-        const selectedServer = this.detectSelectedServer();
-        if (!selectedServer)
-            return;
-        const { region, url } = selectedServer;
-        this.region = region;
-        this.url = `wss://${url}/ptc`;
-        this.start();
-    }
-    detectSelectedServer() {
-        const currentUrl = window.location.href;
-        const isSpecialUrl = /\/#\w+/.test(currentUrl);
-        const teamSelectElement = document.getElementById("team-server-select");
-        const mainSelectElement = document.getElementById("server-select-main");
-        const region = isSpecialUrl && teamSelectElement
-            ? teamSelectElement.value
-            : (mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.value) || "NA";
-        const servers = [
-            { region: "NA", url: "usr.mathsiscoolfun.com:8001" },
-            { region: "EU", url: "eur.mathsiscoolfun.com:8001" },
-            { region: "Asia", url: "asr.mathsiscoolfun.com:8001" },
-            { region: "SA", url: "sa.mathsiscoolfun.com:8001" },
-        ];
-        const selectedServer = servers.find((s) => s.region.toUpperCase() === region.toUpperCase());
-        if (!selectedServer)
-            return undefined;
-        return selectedServer;
-    }
-    attachRegionChangeListener() {
-        const teamSelectElement = document.getElementById("team-server-select");
-        const mainSelectElement = document.getElementById("server-select-main");
-        const onChange = () => {
-            const selectedServer = this.detectSelectedServer();
-            if (!selectedServer)
-                return;
-            const { region } = selectedServer;
-            if (region !== this.region) {
-                this.restart();
-            }
-        };
-        teamSelectElement === null || teamSelectElement === void 0 ? void 0 : teamSelectElement.addEventListener("change", onChange);
-        mainSelectElement === null || mainSelectElement === void 0 ? void 0 : mainSelectElement.addEventListener("change", onChange);
-    }
-    start() {
-        if (this.isConnecting)
-            return;
-        this.isConnecting = true;
-        this.startWebSocketPing();
-        // Vérifier régulièrement l'état de la connexion
-        this.startConnectionCheck();
-    }
-    startConnectionCheck() {
-        // Annuler l'ancien timer si existant
-        if (this.connectionCheckTimer) {
-            clearInterval(this.connectionCheckTimer);
-        }
-        // Vérifier l'état de la connexion toutes les 10 secondes
-        this.connectionCheckTimer = setInterval(() => {
-            // Si on n'a pas de ping valide ou que la connexion est fermée, on tente de reconnecter
-            if (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                this.restart();
-            }
-        }, 10000);
-    }
-    startWebSocketPing() {
-        if (this.ws || !this.url)
-            return;
-        const ws = new WebSocket(this.url);
-        ws.binaryType = "arraybuffer";
-        ws.onopen = () => {
-            this.ws = ws;
-            this.retryCount = 0;
-            this.isConnecting = false;
-            this.sendPing();
-            setTimeout(() => {
-                var _a;
-                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
-                    this.restart();
-                }
-            }, 3000); // 3s pour sécuriser
-        };
-        ws.onmessage = () => {
-            this.hasPing = true;
-            const elapsed = (Date.now() - this.sendTime) / 1e3;
-            this.ping = Math.round(elapsed * 1000);
-            setTimeout(() => this.sendPing(), 1000);
-        };
-        ws.onerror = (error) => {
-            this.ping = 0;
-            this.hasPing = false;
-            this.retryCount++;
-            // Tentative immédiate mais avec backoff exponentiel
-            const retryDelay = Math.min(1000 * Math.pow(2, this.retryCount - 1), 10000);
-            // Annuler tout timer de reconnexion existant
-            if (this.reconnectTimer) {
-                clearTimeout(this.reconnectTimer);
-            }
-            this.reconnectTimer = setTimeout(() => {
-                this.ws = null; // S'assurer que l'ancienne connexion est effacée
-                this.startWebSocketPing();
-            }, retryDelay);
-        };
-        ws.onclose = (event) => {
-            this.hasPing = false;
-            this.ws = null;
-            this.isConnecting = false;
-            // Tentative de reconnexion après une fermeture
-            if (this.reconnectTimer) {
-                clearTimeout(this.reconnectTimer);
-            }
-            this.reconnectTimer = setTimeout(() => {
-                this.start();
-            }, 2000); // Attendre 2 secondes avant de reconnecter
-        };
-    }
-    sendPing() {
-        var _a, _b;
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.sendTime = Date.now();
-            this.ws.send(this.ptcDataBuf);
-        }
-        else if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED || ((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSING) {
-            // Si la WebSocket est fermée au moment d'envoyer le ping, on tente de reconnecter
-            this.restart();
-        }
-    }
-    stop() {
-        // Annuler tous les timers
-        if (this.reconnectTimer) {
-            clearTimeout(this.reconnectTimer);
-            this.reconnectTimer = null;
-        }
-        if (this.keepAliveTimer) {
-            clearInterval(this.keepAliveTimer);
-            this.keepAliveTimer = null;
-        }
-        if (this.connectionCheckTimer) {
-            clearInterval(this.connectionCheckTimer);
-            this.connectionCheckTimer = null;
-        }
-        if (this.ws) {
-            this.ws.onclose = null;
-            this.ws.onerror = null;
-            this.ws.onmessage = null;
-            this.ws.onopen = null;
-            this.ws.close();
-            this.ws = null;
-        }
-        this.isConnecting = false;
-        this.retryCount = 0;
-        this.hasPing = false;
-    }
-    restart() {
-        this.stop();
-        setTimeout(() => {
-            this.setServerFromDOM();
-        }, 500); // Petit délai pour éviter les problèmes de rebond
-    }
-    /**
-     * Retourne le ping actuel. Ne touche jamais à la websocket ici !
-     * Si le ping n'est pas dispo, retourne -1 (jamais null).
-     * La reconnexion doit être gérée ailleurs (timer, event, etc).
-     */
-    getPingResult() {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing) {
-            return {
-                region: this.region,
-                ping: this.ping,
-            };
-        }
-        else {
-            // Si on détecte un problème ici, planifier une reconnexion
-            if (!this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
-                this.reconnectTimer = setTimeout(() => this.restart(), 1000);
-            }
-            return {
-                region: this.region,
-                ping: -1, // -1 indique que le ping n'est pas dispo, mais jamais null
-            };
-        }
-    }
-}
-
-
 ;// ./src/HUD/ClientHUD.ts
-
 
 class KxsClientHUD {
     constructor(kxsClient) {
@@ -7041,7 +6821,6 @@ class KxsClientHUD {
         this.fps = 0;
         this.kills = 0;
         this.isMenuVisible = true;
-        this.pingManager = new PingTest();
         this.allDivToHide = [
             '#ui-medical-interactive > div',
             '#ui-ammo-interactive > div',
@@ -8081,7 +7860,7 @@ class KxsClientHUD {
         if (delta >= 1000) {
             const previousFps = this.fps;
             const previousKills = this.kills;
-            const previousPing = this.pingManager ? this.pingManager.getPingResult().ping : 0;
+            const previousPing = this.kxsClient.pingManager ? this.kxsClient.pingManager.getPingResult().ping : 0;
             this.fps = Math.round((this.frameCount * 1000) / delta);
             this.frameCount = 0;
             this.kxsClient.lastFrameTime = now;
@@ -8125,8 +7904,8 @@ class KxsClientHUD {
             }
             if (this.kxsClient.isPingVisible &&
                 this.kxsClient.counters.ping &&
-                this.pingManager) {
-                const result = this.pingManager.getPingResult();
+                this.kxsClient.pingManager) {
+                const result = this.kxsClient.pingManager.getPingResult();
                 const valueElement = this.kxsClient.counters.ping.querySelector('span:last-child');
                 if (valueElement) {
                     valueElement.textContent = `${result.ping} ms`;
@@ -8810,7 +8589,8 @@ class KxsClientHUD {
 ;// ./src/FUNC/Logger.ts
 class Logger {
     getHeader(method) {
-        return "[" + __webpack_require__.g.client.name + " - " + method + "]";
+        var _a;
+        return "[" + (((_a = __webpack_require__.g.client) === null || _a === void 0 ? void 0 : _a.name) || "KXS") + " - " + method + "]";
     }
     展示(...args) {
         console.log(...args);
@@ -9733,7 +9513,8 @@ class KxsNetwork {
             d: {
                 username: this.getUsername(),
                 isVoiceChat: this.kxsClient.isVoiceChatEnabled,
-                v: this.capitalizeFirstLetter(this.kxsClient.pkg.name) + "@" + this.kxsClient.pkg.version
+                v: this.capitalizeFirstLetter(__webpack_require__.g.client.name) + "@" + this.kxsClient.pkg.version,
+                exchangeKey: this.kxsClient.kxsDeveloperOptions.exchange.password || null
             }
         };
         this.send(payload);
@@ -9887,6 +9668,14 @@ class KxsNetwork {
     gameEnded() {
         var _a;
         (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 4, d: {} }));
+    }
+    gameEnded_ExchangeKey(body) {
+        var _a;
+        (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 16, d: { data: body } }));
+    }
+    PlayerAlive_ExchangeKey(count) {
+        var _a;
+        (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 15, d: { alive: count } }));
     }
 }
 
@@ -10790,7 +10579,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.6.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -10810,6 +10599,249 @@ class ExchangeManager {
     }
 }
 
+;// ./src/SERVER/Ping.ts
+class PingTest {
+    constructor() {
+        this.ping = 0;
+        this.ws = null;
+        this.sendTime = 0;
+        this.retryCount = 0;
+        this.isConnecting = false;
+        this.url = "";
+        this.hasPing = false;
+        this.reconnectTimer = null;
+        this.keepAliveTimer = null;
+        this.connectionCheckTimer = null;
+        this.ptcDataBuf = new ArrayBuffer(1);
+        this.waitForServerSelectElements();
+        this.startKeepAlive();
+    }
+    startKeepAlive() {
+        // Annuler l'ancien timer si existant
+        if (this.keepAliveTimer) {
+            clearInterval(this.keepAliveTimer);
+        }
+        this.keepAliveTimer = setInterval(() => {
+            var _a, _b, _c;
+            if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
+                this.ws.send(this.ptcDataBuf);
+            }
+            else if (((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSED || ((_c = this.ws) === null || _c === void 0 ? void 0 : _c.readyState) === WebSocket.CLOSING) {
+                // Redémarrer la connexion si elle est fermée
+                this.restart();
+            }
+        }, 5000); // envoie toutes les 5s
+    }
+    waitForServerSelectElements() {
+        const checkInterval = setInterval(() => {
+            const teamSelect = document.getElementById("team-server-select");
+            const mainSelect = document.getElementById("server-select-main");
+            const selectedValue = (teamSelect === null || teamSelect === void 0 ? void 0 : teamSelect.value) || (mainSelect === null || mainSelect === void 0 ? void 0 : mainSelect.value);
+            if ((teamSelect || mainSelect) && selectedValue) {
+                clearInterval(checkInterval);
+            }
+        }, 100); // Vérifie toutes les 100ms
+    }
+    setServerFromWebsocketHooking(url) {
+        this.url = url.origin + '/ptc';
+        this.start();
+    }
+    start() {
+        if (this.isConnecting)
+            return;
+        this.isConnecting = true;
+        this.startWebSocketPing();
+        // Vérifier régulièrement l'état de la connexion
+        this.startConnectionCheck();
+    }
+    startConnectionCheck() {
+        // Annuler l'ancien timer si existant
+        if (this.connectionCheckTimer) {
+            clearInterval(this.connectionCheckTimer);
+        }
+        // Vérifier l'état de la connexion toutes les 10 secondes
+        this.connectionCheckTimer = setInterval(() => {
+            // Si on n'a pas de ping valide ou que la connexion est fermée, on tente de reconnecter
+            if (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                this.restart();
+            }
+        }, 10000);
+    }
+    startWebSocketPing() {
+        if (this.ws || !this.url)
+            return;
+        const ws = new WebSocket(this.url);
+        ws.binaryType = "arraybuffer";
+        ws.onopen = () => {
+            this.ws = ws;
+            this.retryCount = 0;
+            this.isConnecting = false;
+            this.sendPing();
+            setTimeout(() => {
+                var _a;
+                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
+                    this.restart();
+                }
+            }, 3000); // 3s pour sécuriser
+        };
+        ws.onmessage = () => {
+            this.hasPing = true;
+            const elapsed = (Date.now() - this.sendTime) / 1e3;
+            this.ping = Math.round(elapsed * 1000);
+            setTimeout(() => this.sendPing(), 1000);
+        };
+        ws.onerror = (error) => {
+            this.ping = 0;
+            this.hasPing = false;
+            this.retryCount++;
+            // Tentative immédiate mais avec backoff exponentiel
+            const retryDelay = Math.min(1000 * Math.pow(2, this.retryCount - 1), 10000);
+            // Annuler tout timer de reconnexion existant
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+            }
+            this.reconnectTimer = setTimeout(() => {
+                this.ws = null; // S'assurer que l'ancienne connexion est effacée
+                this.startWebSocketPing();
+            }, retryDelay);
+        };
+        ws.onclose = (event) => {
+            this.hasPing = false;
+            this.ws = null;
+            this.isConnecting = false;
+            // Tentative de reconnexion après une fermeture
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+            }
+            this.reconnectTimer = setTimeout(() => {
+                this.start();
+            }, 2000); // Attendre 2 secondes avant de reconnecter
+        };
+    }
+    sendPing() {
+        var _a, _b;
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.sendTime = Date.now();
+            this.ws.send(this.ptcDataBuf);
+        }
+        else if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED || ((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSING) {
+            // Si la WebSocket est fermée au moment d'envoyer le ping, on tente de reconnecter
+            this.restart();
+        }
+    }
+    stop() {
+        // Annuler tous les timers
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        if (this.keepAliveTimer) {
+            clearInterval(this.keepAliveTimer);
+            this.keepAliveTimer = null;
+        }
+        if (this.connectionCheckTimer) {
+            clearInterval(this.connectionCheckTimer);
+            this.connectionCheckTimer = null;
+        }
+        if (this.ws) {
+            this.ws.onclose = null;
+            this.ws.onerror = null;
+            this.ws.onmessage = null;
+            this.ws.onopen = null;
+            this.ws.close();
+            this.ws = null;
+        }
+        this.isConnecting = false;
+        this.retryCount = 0;
+        this.hasPing = false;
+    }
+    restart() {
+        this.stop();
+        this.start();
+    }
+    /**
+     * Retourne le ping actuel. Ne touche jamais à la websocket ici !
+     * Si le ping n'est pas dispo, retourne -1 (jamais null).
+     * La reconnexion doit être gérée ailleurs (timer, event, etc).
+     */
+    getPingResult() {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN && this.hasPing) {
+            return {
+                ping: this.ping,
+            };
+        }
+        else {
+            // Si on détecte un problème ici, planifier une reconnexion
+            if (!this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
+                this.reconnectTimer = setTimeout(() => this.restart(), 1000);
+            }
+            return {
+                ping: -1, // -1 indique que le ping n'est pas dispo, mais jamais null
+            };
+        }
+    }
+}
+
+
+;// ./src/UTILS/aliveplayer.ts
+class PlayersAliveMonitor {
+    constructor() {
+        this.observer = null;
+        this.lastValue = null;
+        this.element = null;
+    }
+    /* Reads the current value */
+    getValue() {
+        var _a, _b;
+        return ((_b = (_a = this.element) === null || _a === void 0 ? void 0 : _a.textContent) === null || _b === void 0 ? void 0 : _b.trim()) || null;
+    }
+    /* Starts observation and waits for the element to be present */
+    startObserving(callback) {
+        const tryStart = () => {
+            this.element = document.querySelector(".js-ui-players-alive") || null;
+            if (this.element) {
+                __webpack_require__.g.kxsClient.logger.log("[PlayersAliveMonitor] Html element found :", this.element.outerHTML);
+                this.observeElement(callback);
+                return true;
+            }
+            return false;
+        };
+        if (!tryStart()) {
+            __webpack_require__.g.kxsClient.logger.log("[PlayersAliveMonitor] Html element not found, waiting  MutationObserver...");
+            const bodyObserver = new MutationObserver(() => {
+                if (tryStart()) {
+                    bodyObserver.disconnect();
+                }
+            });
+            bodyObserver.observe(document.body, { childList: true, subtree: true });
+        }
+    }
+    /* Observation of the element once found */
+    observeElement(callback) {
+        var _a;
+        if (!this.element)
+            return;
+        this.lastValue = ((_a = this.element.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || null;
+        this.observer = new MutationObserver(() => {
+            var _a, _b;
+            const newValue = ((_b = (_a = this.element) === null || _a === void 0 ? void 0 : _a.textContent) === null || _b === void 0 ? void 0 : _b.trim()) || null;
+            if (newValue !== this.lastValue) {
+                this.lastValue = newValue;
+                callback(newValue);
+            }
+        });
+        this.observer.observe(this.element, { childList: true, characterData: true, subtree: true });
+        __webpack_require__.g.kxsClient.logger.log("[PlayersAliveMonitor] Observation started on", this.element.outerHTML);
+    }
+    /* Stop observing */
+    stopObserving() {
+        if (this.observer) {
+            this.observer.disconnect();
+            __webpack_require__.g.kxsClient.logger.log("[PlayersAliveMonitor] Observation stopped.");
+        }
+    }
+}
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -10820,6 +10852,8 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
+
 
 
 
@@ -10924,10 +10958,12 @@ class KxsClient {
         this.historyManager = new GameHistoryMenu(this);
         this.kxsNetwork = new KxsNetwork(this);
         this.exchangeManager = new ExchangeManager(this);
+        this.aliveplayer = new PlayersAliveMonitor();
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
         this.discordRPC.connect();
+        this.pingManager = new PingTest();
         this.hud = new KxsClientHUD(this);
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
         this.chat = new KxsChat(this);
@@ -11272,42 +11308,46 @@ class KxsClient {
         this.deathObserver = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 if (mutation.addedNodes.length) {
-                    this.checkForDeathScreen(mutation.addedNodes);
+                    const hasRelevantNode = Array.from(mutation.addedNodes).some(node => {
+                        if (node instanceof HTMLElement) {
+                            return node.querySelector(".ui-stats-header-title") !== null ||
+                                node.querySelector(".ui-stats-title") !== null;
+                        }
+                        return false;
+                    });
+                    if (!hasRelevantNode)
+                        continue;
+                    let isWin = this.isCurrentGameWin();
+                    if (isWin) {
+                        this.kxsNetwork.gameEnded();
+                        this.handlePlayerWin();
+                    }
+                    else {
+                        this.kxsNetwork.gameEnded();
+                        this.handlePlayerDeath();
+                    }
                 }
             }
         });
-        this.deathObserver.observe(document.body, config);
+        const targetContainer = document.querySelector("#game-container") || document.body;
+        this.deathObserver.observe(targetContainer, config);
     }
-    checkForDeathScreen(nodes) {
-        let loseArray = [
-            "died",
-            "eliminated",
-            "was"
-        ];
-        let winArray = [
-            "Winner",
-            "Victory",
-            "dinner",
-        ];
-        nodes.forEach((node) => {
-            var _a;
-            if (node instanceof HTMLElement) {
-                const deathTitle = node.querySelector(".ui-stats-header-title");
-                const deathTitle_2 = node.querySelector(".ui-stats-title");
-                if (loseArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
-                    this.kxsNetwork.gameEnded();
-                    this.handlePlayerDeath();
-                }
-                else if (winArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
-                    this.kxsNetwork.gameEnded();
-                    this.handlePlayerWin();
-                }
-                else if ((_a = deathTitle_2 === null || deathTitle_2 === void 0 ? void 0 : deathTitle_2.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes("result")) {
-                    this.kxsNetwork.gameEnded();
-                    this.handlePlayerDeath();
-                }
-            }
-        });
+    isCurrentGameWin() {
+        var _a;
+        let loseArray = ["died", "eliminated", "was"];
+        let winArray = ["Winner", "Victory", "dinner"];
+        const deathTitle = document.querySelector(".ui-stats-header-title");
+        const deathTitle_2 = document.querySelector(".ui-stats-title");
+        if (loseArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
+            return false;
+        }
+        else if (winArray.some((word) => { var _a; return (_a = deathTitle === null || deathTitle === void 0 ? void 0 : deathTitle.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(word); })) {
+            return true;
+        }
+        else if ((_a = deathTitle_2 === null || deathTitle_2 === void 0 ? void 0 : deathTitle_2.textContent) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes("result")) {
+            return false;
+        }
+        return null; // Aucune détection
     }
     handlePlayerDeath() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
@@ -11321,49 +11361,45 @@ class KxsClient {
             catch (error) {
                 this.logger.error("Reading error:", error);
             }
-            const stats = this.getPlayerStats(false);
-            const body = {
-                username: stats.username,
-                kills: stats.kills,
-                damageDealt: stats.damageDealt,
-                damageTaken: stats.damageTaken,
-                duration: stats.duration,
-                position: stats.position,
-                isWin: false,
-            };
+            const body = this.getFinalGameBody();
             yield this.discordTracker.trackGameEnd(body);
             this.db.set(new Date().toISOString(), body);
         });
     }
+    getFinalGameBody() {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        const stats = this.getPlayerStats(true);
+        const body = {
+            username: stats.username,
+            kills: stats.kills,
+            damageDealt: stats.damageDealt,
+            damageTaken: stats.damageTaken,
+            duration: stats.duration,
+            position: stats.position,
+            isWin: this.isCurrentGameWin() || false,
+            stuff: {
+                main_weapon: ((_a = document.querySelector('#ui-weapon-id-1 .ui-weapon-name')) === null || _a === void 0 ? void 0 : _a.textContent) || "",
+                secondary_weapon: ((_b = document.querySelector('#ui-weapon-id-2 .ui-weapon-name')) === null || _b === void 0 ? void 0 : _b.textContent) || "",
+                soda: ((_c = document.querySelector("#ui-loot-soda .ui-loot-count")) === null || _c === void 0 ? void 0 : _c.textContent) || "",
+                melees: ((_d = document.querySelector('#ui-weapon-id-3 .ui-weapon-name')) === null || _d === void 0 ? void 0 : _d.textContent) || "",
+                grenades: ((_e = document.querySelector(`#ui-weapon-id-4 .ui-weapon-name`)) === null || _e === void 0 ? void 0 : _e.textContent) || "",
+                medkit: ((_f = document.querySelector("#ui-loot-healthkit .ui-loot-count")) === null || _f === void 0 ? void 0 : _f.textContent) || "",
+                bandage: ((_g = document.querySelector("#ui-loot-bandage .ui-loot-count")) === null || _g === void 0 ? void 0 : _g.textContent) || "",
+                pills: ((_h = document.querySelector("#ui-loot-painkiller .ui-loot-count")) === null || _h === void 0 ? void 0 : _h.textContent) || "",
+                backpack: ((_j = document.querySelector("#ui-armor-backpack .ui-armor-level")) === null || _j === void 0 ? void 0 : _j.textContent) || "",
+                chest: ((_k = document.querySelector("#ui-armor-chest .ui-armor-level")) === null || _k === void 0 ? void 0 : _k.textContent) || "",
+                helmet: ((_l = document.querySelector("#ui-armor-helmet .ui-armor-level")) === null || _l === void 0 ? void 0 : _l.textContent) || "",
+            }
+        };
+        return body;
+    }
     handlePlayerWin() {
         return KxsClient_awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             if (this.isWinningAnimationEnabled) {
                 felicitation(this.isWinSoundEnabled, this.soundLibrary.win_sound_url, '#1');
             }
-            const stats = this.getPlayerStats(true);
-            const body = {
-                username: stats.username,
-                kills: stats.kills,
-                damageDealt: stats.damageDealt,
-                damageTaken: stats.damageTaken,
-                duration: stats.duration,
-                position: stats.position,
-                isWin: true,
-                stuff: {
-                    main_weapon: (_a = document.querySelector('#ui-weapon-id-1 .ui-weapon-name')) === null || _a === void 0 ? void 0 : _a.textContent,
-                    secondary_weapon: (_b = document.querySelector('#ui-weapon-id-2 .ui-weapon-name')) === null || _b === void 0 ? void 0 : _b.textContent,
-                    soda: (_c = document.querySelector("#ui-loot-soda .ui-loot-count")) === null || _c === void 0 ? void 0 : _c.textContent,
-                    melees: (_d = document.querySelector('#ui-weapon-id-3 .ui-weapon-name')) === null || _d === void 0 ? void 0 : _d.textContent,
-                    grenades: (_e = document.querySelector(`#ui-weapon-id-4 .ui-weapon-name`)) === null || _e === void 0 ? void 0 : _e.textContent,
-                    medkit: (_f = document.querySelector("#ui-loot-healthkit .ui-loot-count")) === null || _f === void 0 ? void 0 : _f.textContent,
-                    bandage: (_g = document.querySelector("#ui-loot-bandage .ui-loot-count")) === null || _g === void 0 ? void 0 : _g.textContent,
-                    pills: (_h = document.querySelector("#ui-loot-painkiller .ui-loot-count")) === null || _h === void 0 ? void 0 : _h.textContent,
-                    backpack: (_j = document.querySelector("#ui-armor-backpack .ui-armor-level")) === null || _j === void 0 ? void 0 : _j.textContent,
-                    chest: (_k = document.querySelector("#ui-armor-chest .ui-armor-level")) === null || _k === void 0 ? void 0 : _k.textContent,
-                    helmet: (_l = document.querySelector("#ui-armor-helmet .ui-armor-level")) === null || _l === void 0 ? void 0 : _l.textContent,
-                }
-            };
+            const body = this.getFinalGameBody();
+            body.isWin = true;
             yield this.discordTracker.trackGameEnd(body);
             this.db.set(new Date().toISOString(), body);
         });
@@ -12728,4 +12764,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-10-21 16:03:04
+// Last modified code: 2025-10-29 16:57:34
