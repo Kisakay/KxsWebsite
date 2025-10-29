@@ -1,3 +1,16 @@
+<@&1356012705919668284>  `2.7.0`
+
+> *Developer and Stability update*
+
+* **So many codes refactor**
+  * KxsNetwork performence improvement
+  * Game tracking now log guns when died
+
+* **KxsNetwork for developer**
+  * New events into the websocket for [exchange key](https://github.com/Kisakay/KxsClient/tree/main/kxsnetwork-module-example).
+
+---
+
 <@&1356012705919668284>  `2.6.3`
 
 > *Regression fixes*
