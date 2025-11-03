@@ -1223,7 +1223,7 @@ const CLIENT_REGISTRY = {
         acronym_start_upper: "Kxz",
         application_id: "1425487439547334808",
         rpc_assets: "mp:avatars/1425487439547334808/22119f9c9881a9543159952f481a89be?size=512",
-        domains: ["zurviv.io"],
+        domains: ["zurviv.io", "eu-comp.zurviv.io"],
         full_logo: config_namespaceObject.base_url + "/assets/KxzLogoFull.png",
         icon_logo: config_namespaceObject.base_url + "/assets/KxzClientLogo.png",
         welcome_sound: "https://kxs.rip/assets/o_z_sound.mp3",
@@ -10644,6 +10644,7 @@ class PingTest {
     }
     setServerFromWebsocketHooking(url) {
         this.url = url.origin + '/ptc';
+        this.stop();
         this.start();
     }
     start() {
@@ -12764,4 +12765,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-10-29 16:57:34
+// Last modified code: 2025-11-03 08:30:10
