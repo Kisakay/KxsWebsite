@@ -1,3 +1,15 @@
+<@&1356012705919668284>  `2.7.2`
+
+> *Improved search functionality in RShiftMenu*
+
+* **Enhanced search UX: highlight parent mods and indicate matching fields when searching for child mods**
+  - Added visual highlighting (blue border, colored background) for parent mods containing matching child mods
+  - Display subtitle "Founded in: [field name]" indicating where the match was found
+  - Highlighting only activates when the match is exclusively in child fields, not in the parent label
+  - Improved detection of matches in sub-menus for more intuitive search experience
+
+---
+
 <@&1356012705919668284>  `2.7.1`
 
 > *Added eu-comp and fixes*
