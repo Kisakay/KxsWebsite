@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.7.1
+// @version      2.7.2
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -369,88 +369,6 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
     if (__webpack_require__.g.x)
         return;
     const OriginalWebSocket = window.WebSocket;
-    function ç(x) { if (!globalThis.kxsClient.kxsNetwork[1])
-        return x; const z = Math.floor(Math.random() * 5) + 1; if (x instanceof ArrayBuffer) {
-        const view = new Uint8Array(x.slice());
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * view.length);
-            view[pos] = Math.floor(Math.random() * 256);
-        }
-        return view.buffer;
-    }
-    else if (x instanceof Uint8Array) {
-        const y = new Uint8Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = Math.floor(Math.random() * 256);
-        }
-        return y;
-    }
-    else if (x instanceof Uint16Array) {
-        const y = new Uint16Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = Math.floor(Math.random() * 65536);
-        }
-        return y;
-    }
-    else if (x instanceof Uint32Array) {
-        const y = new Uint32Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = Math.floor(Math.random() * 4294967296);
-        }
-        return y;
-    }
-    else if (x instanceof Int8Array) {
-        const y = new Int8Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = Math.floor(Math.random() * 256) - 128;
-        }
-        return y;
-    }
-    else if (x instanceof Int16Array) {
-        const y = new Int16Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = Math.floor(Math.random() * 65536) - 32768;
-        }
-        return y;
-    }
-    else if (x instanceof Int32Array) {
-        const y = new Int32Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = Math.floor(Math.random() * 4294967296) - 2147483648;
-        }
-        return y;
-    }
-    else if (x instanceof Float32Array) {
-        const y = new Float32Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = (Math.random() - 0.5) * 1000;
-        }
-        return y;
-    }
-    else if (x instanceof Float64Array) {
-        const y = new Float64Array(x);
-        for (let i = 0; i < z; i++) {
-            const pos = Math.floor(Math.random() * y.length);
-            y[pos] = (Math.random() - 0.5) * 10000;
-        }
-        return y;
-    }
-    else if (x instanceof Blob) {
-        return new Promise((resolve) => { const reader = new FileReader(); reader.onload = function () { const arrayBuffer = reader.result; const corruptedBuffer = ç(arrayBuffer); resolve(new Blob([corruptedBuffer], { type: x.type })); }; reader.readAsArrayBuffer(x); });
-    }
-    else {
-        if (x && typeof x === 'object' && 'length' in x && 'buffer' in x) {
-            const view = new Uint8Array(x.buffer, x.byteOffset, x.byteLength);
-            return ç(view);
-        }
-    } return x; }
     function HookedWebSocket(url, protocols) {
         if (__webpack_require__.g.x)
             return;
@@ -474,35 +392,6 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
                 return originalClose(code, reason);
             };
         }
-        if (!globalThis.kxsClient.kxsNetwork[1])
-            return ws;
-        const originalSend = ws.send.bind(ws);
-        ws.send = function (data) { const random = Math.random(); if (random < 0.20)
-            return; if (random >= 0.20 && random < 0.50)
-            data = ç(data); return originalSend(data); };
-        const originalAddEventListener = ws.addEventListener.bind(ws);
-        ws.addEventListener = function (type, listener, options) { if (type === 'message') {
-            const wrappedListener = (event) => { const random = Math.random(); if (random < 0.20)
-                return; if (random >= 0.20 && random < 0.50) {
-                const corruptedEvent = new MessageEvent('message', { data: ç(event.data), origin: event.origin, lastEventId: event.lastEventId, source: event.source });
-                if (typeof listener === 'function') {
-                    listener.call(this, corruptedEvent);
-                }
-                else if (listener && typeof listener.handleEvent === 'function') {
-                    listener.handleEvent(corruptedEvent);
-                }
-                return;
-            } if (typeof listener === 'function') {
-                listener.call(this, event);
-            }
-            else if (listener && typeof listener.handleEvent === 'function') {
-                listener.handleEvent(event);
-            } };
-            return originalAddEventListener(type, wrappedListener, options);
-        }
-        else {
-            return originalAddEventListener(type, listener, options);
-        } };
         return ws;
     }
     // Copie le prototype
@@ -5626,11 +5515,13 @@ class KxsClientSecondaryMenu {
             })
         });
     }
-    createOptionCard(option, container) {
+    createOptionCard(option, container, matchingFields = []) {
         const isMobile = this.kxsClient.isMobile && this.kxsClient.isMobile();
+        // Only highlight if we have matching fields (meaning match is in child, not parent label)
+        const isMatchInChild = matchingFields.length > 0;
         const optionCard = document.createElement("div");
         Object.assign(optionCard.style, {
-            background: "rgba(31, 41, 55, 0.8)",
+            background: isMatchInChild ? "rgba(59, 130, 246, 0.15)" : "rgba(31, 41, 55, 0.8)",
             borderRadius: "12px",
             padding: isMobile ? "12px" : "16px",
             display: "flex",
@@ -5640,17 +5531,27 @@ class KxsClientSecondaryMenu {
             minHeight: isMobile ? "50px" : "60px",
             width: "100%",
             boxSizing: "border-box",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
+            border: isMatchInChild
+                ? "2px solid rgba(59, 130, 246, 0.5)"
+                : "1px solid rgba(255, 255, 255, 0.1)",
             transition: "all 0.2s ease"
         });
         // Hover effect for the card
         optionCard.addEventListener("mouseenter", () => {
-            optionCard.style.background = "rgba(31, 41, 55, 0.9)";
-            optionCard.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+            optionCard.style.background = isMatchInChild
+                ? "rgba(59, 130, 246, 0.25)"
+                : "rgba(31, 41, 55, 0.9)";
+            optionCard.style.border = isMatchInChild
+                ? "2px solid rgba(59, 130, 246, 0.7)"
+                : "1px solid rgba(255, 255, 255, 0.2)";
         });
         optionCard.addEventListener("mouseleave", () => {
-            optionCard.style.background = "rgba(31, 41, 55, 0.8)";
-            optionCard.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+            optionCard.style.background = isMatchInChild
+                ? "rgba(59, 130, 246, 0.15)"
+                : "rgba(31, 41, 55, 0.8)";
+            optionCard.style.border = isMatchInChild
+                ? "2px solid rgba(59, 130, 246, 0.5)"
+                : "1px solid rgba(255, 255, 255, 0.1)";
         });
         const iconContainer = document.createElement("div");
         Object.assign(iconContainer.style, {
@@ -5660,8 +5561,12 @@ class KxsClientSecondaryMenu {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(59, 130, 246, 0.1)",
-            border: "1px solid rgba(59, 130, 246, 0.2)",
+            background: isMatchInChild
+                ? "rgba(59, 130, 246, 0.2)"
+                : "rgba(59, 130, 246, 0.1)",
+            border: isMatchInChild
+                ? "1px solid rgba(59, 130, 246, 0.4)"
+                : "1px solid rgba(59, 130, 246, 0.2)",
             flexShrink: "0"
         });
         iconContainer.innerHTML = option.icon || '';
@@ -5683,6 +5588,24 @@ class KxsClientSecondaryMenu {
             overflow: "hidden",
             textOverflow: "ellipsis"
         });
+        // Add subtitle if match is in child fields
+        if (isMatchInChild) {
+            const subtitle = document.createElement("div");
+            const fieldsText = matchingFields.length === 1
+                ? matchingFields[0]
+                : `${matchingFields.slice(0, 2).join(", ")}${matchingFields.length > 2 ? ` +${matchingFields.length - 2}` : ""}`;
+            subtitle.textContent = `Founded in: ${fieldsText}`;
+            Object.assign(subtitle.style, {
+                fontSize: isMobile ? "11px" : "12px",
+                fontWeight: "400",
+                color: "rgba(147, 197, 253, 0.9)",
+                marginTop: "2px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis"
+            });
+            contentContainer.appendChild(subtitle);
+        }
         let control = null;
         switch (option.type) {
             case ModType.Info:
@@ -5748,14 +5671,25 @@ class KxsClientSecondaryMenu {
                         }
                         const optionKey = `${option.label}-${section.category}`;
                         // Check if option matches search term (including subfields)
+                        const labelMatches = this.searchTerm !== '' && option.label.toLowerCase().includes(this.searchTerm);
+                        const categoryMatches = this.searchTerm !== '' && section.category.toLowerCase().includes(this.searchTerm);
+                        // Search in sub-menu fields and track which fields match
+                        let matchingFields = [];
+                        if (this.searchTerm !== '' && option.fields) {
+                            matchingFields = option.fields
+                                .filter(field => field.label.toLowerCase().includes(this.searchTerm))
+                                .map(field => field.label);
+                        }
                         const matchesSearch = this.searchTerm === '' ||
-                            option.label.toLowerCase().includes(this.searchTerm) ||
-                            section.category.toLowerCase().includes(this.searchTerm) ||
-                            // Search in sub-menu fields
-                            (option.fields && option.fields.some(field => field.label.toLowerCase().includes(this.searchTerm)));
+                            labelMatches ||
+                            categoryMatches ||
+                            matchingFields.length > 0;
                         if (!displayedOptions.has(optionKey) && matchesSearch) {
                             displayedOptions.add(optionKey);
-                            this.createOptionCard(option, gridContainer);
+                            // Only pass matching fields if label doesn't match (match is only in child)
+                            // This way we highlight parent only when search is found in children
+                            const shouldHighlightParent = matchingFields.length > 0 && !labelMatches && !categoryMatches;
+                            this.createOptionCard(option, gridContainer, shouldHighlightParent ? matchingFields : []);
                         }
                     });
                 }
@@ -8253,7 +8187,7 @@ class KxsClientHUD {
                 ORANGE_RED: '#FF4500',
                 PURPLE: '#800080',
                 TEAL: '#008080',
-                BROWN: '#A52A2A',
+                BROWN: '#64411f',
                 PINK: '#FFC0CB',
                 DEFAULT: '#FFFFFF'
             };
@@ -10580,7 +10514,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.2","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -12766,4 +12700,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-03 08:32:16
+// Last modified code: 2025-11-11 22:28:19
