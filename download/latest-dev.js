@@ -9943,7 +9943,9 @@ class KxsNetwork {
                 username: this.getUsername(),
                 isVoiceChat: this.kxsClient.isVoiceChatEnabled,
                 v: this.capitalizeFirstLetter(__webpack_require__.g.client.name) + "@" + this.kxsClient.pkg.version,
-                exchangeKey: this.kxsClient.kxsDeveloperOptions.exchange.password || null
+                exchangeKey: this.kxsClient.kxsDeveloperOptions.exchange.password || null,
+                isMobile: this.kxsClient.isMobile(),
+                isSecure: this.kxsClient.ContextIsSecure
             }
         };
         this.send(payload);
@@ -13651,4 +13653,5 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-12 14:25:44
+// Last modified code: 2025-11-12 15:06:01
+
