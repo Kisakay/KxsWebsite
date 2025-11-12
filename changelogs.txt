@@ -1,3 +1,12 @@
+<@&1356012705919668284>  `2.7.3`
+
+> *Minor Update*
+
+* **Change the confetti to js-confetti**
+* **Game ID Helper mod**
+
+---
+
 <@&1356012705919668284>  `2.7.2`
 
 > *Improved search functionality in RShiftMenu*
