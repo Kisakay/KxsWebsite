@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.7.2
+// @version      2.7.3
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -377,6 +377,7 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
             : new OriginalWebSocket(url);
         if (typeof url === "string" && url.includes("gameId=")) {
             const gameId = url.split("gameId=")[1];
+            globalThis.kxsClient.kxsNetwork.actualGameId = gameId;
             // do things
             globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
             globalThis.kxsClient.exchangeManager.sendGameInfo(gameId);
@@ -389,6 +390,7 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
                 __webpack_require__.g.kxsClient.kxsNetwork.gameEnded();
                 __webpack_require__.g.kxsClient.kxsNetwork.gameEnded_ExchangeKey(__webpack_require__.g.kxsClient.getFinalGameBody() || {});
                 globalThis.kxsClient.aliveplayer.stopObserving();
+                globalThis.kxsClient.kxsNetwork.actualGameId = null;
                 return originalClose(code, reason);
             };
         }
@@ -3069,67 +3071,532 @@ class EasterEgg {
 
 ;// ./src/assets/onboarding-styles.css?raw
 const onboarding_stylesraw_namespaceObject = "/* Reset and base styles */\r\n.popup-overlay {\r\n\tposition: fixed;\r\n\ttop: 0;\r\n\tleft: 0;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tbackground: rgba(0, 0, 0, 0.8);\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tz-index: 1000;\r\n\tfont-family: Arial, sans-serif;\r\n}\r\n\r\n.subtitle-image {\r\n\tdisplay: block;\r\n\tmargin: 0 auto;\r\n\tmax-width: 00px;\r\n\t/* adapte selon ton image */\r\n\theight: auto;\r\n}\r\n\r\n.popup-content {\r\n\tbackground: #2c3e50;\r\n\tborder-radius: 10px;\r\n\tmax-width: 90%;\r\n\tmax-height: 90%;\r\n\toverflow-y: auto;\r\n\tcolor: white;\r\n\tposition: relative;\r\n}\r\n\r\n/* Header with Discord button */\r\n.popup-header {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n\talign-items: center;\r\n\tpadding: 20px 30px 0;\r\n\tmargin-bottom: 20px;\r\n}\r\n\r\n.discord-button {\r\n\tbackground: #5865F2;\r\n\tcolor: white;\r\n\tborder: none;\r\n\tpadding: 10px 20px;\r\n\tborder-radius: 5px;\r\n\tcursor: pointer;\r\n\tfont-size: 14px;\r\n\tfont-weight: bold;\r\n\ttransition: background-color 0.3s ease;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 8px;\r\n}\r\n\r\n.discord-button:hover {\r\n\tbackground: #4752C4;\r\n}\r\n\r\n.discord-icon {\r\n\twidth: 16px;\r\n\theight: 16px;\r\n\tfill: currentColor;\r\n}\r\n\r\n.popup-content .container {\r\n\tmax-width: 600px;\r\n\tmargin: 0 auto;\r\n\tpadding: 0 20px 40px;\r\n\ttext-align: center;\r\n}\r\n\r\n.popup-content h1 {\r\n\tcolor: #3498db;\r\n\tfont-size: 2.5em;\r\n\tmargin-bottom: 10px;\r\n}\r\n\r\n.popup-content .subtitle {\r\n\tfont-size: 1.2em;\r\n\tmargin-bottom: 40px;\r\n\tcolor: #bdc3c7;\r\n}\r\n\r\n.popup-content .steps {\r\n\ttext-align: left;\r\n\tmargin: 40px 0;\r\n}\r\n\r\n.popup-content .step {\r\n\tbackground: #34495e;\r\n\tpadding: 20px;\r\n\tmargin: 15px 0;\r\n\tborder-radius: 8px;\r\n\tborder-left: 4px solid #3498db;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tgap: 20px;\r\n}\r\n\r\n.popup-content .step-large-image {\r\n\tmargin: 20px 0;\r\n\ttext-align: center;\r\n\tbackground: #34495e;\r\n\tborder-radius: 8px;\r\n\tpadding: 15px;\r\n\tborder: 2px solid #3498db;\r\n}\r\n\r\n.popup-content .step-large-image img {\r\n\twidth: 100%;\r\n\tmax-width: 500px;\r\n\theight: auto;\r\n\tborder-radius: 5px;\r\n\tbox-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);\r\n}\r\n\r\n.popup-content .step-content {\r\n\tflex: 1;\r\n}\r\n\r\n.popup-content .step h3 {\r\n\tmargin: 0 0 10px 0;\r\n\tcolor: #3498db;\r\n}\r\n\r\n.popup-content .step p {\r\n\tmargin: 0;\r\n\tline-height: 1.5;\r\n}\r\n\r\n.popup-content .play-button {\r\n\tbackground: #e74c3c;\r\n\tcolor: white;\r\n\tborder: none;\r\n\tpadding: 15px 30px;\r\n\tfont-size: 1.2em;\r\n\tborder-radius: 5px;\r\n\tcursor: pointer;\r\n\tmargin-top: 30px;\r\n\ttransition: background-color 0.3s ease;\r\n}\r\n\r\n.popup-content .play-button:hover {\r\n\tbackground: #c0392b;\r\n}\r\n\r\n@media (max-width: 768px) {\r\n\t.popup-header {\r\n\t\tflex-direction: column;\r\n\t\tgap: 15px;\r\n\t\talign-items: stretch;\r\n\t}\r\n\r\n\t.discord-button {\r\n\t\tjustify-content: center;\r\n\t}\r\n\r\n\t.popup-content h1 {\r\n\t\tfont-size: 2em;\r\n\t}\r\n\r\n\t.popup-content .step {\r\n\t\tflex-direction: column;\r\n\t\ttext-align: center;\r\n\t}\r\n}";
+;// ./node_modules/js-confetti/dist/es/index.js
+function _classCallCheck(a, n) {
+  if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+}
+function _defineProperties(e, r) {
+  for (var t = 0; t < r.length; t++) {
+    var o = r[t];
+    o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey(o.key), o);
+  }
+}
+function _createClass(e, r, t) {
+  return r && _defineProperties(e.prototype, r), Object.defineProperty(e, "prototype", {
+    writable: false
+  }), e;
+}
+function _toPrimitive(t, r) {
+  if ("object" != typeof t || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r);
+    if ("object" != typeof i) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return (String )(t);
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == typeof i ? i : i + "";
+}
+
+function normalizeComputedStyleValue(string) {
+  // "250px" --> 250
+  return +string.replace(/px/, '');
+}
+function fixDPR(canvas) {
+  var dpr = window.devicePixelRatio;
+  var computedStyles = getComputedStyle(canvas);
+  var width = normalizeComputedStyleValue(computedStyles.getPropertyValue('width'));
+  var height = normalizeComputedStyleValue(computedStyles.getPropertyValue('height'));
+  canvas.setAttribute('width', (width * dpr).toString());
+  canvas.setAttribute('height', (height * dpr).toString());
+}
+
+function generateRandomNumber(min, max) {
+  var fractionDigits = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var randomNumber = Math.random() * (max - min) + min;
+  return Math.floor(randomNumber * Math.pow(10, fractionDigits)) / Math.pow(10, fractionDigits);
+}
+
+function generateRandomArrayElement(arr) {
+  return arr[generateRandomNumber(0, arr.length)];
+}
+
+var FREE_FALLING_OBJECT_ACCELERATION = 0.00125;
+var MIN_DRAG_FORCE_COEFFICIENT = 0.0005;
+var MAX_DRAG_FORCE_COEFFICIENT = 0.0009;
+var ROTATION_SLOWDOWN_ACCELERATION = 0.00001;
+var INITIAL_SHAPE_RADIUS = 6;
+var INITIAL_EMOJI_SIZE = 80;
+var MIN_INITIAL_CONFETTI_SPEED = 0.9;
+var MAX_INITIAL_CONFETTI_SPEED = 1.7;
+var MIN_FINAL_X_CONFETTI_SPEED = 0.2;
+var MAX_FINAL_X_CONFETTI_SPEED = 0.6;
+var MIN_INITIAL_ROTATION_SPEED = 0.03;
+var MAX_INITIAL_ROTATION_SPEED = 0.07;
+var MIN_CONFETTI_ANGLE_IN_DEGREES = 15;
+var MAX_CONFETTI_ANGLE_IN_DEGREES = 82;
+var MAX_CONFETTI_ANGLE_FIRED_FROM_SPEICIFIED_POSITION_IN_DEGREES = 150;
+var SHAPE_VISIBILITY_TRESHOLD = 100;
+var DEFAULT_CONFETTI_NUMBER = 250;
+var DEFAULT_EMOJIS_NUMBER = 40;
+var DEFAULT_CONFETTI_COLORS = ['#fcf403', '#62fc03', '#f4fc03', '#03e7fc', '#03fca5', '#a503fc', '#fc03ad', '#fc03c2'];
+
+// For wide screens - fast confetti, for small screens - slow confetti
+function getWindowWidthCoefficient(canvasWidth) {
+  var HD_SCREEN_WIDTH = 1920;
+  return Math.log(canvasWidth) / Math.log(HD_SCREEN_WIDTH);
+}
+var ConfettiShape = /*#__PURE__*/function () {
+  function ConfettiShape(args) {
+    _classCallCheck(this, ConfettiShape);
+    var initialPosition = args.initialPosition,
+      confettiRadius = args.confettiRadius,
+      confettiColors = args.confettiColors,
+      emojis = args.emojis,
+      emojiSize = args.emojiSize,
+      canvasWidth = args.canvasWidth,
+      initialFlightAngle = args.initialFlightAngle,
+      rotationAngle = args.rotationAngle,
+      _args$shouldHideConfe = args.shouldHideConfettiInShiftedPosition,
+      shouldHideConfettiInShiftedPosition = _args$shouldHideConfe === void 0 ? false : _args$shouldHideConfe;
+    var randomConfettiSpeed = generateRandomNumber(MIN_INITIAL_CONFETTI_SPEED, MAX_INITIAL_CONFETTI_SPEED, 3);
+    var initialSpeed = randomConfettiSpeed * getWindowWidthCoefficient(canvasWidth);
+    this.confettiSpeed = {
+      x: initialSpeed,
+      y: initialSpeed
+    };
+    this.finalConfettiSpeedX = generateRandomNumber(MIN_FINAL_X_CONFETTI_SPEED, MAX_FINAL_X_CONFETTI_SPEED, 3);
+    this.rotationSpeed = emojis.length ? 0.01 : generateRandomNumber(MIN_INITIAL_ROTATION_SPEED, MAX_INITIAL_ROTATION_SPEED, 3) * getWindowWidthCoefficient(canvasWidth);
+    this.dragForceCoefficient = generateRandomNumber(MIN_DRAG_FORCE_COEFFICIENT, MAX_DRAG_FORCE_COEFFICIENT, 6);
+    this.radius = {
+      x: confettiRadius,
+      y: confettiRadius
+    };
+    this.initialRadius = confettiRadius;
+    this.rotationAngle = rotationAngle;
+    this.emojiSize = emojiSize;
+    this.emojiRotationAngle = generateRandomNumber(0, 2 * Math.PI);
+    this.radiusYUpdateDirection = 'down';
+    this.cos = Math.cos(initialFlightAngle);
+    this.sin = Math.sin(initialFlightAngle);
+    var positionShift = generateRandomNumber(-150, 0);
+    this.positionOffset = {
+      x: positionShift * this.sin,
+      y: positionShift * this.cos
+    };
+    this.distanceTravelled = {
+      x: 0,
+      y: 0
+    };
+    var shiftedInitialPosition = {
+      x: initialPosition.x + this.positionOffset.x,
+      y: initialPosition.y - this.positionOffset.y
+    };
+    this.currentPosition = Object.assign({}, shiftedInitialPosition);
+    this.initialPosition = Object.assign({}, shiftedInitialPosition);
+    this.color = emojis.length ? null : generateRandomArrayElement(confettiColors);
+    this.emoji = emojis.length ? generateRandomArrayElement(emojis) : null;
+    this.createdAt = new Date().getTime();
+    this.isVisible = !shouldHideConfettiInShiftedPosition;
+  }
+  return _createClass(ConfettiShape, [{
+    key: "draw",
+    value: function draw(canvasContext) {
+      var currentPosition = this.currentPosition,
+        radius = this.radius,
+        color = this.color,
+        emoji = this.emoji,
+        rotationAngle = this.rotationAngle,
+        emojiRotationAngle = this.emojiRotationAngle,
+        emojiSize = this.emojiSize,
+        isVisible = this.isVisible;
+      if (!isVisible) return;
+      var dpr = window.devicePixelRatio;
+      if (color) {
+        canvasContext.fillStyle = color;
+        canvasContext.beginPath();
+        canvasContext.ellipse(currentPosition.x * dpr, currentPosition.y * dpr, radius.x * dpr, radius.y * dpr, rotationAngle, 0, 2 * Math.PI);
+        canvasContext.fill();
+      } else if (emoji) {
+        canvasContext.font = "".concat(emojiSize, "px serif");
+        canvasContext.save();
+        canvasContext.translate(dpr * currentPosition.x, dpr * currentPosition.y);
+        canvasContext.rotate(emojiRotationAngle);
+        canvasContext.textAlign = 'center';
+        canvasContext.fillText(emoji, 0, 0);
+        canvasContext.restore();
+      }
+    }
+  }, {
+    key: "updatePosition",
+    value: function updatePosition(iterationTimeDelta, currentTime) {
+      var confettiSpeed = this.confettiSpeed,
+        dragForceCoefficient = this.dragForceCoefficient,
+        finalConfettiSpeedX = this.finalConfettiSpeedX,
+        radiusYUpdateDirection = this.radiusYUpdateDirection,
+        rotationSpeed = this.rotationSpeed,
+        createdAt = this.createdAt;
+      if (confettiSpeed.x > finalConfettiSpeedX) this.confettiSpeed.x -= dragForceCoefficient * iterationTimeDelta;
+      var prevPositionY = this.currentPosition.y;
+      var timeDeltaSinceCreation = currentTime - createdAt;
+      this.currentPosition.y = this.initialPosition.y - confettiSpeed.y * this.cos * timeDeltaSinceCreation + FREE_FALLING_OBJECT_ACCELERATION * Math.pow(timeDeltaSinceCreation, 2) / 2;
+      var positionUpdate = {
+        x: confettiSpeed.x * this.sin * iterationTimeDelta,
+        y: this.currentPosition.y - prevPositionY
+      };
+      this.currentPosition.x += positionUpdate.x;
+      this.distanceTravelled.x += Math.abs(positionUpdate.x);
+      this.distanceTravelled.y += Math.abs(positionUpdate.y);
+      if (this.distanceTravelled.x >= Math.abs(this.positionOffset.x) && this.distanceTravelled.y >= Math.abs(this.positionOffset.y)) {
+        this.isVisible = true;
+      }
+      this.rotationSpeed -= this.emoji ? 0.0001 : ROTATION_SLOWDOWN_ACCELERATION * iterationTimeDelta;
+      if (this.rotationSpeed < 0) this.rotationSpeed = 0;
+      // no need to update rotation radius for emoji
+      if (this.emoji) {
+        this.emojiRotationAngle += this.rotationSpeed * iterationTimeDelta % (2 * Math.PI);
+        return;
+      }
+      if (radiusYUpdateDirection === 'down') {
+        this.radius.y -= iterationTimeDelta * rotationSpeed;
+        if (this.radius.y <= 0) {
+          this.radius.y = 0;
+          this.radiusYUpdateDirection = 'up';
+        }
+      } else {
+        this.radius.y += iterationTimeDelta * rotationSpeed;
+        if (this.radius.y >= this.initialRadius) {
+          this.radius.y = this.initialRadius;
+          this.radiusYUpdateDirection = 'down';
+        }
+      }
+    }
+  }, {
+    key: "getIsVisibleOnCanvas",
+    value: function getIsVisibleOnCanvas(canvasHeight) {
+      return this.currentPosition.y < canvasHeight + SHAPE_VISIBILITY_TRESHOLD;
+    }
+  }]);
+}();
+
+function createCanvas() {
+  var canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed';
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.zIndex = '1000';
+  canvas.style.pointerEvents = 'none';
+  document.body.appendChild(canvas);
+  return canvas;
+}
+
+function normalizeConfettiConfig(confettiConfig) {
+  var _confettiConfig$confe = confettiConfig.confettiRadius,
+    confettiRadius = _confettiConfig$confe === void 0 ? INITIAL_SHAPE_RADIUS : _confettiConfig$confe,
+    _confettiConfig$confe2 = confettiConfig.confettiNumber,
+    confettiNumber = _confettiConfig$confe2 === void 0 ? confettiConfig.confettiesNumber || (confettiConfig.emojis ? DEFAULT_EMOJIS_NUMBER : DEFAULT_CONFETTI_NUMBER) : _confettiConfig$confe2,
+    _confettiConfig$confe3 = confettiConfig.confettiColors,
+    confettiColors = _confettiConfig$confe3 === void 0 ? DEFAULT_CONFETTI_COLORS : _confettiConfig$confe3,
+    _confettiConfig$emoji = confettiConfig.emojis,
+    emojis = _confettiConfig$emoji === void 0 ? confettiConfig.emojies || [] : _confettiConfig$emoji,
+    _confettiConfig$emoji2 = confettiConfig.emojiSize,
+    emojiSize = _confettiConfig$emoji2 === void 0 ? INITIAL_EMOJI_SIZE : _confettiConfig$emoji2,
+    _confettiConfig$confe4 = confettiConfig.confettiDispatchPosition,
+    confettiDispatchPosition = _confettiConfig$confe4 === void 0 ? null : _confettiConfig$confe4;
+  // deprecate wrong plural forms, used in early releases
+  if (confettiConfig.emojies) console.error("emojies argument is deprecated, please use emojis instead");
+  if (confettiConfig.confettiesNumber) console.error("confettiesNumber argument is deprecated, please use confettiNumber instead");
+  return {
+    confettiRadius: confettiRadius,
+    confettiNumber: confettiNumber,
+    confettiColors: confettiColors,
+    emojis: emojis,
+    emojiSize: emojiSize,
+    confettiDispatchPosition: confettiDispatchPosition
+  };
+}
+
+function convertDegreesToRadians(degreesToRadians) {
+  return degreesToRadians * Math.PI / 180;
+}
+/*
+ * determine the angle at which confetti is being dispatched
+ *
+ * for confetti that are dispatched from the sides of the screen, there's a min and max angle at which they could fly
+ * for confetti that are dispatched from the specific position (like mouse click), the angle ranges from -max to max
+ *
+ * the angle is stored in radians, but degrees are used in constants for convenience
+ *
+ * examples:
+ * - 0 means that confetti would fly straight up
+ * - 0.7 means that confetti would start flying approximately 40 degrees to the right
+ */
+function generateConfettiInitialFlightAngleFiredFromLeftSideOfTheScreen() {
+  return convertDegreesToRadians(generateRandomNumber(MAX_CONFETTI_ANGLE_IN_DEGREES, MIN_CONFETTI_ANGLE_IN_DEGREES));
+}
+function generateConfettiInitialFlightAngleFiredFromRightSideOfTheScreen() {
+  return convertDegreesToRadians(generateRandomNumber(-MIN_CONFETTI_ANGLE_IN_DEGREES, -MAX_CONFETTI_ANGLE_IN_DEGREES));
+}
+function generateConfettiInitialFlightAngleFiredFromSpecificPosition() {
+  return convertDegreesToRadians(generateRandomNumber(-MAX_CONFETTI_ANGLE_FIRED_FROM_SPEICIFIED_POSITION_IN_DEGREES, MAX_CONFETTI_ANGLE_FIRED_FROM_SPEICIFIED_POSITION_IN_DEGREES));
+}
+/*
+ * WHAT IS THIS?
+ */
+function generateConfettiRotationAngleFiredFromLeftSideOfTheScreen() {
+  return generateRandomNumber(0, 0.2, 3);
+}
+function generateConfettiRotationAngleFiredFromRightSideOfTheScreen() {
+  return generateRandomNumber(-0.2, 0, 3);
+}
+
+var ConfettiBatch = /*#__PURE__*/function () {
+  function ConfettiBatch(canvasContext) {
+    var _this = this;
+    _classCallCheck(this, ConfettiBatch);
+    this.canvasContext = canvasContext;
+    this.shapes = [];
+    this.promise = new Promise(function (completionCallback) {
+      return _this.resolvePromise = completionCallback;
+    });
+  }
+  return _createClass(ConfettiBatch, [{
+    key: "getBatchCompletePromise",
+    value: function getBatchCompletePromise() {
+      return this.promise;
+    }
+  }, {
+    key: "addShapes",
+    value: function addShapes() {
+      var _this$shapes;
+      (_this$shapes = this.shapes).push.apply(_this$shapes, arguments);
+    }
+  }, {
+    key: "complete",
+    value: function complete() {
+      var _a;
+      if (this.shapes.length) {
+        return false;
+      }
+      (_a = this.resolvePromise) === null || _a === void 0 ? void 0 : _a.call(this);
+      return true;
+    }
+  }, {
+    key: "processShapes",
+    value: function processShapes(time, canvasHeight, cleanupInvisibleShapes) {
+      var _this2 = this;
+      var timeDelta = time.timeDelta,
+        currentTime = time.currentTime;
+      this.shapes = this.shapes.filter(function (shape) {
+        // Render the shapes in this batch
+        shape.updatePosition(timeDelta, currentTime);
+        shape.draw(_this2.canvasContext);
+        // Only cleanup the shapes if we're being asked to
+        if (!cleanupInvisibleShapes) {
+          return true;
+        }
+        return shape.getIsVisibleOnCanvas(canvasHeight);
+      });
+    }
+  }]);
+}();
+var JSConfetti = /*#__PURE__*/function () {
+  function JSConfetti() {
+    var jsConfettiConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    _classCallCheck(this, JSConfetti);
+    this.activeConfettiBatches = [];
+    this.canvas = jsConfettiConfig.canvas || createCanvas();
+    this.canvasContext = this.canvas.getContext('2d');
+    this.requestAnimationFrameRequested = false;
+    this.lastUpdated = new Date().getTime();
+    this.iterationIndex = 0;
+    this.loop = this.loop.bind(this);
+    requestAnimationFrame(this.loop);
+  }
+  return _createClass(JSConfetti, [{
+    key: "loop",
+    value: function loop() {
+      this.requestAnimationFrameRequested = false;
+      fixDPR(this.canvas);
+      var currentTime = new Date().getTime();
+      var timeDelta = currentTime - this.lastUpdated;
+      var canvasHeight = this.canvas.offsetHeight;
+      var cleanupInvisibleShapes = this.iterationIndex % 10 === 0;
+      this.activeConfettiBatches = this.activeConfettiBatches.filter(function (batch) {
+        batch.processShapes({
+          timeDelta: timeDelta,
+          currentTime: currentTime
+        }, canvasHeight, cleanupInvisibleShapes);
+        // Do not remove invisible shapes on every iteration
+        if (!cleanupInvisibleShapes) {
+          return true;
+        }
+        return !batch.complete();
+      });
+      this.iterationIndex++;
+      this.queueAnimationFrameIfNeeded(currentTime);
+    }
+  }, {
+    key: "queueAnimationFrameIfNeeded",
+    value: function queueAnimationFrameIfNeeded(currentTime) {
+      if (this.requestAnimationFrameRequested) {
+        // We already have a pended animation frame, so there is no more work
+        return;
+      }
+      if (this.activeConfettiBatches.length < 1) {
+        // No shapes to animate, so don't queue another frame
+        return;
+      }
+      this.requestAnimationFrameRequested = true;
+      // Capture the last updated time for animation
+      this.lastUpdated = currentTime || new Date().getTime();
+      requestAnimationFrame(this.loop);
+    }
+  }, {
+    key: "addConfettiAtPosition",
+    value: function addConfettiAtPosition() {
+      var confettiConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _normalizeConfettiCon = normalizeConfettiConfig(confettiConfig),
+        confettiRadius = _normalizeConfettiCon.confettiRadius,
+        confettiNumber = _normalizeConfettiCon.confettiNumber,
+        confettiColors = _normalizeConfettiCon.confettiColors,
+        emojis = _normalizeConfettiCon.emojis,
+        emojiSize = _normalizeConfettiCon.emojiSize,
+        confettiDispatchPosition = _normalizeConfettiCon.confettiDispatchPosition;
+      var _this$canvas$getBound = this.canvas.getBoundingClientRect(),
+        canvasWidth = _this$canvas$getBound.width;
+      var confettiGroup = new ConfettiBatch(this.canvasContext);
+      for (var i = 0; i < confettiNumber; i++) {
+        var confettiShape = new ConfettiShape({
+          initialPosition: confettiDispatchPosition,
+          confettiRadius: confettiRadius,
+          confettiColors: confettiColors,
+          confettiNumber: confettiNumber,
+          emojis: emojis,
+          emojiSize: emojiSize,
+          canvasWidth: canvasWidth,
+          rotationAngle: generateConfettiRotationAngleFiredFromLeftSideOfTheScreen(),
+          initialFlightAngle: generateConfettiInitialFlightAngleFiredFromSpecificPosition(),
+          shouldHideConfettiInShiftedPosition: true
+        });
+        confettiGroup.addShapes(confettiShape);
+      }
+      this.activeConfettiBatches.push(confettiGroup);
+      this.queueAnimationFrameIfNeeded();
+      return confettiGroup.getBatchCompletePromise();
+    }
+  }, {
+    key: "addConfetti",
+    value: function addConfetti() {
+      var confettiConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var _normalizeConfettiCon2 = normalizeConfettiConfig(confettiConfig),
+        confettiRadius = _normalizeConfettiCon2.confettiRadius,
+        confettiNumber = _normalizeConfettiCon2.confettiNumber,
+        confettiColors = _normalizeConfettiCon2.confettiColors,
+        emojis = _normalizeConfettiCon2.emojis,
+        emojiSize = _normalizeConfettiCon2.emojiSize;
+      // Use the bounding rect rather tahn the canvas width / height, because
+      // .width / .height are unset until a layout pass has been completed. Upon
+      // confetti being immediately queued on a page load, this hasn't happened so
+      // the default of 300x150 will be returned, causing an improper source point
+      // for the confetti animation.
+      var _this$canvas$getBound2 = this.canvas.getBoundingClientRect(),
+        canvasWidth = _this$canvas$getBound2.width,
+        canvasHeight = _this$canvas$getBound2.height;
+      var yPosition = canvasHeight * 5 / 7;
+      var leftConfettiPosition = {
+        x: 0,
+        y: yPosition
+      };
+      var rightConfettiPosition = {
+        x: canvasWidth,
+        y: yPosition
+      };
+      var confettiGroup = new ConfettiBatch(this.canvasContext);
+      for (var i = 0; i < confettiNumber / 2; i++) {
+        var confettiOnTheLeft = new ConfettiShape({
+          initialPosition: leftConfettiPosition,
+          confettiRadius: confettiRadius,
+          confettiColors: confettiColors,
+          confettiNumber: confettiNumber,
+          emojis: emojis,
+          emojiSize: emojiSize,
+          canvasWidth: canvasWidth,
+          rotationAngle: generateConfettiRotationAngleFiredFromLeftSideOfTheScreen(),
+          initialFlightAngle: generateConfettiInitialFlightAngleFiredFromLeftSideOfTheScreen()
+        });
+        var confettiOnTheRight = new ConfettiShape({
+          initialPosition: rightConfettiPosition,
+          confettiRadius: confettiRadius,
+          confettiColors: confettiColors,
+          confettiNumber: confettiNumber,
+          emojis: emojis,
+          emojiSize: emojiSize,
+          canvasWidth: canvasWidth,
+          rotationAngle: generateConfettiRotationAngleFiredFromRightSideOfTheScreen(),
+          initialFlightAngle: generateConfettiInitialFlightAngleFiredFromRightSideOfTheScreen()
+        });
+        confettiGroup.addShapes(confettiOnTheRight, confettiOnTheLeft);
+      }
+      this.activeConfettiBatches.push(confettiGroup);
+      this.queueAnimationFrameIfNeeded();
+      return confettiGroup.getBatchCompletePromise();
+    }
+  }, {
+    key: "clearCanvas",
+    value: function clearCanvas() {
+      this.activeConfettiBatches = [];
+    }
+  }, {
+    key: "destroyCanvas",
+    value: function destroyCanvas() {
+      this.canvas.remove();
+    }
+  }]);
+}();
+
+
+
 ;// ./src/FUNC/Felicitations.ts
+
 function felicitation(enable, win_sound_url, text) {
+    const jsConfetti = new JSConfetti();
     const goldText = document.createElement("div");
     goldText.textContent = text;
-    goldText.style.position = "fixed";
-    goldText.style.top = "50%";
-    goldText.style.left = "50%";
-    goldText.style.transform = "translate(-50%, -50%)";
-    goldText.style.fontSize = "80px";
-    goldText.style.color = "gold";
-    goldText.style.textShadow = "2px 2px 4px rgba(0,0,0,0.3)";
-    goldText.style.zIndex = "10000";
+    Object.assign(goldText.style, {
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        fontSize: "80px",
+        color: "gold",
+        textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+        zIndex: "10000",
+        pointerEvents: "none",
+        fontWeight: "bold"
+    });
     document.body.appendChild(goldText);
-    function createConfetti() {
-        const colors = [
-            "#ff0000",
-            "#00ff00",
-            "#0000ff",
-            "#ffff00",
-            "#ff00ff",
-            "#00ffff",
-            "gold",
-        ];
-        const confetti = document.createElement("div");
-        confetti.style.position = "fixed";
-        confetti.style.width = Math.random() * 10 + 5 + "px";
-        confetti.style.height = Math.random() * 10 + 5 + "px";
-        confetti.style.backgroundColor =
-            colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.borderRadius = "50%";
-        confetti.style.zIndex = "9999";
-        confetti.style.left = Math.random() * 100 + "vw";
-        confetti.style.top = "-20px";
-        document.body.appendChild(confetti);
-        let posY = -20;
-        let posX = parseFloat(confetti.style.left);
-        let rotation = 0;
-        let speedY = Math.random() * 2 + 1;
-        let speedX = Math.random() * 2 - 1;
-        function fall() {
-            posY += speedY;
-            posX += speedX;
-            rotation += 5;
-            confetti.style.top = posY + "px";
-            confetti.style.left = posX + "vw";
-            confetti.style.transform = `rotate(${rotation}deg)`;
-            if (posY < window.innerHeight) {
-                requestAnimationFrame(fall);
-            }
-            else {
-                confetti.remove();
-            }
-        }
-        fall();
-    }
+    const duration = 2000;
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#FFD700'];
+    jsConfetti.addConfetti({
+        confettiColors: colors,
+        confettiRadius: 6,
+        confettiNumber: 500,
+        emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
+    });
     const confettiInterval = setInterval(() => {
-        for (let i = 0; i < 5; i++) {
-            createConfetti();
-        }
-    }, 100);
-    if (enable) {
+        jsConfetti.addConfetti({
+            confettiColors: colors,
+            confettiRadius: 5,
+            confettiNumber: 150,
+        });
+    }, 300);
+    if (enable && win_sound_url) {
         const audio = new Audio(win_sound_url);
         audio.play().catch((err) => console.error("Erreur lecture:", err));
     }
@@ -3137,8 +3604,11 @@ function felicitation(enable, win_sound_url, text) {
         clearInterval(confettiInterval);
         goldText.style.transition = "opacity 1s";
         goldText.style.opacity = "0";
-        setTimeout(() => goldText.remove(), 1000);
-    }, 5000);
+        setTimeout(() => {
+            goldText.remove();
+            jsConfetti.clearCanvas();
+        }, 1000);
+    }, duration);
 }
 
 ;// ./src/FUNC/Onboarding.ts
@@ -5513,6 +5983,29 @@ class KxsClientSecondaryMenu {
                     this.kxsClient.nm.showNotification("The current configuration in the clipboard is not a valid Survev Config", "error", 4000);
                 }
             })
+        });
+        this.addOption(SERVER, {
+            label: "Game ID Helper",
+            value: this.kxsClient.isGameIdHelperEnabled,
+            type: ModType.Toggle,
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 14L11.2929 14.7071L12 15.4142L12.7071 14.7071L12 14ZM13 5C13 4.44772 12.5523 4 12 4C11.4477 4 11 4.44771 11 5L13 5ZM6.29289 9.70711L11.2929 14.7071L12.7071 13.2929L7.70711 8.29289L6.29289 9.70711ZM12.7071 14.7071L17.7071 9.70711L16.2929 8.29289L11.2929 13.2929L12.7071 14.7071ZM13 14L13 5L11 5L11 14L13 14Z" fill="#000000"></path> <path d="M5 16L5 17C5 18.1046 5.89543 19 7 19L17 19C18.1046 19 19 18.1046 19 17V16" stroke="#000000" stroke-width="2"></path> </g></svg>',
+            onChange: (value) => {
+                var _a;
+                this.kxsClient.isGameIdHelperEnabled = !this.kxsClient.isGameIdHelperEnabled;
+                this.kxsClient.updateLocalStorage();
+                // Déclencher une mise à jour via le callback du menu pour réévaluer l'état
+                // Cela garantit que l'affichage est cohérent avec l'état du menu et du gameId
+                if ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.onMenuToggle) {
+                    this.kxsClient.secondaryMenu.onMenuToggle.forEach(callback => {
+                        try {
+                            callback();
+                        }
+                        catch (error) {
+                            // Ignorer les erreurs
+                        }
+                    });
+                }
+            }
         });
     }
     createOptionCard(option, container, matchingFields = []) {
@@ -9364,6 +9857,7 @@ class KxsNetwork {
         this.kxs_users = [];
         this[0x1] = false;
         this.connected = false;
+        this.actualGameId = null;
         this.kxsClient = kxsClient;
     }
     connect() {
@@ -10514,7 +11008,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.2","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -10778,6 +11272,458 @@ class PlayersAliveMonitor {
     }
 }
 
+;// ./src/HUD/MOD/GameIdHelper.ts
+var GameIdHelper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+class GameIdHelper {
+    constructor(kxsClient) {
+        this.POSITION_KEY = 'gameIdHelper';
+        this.menuToggleCallback = null;
+        this.isDraggable = false;
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
+        this.mouseMoveThrottle = false;
+        this.clickStartTime = 0;
+        this.clickStartPosition = { x: 0, y: 0 };
+        this.CLICK_THRESHOLD = 5; // pixels de mouvement pour considérer comme un drag
+        this.CLICK_TIME_THRESHOLD = 200; // ms pour considérer comme un clic
+        this.updateInterval = null;
+        this.warningElement = null;
+        this.kxsClient = kxsClient;
+        this.createWarningElement();
+        this.setFixedPosition();
+        this.setupDragAndDrop();
+        this.startMenuCheckInterval();
+    }
+    createWarningElement() {
+        const warning = document.createElement("div");
+        const uiTopLeft = document.getElementById("ui-top-left");
+        // Vérifier si le mode glassmorphism est activé
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        // Appliquer le style approprié en fonction du toggle glassmorphism
+        DesignSystem.applyGlassEffect(warning, this.kxsClient.isGlassmorphismEnabled ? 'medium' : 'dark', {
+            position: 'fixed',
+            border: is_glassmorphism_enabled ?
+                '2px solid rgba(255, 255, 255, 0.8)' :
+                '2px solid rgba(255, 255, 255, 0.8)',
+            padding: DesignSystem.spacing.md + ' ' + DesignSystem.spacing.lg,
+            color: '#ffffff',
+            fontFamily: DesignSystem.fonts.primary,
+            fontSize: DesignSystem.fonts.sizes.base,
+            fontWeight: '600',
+            zIndex: DesignSystem.layers.notification.toString(),
+            display: 'none',
+            pointerEvents: 'none',
+            cursor: 'default',
+            transition: `all ${DesignSystem.animation.normal} ease`,
+            boxShadow: is_glassmorphism_enabled ?
+                '0 8px 32px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)' :
+                '0 4px 12px rgba(255, 255, 255, 0.25)',
+            textShadow: is_glassmorphism_enabled ?
+                '0 0 10px rgba(255, 255, 255, 0.5)' :
+                '0 0 5px rgba(255, 255, 255, 0.4)',
+            backdropFilter: is_glassmorphism_enabled ? 'blur(8px) saturate(180%)' : 'none',
+            borderRadius: is_glassmorphism_enabled ? '12px' : '8px'
+        });
+        // Appliquer le webkit backdrop filter manuellement
+        if (is_glassmorphism_enabled) {
+            warning.style['-webkit-backdrop-filter'] = 'blur(8px) saturate(180%)';
+        }
+        else {
+            warning.style['-webkit-backdrop-filter'] = 'none';
+        }
+        const content = document.createElement("div");
+        Object.assign(content.style, {
+            display: 'flex',
+            alignItems: 'center',
+            gap: DesignSystem.spacing.sm,
+            filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))'
+        });
+        const icon = document.createElement("div");
+        icon.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"></path>
+            </svg>
+        `;
+        const text = document.createElement("span");
+        text.textContent = this.kxsClient.kxsNetwork.actualGameId || "";
+        if (uiTopLeft) {
+            content.appendChild(icon);
+            content.appendChild(text);
+            warning.appendChild(content);
+            uiTopLeft.appendChild(warning);
+        }
+        this.warningElement = warning;
+        this.addPulseAnimation();
+    }
+    setFixedPosition() {
+        if (!this.warningElement)
+            return;
+        // Récupérer la position depuis le localStorage ou les valeurs par défaut
+        const storageKey = `position_${this.POSITION_KEY}`;
+        const savedPosition = localStorage.getItem(storageKey);
+        let position;
+        if (savedPosition) {
+            try {
+                // Utiliser la position sauvegardée
+                const { x, y } = JSON.parse(savedPosition);
+                position = { left: x, top: y };
+            }
+            catch (error) {
+                // En cas d'erreur, utiliser la position par défaut
+                position = this.kxsClient.defaultPositions[this.POSITION_KEY];
+                this.kxsClient.logger.error('Erreur lors du chargement de la position LOW HP:', error);
+            }
+        }
+        else {
+            // Utiliser la position par défaut
+            position = this.kxsClient.defaultPositions[this.POSITION_KEY];
+        }
+        // Appliquer la position
+        if (position) {
+            this.warningElement.style.top = `${position.top}px`;
+            this.warningElement.style.left = `${position.left}px`;
+        }
+    }
+    addPulseAnimation() {
+        const keyframes = `
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+        `;
+        const style = document.createElement("style");
+        style.textContent = keyframes;
+        document.head.appendChild(style);
+        if (this.warningElement) {
+            this.warningElement.style.animation = "pulse 1.5s infinite";
+        }
+    }
+    show() {
+        if (!this.warningElement)
+            return;
+        if (!this.kxsClient.isGameIdHelperEnabled) {
+            this.hide();
+            return;
+        }
+        const gameId = this.kxsClient.kxsNetwork.actualGameId;
+        if (!gameId || gameId === "") {
+            this.hide();
+            return;
+        }
+        this.warningElement.style.display = "block";
+        const span = this.warningElement.querySelector("span");
+        if (span) {
+            span.textContent = `Game ID: ${gameId}`;
+        }
+    }
+    hide() {
+        if (!this.warningElement)
+            return;
+        // Toujours cacher si le module est désactivé
+        if (!this.kxsClient.isGameIdHelperEnabled) {
+            this.warningElement.style.display = "none";
+            this.isDraggable = false;
+            this.isDragging = false;
+            return;
+        }
+        // Ne pas masquer si en mode placement (dragging)
+        if (this.isDraggable)
+            return;
+        this.warningElement.style.display = "none";
+    }
+    update() {
+        // L'affichage est géré par setupRShiftListener selon l'état du menu
+        // On met juste à jour le contenu si l'élément est visible
+        if (this.warningElement && this.warningElement.style.display === "block") {
+            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            const span = this.warningElement.querySelector("span");
+            if (span && gameId && gameId !== "") {
+                span.textContent = `Game ID: ${gameId}`;
+            }
+        }
+    }
+    setupDragAndDrop() {
+        // Écouteurs d'événements de souris pour le glisser-déposer et le clic
+        document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+    }
+    copyGameIdToClipboard() {
+        return GameIdHelper_awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            if (!gameId || gameId === "") {
+                return;
+            }
+            try {
+                // Copier le gameId dans le clipboard
+                yield navigator.clipboard.writeText(gameId);
+                // Feedback visuel : changer temporairement le texte
+                const span = (_a = this.warningElement) === null || _a === void 0 ? void 0 : _a.querySelector("span");
+                if (span) {
+                    const originalText = span.textContent || `Game ID: ${gameId}`;
+                    span.textContent = "✓ Copied!";
+                    // Restaurer le texte original après 1.5 secondes
+                    setTimeout(() => {
+                        if (span && this.warningElement) {
+                            const currentGameId = this.kxsClient.kxsNetwork.actualGameId;
+                            if (currentGameId && currentGameId !== "") {
+                                span.textContent = `Game ID: ${currentGameId}`;
+                            }
+                            else {
+                                span.textContent = originalText;
+                            }
+                        }
+                    }, 1500);
+                }
+            }
+            catch (error) {
+                // Fallback pour les navigateurs qui ne supportent pas l'API clipboard
+                this.kxsClient.logger.error('Erreur lors de la copie du gameId:', error);
+                // Alternative : utiliser l'ancienne méthode
+                const textArea = document.createElement('textarea');
+                textArea.value = gameId;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const span = (_b = this.warningElement) === null || _b === void 0 ? void 0 : _b.querySelector("span");
+                    if (span) {
+                        const originalText = span.textContent || `Game ID: ${gameId}`;
+                        span.textContent = "✓ Copied!";
+                        setTimeout(() => {
+                            if (span && this.warningElement) {
+                                const currentGameId = this.kxsClient.kxsNetwork.actualGameId;
+                                if (currentGameId && currentGameId !== "") {
+                                    span.textContent = `Game ID: ${currentGameId}`;
+                                }
+                                else {
+                                    span.textContent = originalText;
+                                }
+                            }
+                        }, 1500);
+                    }
+                }
+                catch (err) {
+                    this.kxsClient.logger.error('Erreur lors de la copie (fallback):', err);
+                }
+                document.body.removeChild(textArea);
+            }
+        });
+    }
+    enableDragging() {
+        if (!this.warningElement)
+            return;
+        // Vérifier si le module est activé
+        if (!this.kxsClient.isGameIdHelperEnabled) {
+            this.disableDragging();
+            return;
+        }
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        this.isDraggable = true;
+        this.warningElement.style.pointerEvents = 'auto';
+        this.warningElement.style.cursor = 'move';
+        // Adaptation du style pour le mode placement, selon le toggle glassmorphism
+        this.warningElement.style.borderColor = '#00ff00'; // Feedback visuel quand déplaçable
+        if (is_glassmorphism_enabled) {
+            this.warningElement.style.boxShadow = '0 8px 32px rgba(0, 255, 0, 0.2), 0 0 20px rgba(0, 255, 0, 0.15)';
+            this.warningElement.style.backdropFilter = 'blur(8px) saturate(180%)';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'blur(8px) saturate(180%)';
+        }
+        else {
+            this.warningElement.style.boxShadow = '0 4px 12px rgba(0, 255, 0, 0.2)';
+            this.warningElement.style.backdropFilter = 'none';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'none';
+        }
+        // Force l'affichage de l'élément et met à jour le texte
+        this.warningElement.style.display = 'block';
+        this.updateDisplayText();
+    }
+    updateDisplayText() {
+        if (!this.warningElement)
+            return;
+        const span = this.warningElement.querySelector("span");
+        if (span) {
+            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            // Ne pas mettre à jour si le texte est "✓ Copied!" (feedback de copie)
+            if (span.textContent !== "✓ Copied!") {
+                span.textContent = gameId && gameId !== "" ? `Game ID: ${gameId}` : 'Game ID: Placement Mode';
+            }
+        }
+    }
+    disableDragging() {
+        if (!this.warningElement)
+            return;
+        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
+        this.isDraggable = false;
+        this.isDragging = false;
+        this.warningElement.style.pointerEvents = 'none';
+        this.warningElement.style.cursor = 'default';
+        // Restauration du style original en fonction du mode glassmorphism
+        this.warningElement.style.borderColor = is_glassmorphism_enabled ?
+            'rgba(255, 255, 255, 0.8)' :
+            'rgba(255, 255, 255, 0.8)';
+        if (is_glassmorphism_enabled) {
+            this.warningElement.style.boxShadow = '0 8px 32px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)';
+            this.warningElement.style.backdropFilter = 'blur(8px) saturate(180%)';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'blur(8px) saturate(180%)';
+        }
+        else {
+            this.warningElement.style.boxShadow = '0 4px 12px rgba(255, 255, 255, 0.25)';
+            this.warningElement.style.backdropFilter = 'none';
+            this.warningElement.style['-webkit-backdrop-filter'] = 'none';
+        }
+        // Cacher l'élément quand le menu est fermé ou si le module est désactivé
+        this.warningElement.style.display = 'none';
+    }
+    handleMouseDown(event) {
+        if (!this.isDraggable || !this.warningElement)
+            return;
+        // Vérifier si le clic est sur l'élément
+        if (this.warningElement.contains(event.target)) {
+            this.clickStartTime = Date.now();
+            this.clickStartPosition = { x: event.clientX, y: event.clientY };
+            this.isDragging = false;
+            // Calculer l'offset depuis la position de la souris jusqu'au coin de l'élément
+            const rect = this.warningElement.getBoundingClientRect();
+            this.dragOffset = {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+            // Empêcher la sélection de texte pendant le drag
+            event.preventDefault();
+        }
+    }
+    handleMouseMove(event) {
+        if (!this.isDraggable || !this.warningElement || this.mouseMoveThrottle)
+            return;
+        // Si on a commencé un clic sur l'élément, vérifier si c'est un drag
+        if (this.clickStartTime > 0 && !this.isDragging) {
+            const moveDistance = Math.sqrt(Math.pow(event.clientX - this.clickStartPosition.x, 2) +
+                Math.pow(event.clientY - this.clickStartPosition.y, 2));
+            // Si le mouvement est suffisant, considérer comme un drag
+            if (moveDistance > this.CLICK_THRESHOLD) {
+                this.isDragging = true;
+            }
+        }
+        // Si on est en train de drag, déplacer l'élément
+        if (this.isDragging && this.warningElement) {
+            // Optimisé : throttle mousemove pour de meilleures performances
+            this.mouseMoveThrottle = true;
+            requestAnimationFrame(() => {
+                // Calculer la nouvelle position
+                const newX = event.clientX - this.dragOffset.x;
+                const newY = event.clientY - this.dragOffset.y;
+                // Mettre à jour la position de l'élément
+                if (this.warningElement) {
+                    this.warningElement.style.left = `${newX}px`;
+                    this.warningElement.style.top = `${newY}px`;
+                }
+                this.mouseMoveThrottle = false;
+            });
+        }
+    }
+    handleMouseUp(event) {
+        if (!this.isDraggable || !this.warningElement)
+            return;
+        // Si on était en train de drag, sauvegarder la position
+        if (this.isDragging) {
+            this.isDragging = false;
+            // Récupérer les positions actuelles
+            const left = parseInt(this.warningElement.style.left);
+            const top = parseInt(this.warningElement.style.top);
+            // Sauvegarder la position
+            const storageKey = `position_${this.POSITION_KEY}`;
+            localStorage.setItem(storageKey, JSON.stringify({ x: left, y: top }));
+        }
+        else if (this.clickStartTime > 0) {
+            // Sinon, vérifier si c'était un clic simple
+            const clickDuration = Date.now() - this.clickStartTime;
+            const moveDistance = Math.sqrt(Math.pow(event.clientX - this.clickStartPosition.x, 2) +
+                Math.pow(event.clientY - this.clickStartPosition.y, 2));
+            // Si c'était un clic rapide et sans mouvement significatif, copier le gameId
+            if (clickDuration < this.CLICK_TIME_THRESHOLD && moveDistance < this.CLICK_THRESHOLD) {
+                this.copyGameIdToClipboard();
+            }
+        }
+        // Réinitialiser les variables
+        this.clickStartTime = 0;
+        this.clickStartPosition = { x: 0, y: 0 };
+    }
+    startMenuCheckInterval() {
+        // Écouter directement les événements RSHIFT pour une réaction immédiate
+        this.setupRShiftListener();
+    }
+    setupRShiftListener() {
+        // Fonction pour vérifier et mettre à jour l'affichage selon l'état du menu
+        this.menuToggleCallback = () => {
+            var _a;
+            // Vérifier d'abord si le module est activé
+            if (!this.kxsClient.isGameIdHelperEnabled) {
+                this.disableDragging();
+                return;
+            }
+            const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.isOpen) || false;
+            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            // Afficher uniquement si le module est activé, le menu est ouvert ET qu'un gameId existe
+            if (isMenuOpen && gameId && gameId !== "") {
+                this.enableDragging();
+            }
+            else {
+                // Si le menu est fermé ou pas de gameId, désactiver le mode placement et cacher
+                this.disableDragging();
+            }
+        };
+        // S'abonner aux notifications de changement d'état du menu
+        if (!this.kxsClient.secondaryMenu.onMenuToggle) {
+            this.kxsClient.secondaryMenu.onMenuToggle = [];
+        }
+        this.kxsClient.secondaryMenu.onMenuToggle.push(this.menuToggleCallback);
+        // Vérifier l'état initial
+        this.menuToggleCallback();
+        // Mettre à jour périodiquement le texte si le menu est ouvert (pour détecter les changements de gameId)
+        this.updateInterval = window.setInterval(() => {
+            if (this.isDraggable && this.warningElement && this.warningElement.style.display === 'block') {
+                this.updateDisplayText();
+            }
+        }, 1000); // Vérifier toutes les secondes
+    }
+    destroy() {
+        var _a;
+        // Nettoyer l'intervalle de mise à jour
+        if (this.updateInterval !== null) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+        }
+        // Supprimer le callback du menu secondaire
+        if (((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.onMenuToggle) && this.menuToggleCallback) {
+            const index = this.kxsClient.secondaryMenu.onMenuToggle.indexOf(this.menuToggleCallback);
+            if (index !== -1) {
+                this.kxsClient.secondaryMenu.onMenuToggle.splice(index, 1);
+            }
+            this.menuToggleCallback = null;
+        }
+        // Supprimer l'élément du DOM
+        if (this.warningElement) {
+            this.warningElement.remove();
+            this.warningElement = null;
+        }
+    }
+}
+
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -10788,6 +11734,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -10852,6 +11799,7 @@ class KxsClient {
         this.currentFocusModeState = false;
         this.isGlassmorphismEnabled = true;
         this.isCustomBackgroundEnabled = true;
+        this.isGameIdHelperEnabled = true;
         this.used = true;
         this.ContextIsSecure = window.location.protocol.startsWith("https");
         this.kxsDeveloperOptions = {
@@ -10895,6 +11843,7 @@ class KxsClient {
         this.kxsNetwork = new KxsNetwork(this);
         this.exchangeManager = new ExchangeManager(this);
         this.aliveplayer = new PlayersAliveMonitor();
+        this.gameIdHelper = new GameIdHelper(this);
         this.setAnimationFrameCallback();
         this.loadBackgroundFromLocalStorage();
         this.initDeathDetection();
@@ -11224,7 +12173,8 @@ class KxsClient {
             kxsDeveloperOptions: this.kxsDeveloperOptions,
             isGlassmorphismEnabled: this.isGlassmorphismEnabled,
             isCustomBackgroundEnabled: this.isCustomBackgroundEnabled,
-            used: this.used
+            used: this.used,
+            isGameIdHelperEnabled: this.isGameIdHelperEnabled
         }));
     }
     ;
@@ -11462,7 +12412,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -11498,6 +12448,7 @@ class KxsClient {
             this.isGlassmorphismEnabled = (_4 = savedSettings.isGlassmorphismEnabled) !== null && _4 !== void 0 ? _4 : this.isGlassmorphismEnabled;
             this.isCustomBackgroundEnabled = (_5 = savedSettings.isCustomBackgroundEnabled) !== null && _5 !== void 0 ? _5 : this.isCustomBackgroundEnabled;
             this.used = (_6 = savedSettings.used) !== null && _6 !== void 0 ? _6 : this.used;
+            this.isGameIdHelperEnabled = (_7 = savedSettings.isGameIdHelperEnabled) !== null && _7 !== void 0 ? _7 : this.isGameIdHelperEnabled;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -12700,4 +13651,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-11 22:28:19
+// Last modified code: 2025-11-12 14:25:44
