@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.7.3
+// @version      2.7.4
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1145,15 +1145,15 @@ const CLIENT_REGISTRY = {
         acronym_upper: "KXC",
         acronym_start_upper: "Kxc",
         application_id: "1429750717450686535",
-        rpc_assets: "mp:avatars/1429750717450686535/fa4d8b71aa1ecd6518ad6fbc456f63ee?size=512",
+        rpc_assets: "mp:avatars/1429750717450686535/7cdebef07a65680c8b8e2de22e38ac51?size=512",
         domains: ["cursev.io"],
         full_logo: config_namespaceObject.base_url + "/assets/KxcLogoFull.png",
         icon_logo: config_namespaceObject.base_url + "/assets/KxcClientLogo.png",
         welcome_sound: "https://kxs.rip/assets/o_c_sound.mp3",
         options: {
-            is_custom_background_enabled: true,
+            is_custom_background_enabled: false,
             is_dollar_sub_category_enable: true,
-            is_background_music_enabled: true,
+            is_background_music_enabled: false,
             is_game_history_enabled: true,
             is_counters_enable: true,
             is_waepon_border_enable: true,
@@ -3586,22 +3586,14 @@ function felicitation(enable, win_sound_url, text) {
     jsConfetti.addConfetti({
         confettiColors: colors,
         confettiRadius: 6,
-        confettiNumber: 500,
+        confettiNumber: 300,
         emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
     });
-    const confettiInterval = setInterval(() => {
-        jsConfetti.addConfetti({
-            confettiColors: colors,
-            confettiRadius: 5,
-            confettiNumber: 150,
-        });
-    }, 300);
     if (enable && win_sound_url) {
         const audio = new Audio(win_sound_url);
         audio.play().catch((err) => console.error("Erreur lecture:", err));
     }
     setTimeout(() => {
-        clearInterval(confettiInterval);
         goldText.style.transition = "opacity 1s";
         goldText.style.opacity = "0";
         setTimeout(() => {
@@ -5573,6 +5565,16 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.hud.toggleWeaponBorderHandler();
             },
         });
+        this.addOption(HUD, {
+            label: "Main Menu Custom Music",
+            value: this.kxsClient.isCustomMusicEnabled,
+            type: ModType.Toggle,
+            icon: '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M15 1H4V9H3C1.34315 9 0 10.3431 0 12C0 13.6569 1.34315 15 3 15C4.65685 15 6 13.6569 6 12V5H13V9H12C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12V1Z" fill="#000000" style="--darkreader-inline-fill: var(--darkreader-background-000000, #000000);" data-darkreader-inline-fill=""></path> </g></svg>',
+            onChange: () => {
+                this.kxsClient.isCustomMusicEnabled = !this.kxsClient.isCustomMusicEnabled;
+                this.kxsClient.updateLocalStorage();
+            },
+        });
         vars_client.options.is_waepon_border_enable && this.addOption(HUD, {
             label: "Chromatic Weapon Border",
             value: this.kxsClient.isGunBorderChromatic,
@@ -5835,14 +5837,14 @@ class KxsClientSecondaryMenu {
                             localStorage.removeItem("lastBackgroundFile");
                             localStorage.removeItem("lastBackgroundType");
                             localStorage.removeItem("lastBackgroundValue");
-                            backgroundElement.style.backgroundImage = `url(${background_image})`;
+                            this.kxsClient.loadBackgroundFromLocalStorage(true);
                         }
                         else if (choice === "1") {
                             const newBackgroundUrl = prompt("Enter the URL of the new background image:");
                             if (newBackgroundUrl) {
-                                backgroundElement.style.backgroundImage = `url(${newBackgroundUrl})`;
                                 this.kxsClient.saveBackgroundToLocalStorage(newBackgroundUrl);
                                 alert("Background updated successfully!");
+                                this.kxsClient.loadBackgroundFromLocalStorage();
                             }
                         }
                         else if (choice === "2") {
@@ -5855,9 +5857,9 @@ class KxsClientSecondaryMenu {
                                 if (file) {
                                     const reader = new FileReader();
                                     reader.onload = () => {
-                                        backgroundElement.style.backgroundImage = `url(${reader.result})`;
                                         this.kxsClient.saveBackgroundToLocalStorage(file);
                                         alert("Background updated successfully!");
+                                        this.kxsClient.loadBackgroundFromLocalStorage();
                                     };
                                     reader.readAsDataURL(file);
                                 }
@@ -6990,7 +6992,7 @@ class KxsClientSecondaryMenu {
             </svg>
             ${isMobile ? '' : 'Join Discord'}
           </button>
-          <button style="
+          <button id="closeMenuBtn" style="
             padding: ${closeBtnPadding}px;
             background: none;
             border: none;
@@ -7057,10 +7059,13 @@ class KxsClientSecondaryMenu {
                 }
             });
         });
-        const closeButton = header.querySelector('button');
-        closeButton === null || closeButton === void 0 ? void 0 : closeButton.addEventListener('click', () => {
-            this.toggleMenuVisibility();
-        });
+        const closeButton = header.querySelector('#closeMenuBtn');
+        if (closeButton) {
+            this.blockMousePropagation(closeButton);
+            closeButton.addEventListener('click', () => {
+                this.toggleMenuVisibility();
+            });
+        }
         // Discord button event listener
         const discordButton = header.querySelector('#discordBtn');
         DesignSystem.applyGlassEffect(discordButton, this.kxsClient.isGlassmorphismEnabled ? 'medium' : 'dark');
@@ -11010,7 +11015,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.4","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11764,6 +11769,7 @@ class KxsClient {
     constructor() {
         this.onlineMenuElement = null;
         this.onlineMenuInterval = null;
+        this.backgroundInterval = null;
         this.deathObserver = null;
         this.adBlockObserver = null;
         globalThis.kxsClient = this;
@@ -11802,6 +11808,7 @@ class KxsClient {
         this.isGlassmorphismEnabled = true;
         this.isCustomBackgroundEnabled = true;
         this.isGameIdHelperEnabled = true;
+        this.isCustomMusicEnabled = true;
         this.used = true;
         this.ContextIsSecure = window.location.protocol.startsWith("https");
         this.kxsDeveloperOptions = {
@@ -12176,7 +12183,8 @@ class KxsClient {
             isGlassmorphismEnabled: this.isGlassmorphismEnabled,
             isCustomBackgroundEnabled: this.isCustomBackgroundEnabled,
             used: this.used,
-            isGameIdHelperEnabled: this.isGameIdHelperEnabled
+            isGameIdHelperEnabled: this.isGameIdHelperEnabled,
+            isCustomMusicEnabled: this.isCustomMusicEnabled
         }));
     }
     ;
@@ -12401,20 +12409,93 @@ class KxsClient {
             reader.readAsDataURL(image);
         }
     }
-    loadBackgroundFromLocalStorage() {
+    loadBackgroundFromLocalStorage(applyImmediately = false) {
         if (!client.options.is_custom_background_enabled)
             return;
+        const backgroundElement = document.getElementById("background");
+        if (!backgroundElement)
+            return;
+        // Clear any existing background interval
+        if (this.backgroundInterval !== null) {
+            clearInterval(this.backgroundInterval);
+            this.backgroundInterval = null;
+        }
+        // Retrieve values from localStorage
         const backgroundType = localStorage.getItem("lastBackgroundType");
         const backgroundValue = localStorage.getItem("lastBackgroundValue");
-        const backgroundElement = document.getElementById("background");
-        if (backgroundElement && backgroundType && backgroundValue && this.isCustomBackgroundEnabled) {
-            setInterval(() => {
-                backgroundElement.style.backgroundImage = `url(${backgroundValue})`;
+        // Check custom settings
+        const isCustomEnabled = kxs_settings.has("isCustomBackgroundEnabled")
+            ? kxs_settings.get("isCustomBackgroundEnabled")
+            : true;
+        // Function to extract dominant color from an image
+        const extractDominantColor = (imageUrl, callback) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imageUrl;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                let r = 0, g = 0, b = 0, count = 0;
+                for (let i = 0; i < imageData.length; i += 4) {
+                    r += imageData[i];
+                    g += imageData[i + 1];
+                    b += imageData[i + 2];
+                    count++;
+                }
+                r = Math.floor(r / count);
+                g = Math.floor(g / count);
+                b = Math.floor(b / count);
+                const dominantColor = `rgb(${r}, ${g}, ${b})`;
+                callback(dominantColor);
+            };
+            img.onerror = () => {
+                console.error('Error loading image for color extraction');
+            };
+        };
+        // Function to apply background
+        const applyBackground = (imageUrl) => {
+            backgroundElement.style.backgroundImage = `url("${imageUrl}")`;
+            extractDominantColor(imageUrl, (color) => {
+                console.log(`
+					
+					
+					
+					`, color);
+                document.body.style.backgroundColor = color;
+            });
+        };
+        // Priority to stored background if everything is valid
+        if (backgroundType && backgroundValue && this.isCustomBackgroundEnabled && isCustomEnabled) {
+            // Apply immediately if requested, otherwise wait
+            if (applyImmediately) {
+                applyBackground(backgroundValue);
+            }
+            this.backgroundInterval = setInterval(() => {
+                applyBackground(backgroundValue);
+            }, 2900);
+        }
+        else if (isCustomEnabled && client.options.is_custom_background_enabled) {
+            // Fallback if no stored background - apply default background
+            if (applyImmediately) {
+                applyBackground(background_image);
+            }
+            else {
+                setTimeout(() => {
+                    applyBackground(background_image);
+                }, 2900);
+            }
+            // Set interval to keep applying default background
+            this.backgroundInterval = setInterval(() => {
+                applyBackground(background_image);
             }, 2900);
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -12451,6 +12532,7 @@ class KxsClient {
             this.isCustomBackgroundEnabled = (_5 = savedSettings.isCustomBackgroundEnabled) !== null && _5 !== void 0 ? _5 : this.isCustomBackgroundEnabled;
             this.used = (_6 = savedSettings.used) !== null && _6 !== void 0 ? _6 : this.used;
             this.isGameIdHelperEnabled = (_7 = savedSettings.isGameIdHelperEnabled) !== null && _7 !== void 0 ? _7 : this.isGameIdHelperEnabled;
+            this.isCustomMusicEnabled = (_8 = savedSettings.isCustomMusicEnabled) !== null && _8 !== void 0 ? _8 : this.isCustomMusicEnabled;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -13580,7 +13662,10 @@ function loadKxs() {
         /*
             - Avoiding intercepting another page as the root page
         */
-        intercept("audio/ambient/menu_music_01.mp3", kxs_settings.get("soundLibrary.background_sound_url") || background_song);
+        console.log(kxs_settings.has("isCustomMusicEnabled"), kxs_settings.get("isCustomMusicEnabled"));
+        if ((kxs_settings.has("isCustomMusicEnabled") && kxs_settings.get("isCustomMusicEnabled"))) {
+            intercept("audio/ambient/menu_music_01.mp3", kxs_settings.get("soundLibrary.background_sound_url") || background_song);
+        }
         survev_settings.set("language", "en");
         if (localStorage.getItem("on_boarding_complete") !== "yes") {
             window.addEventListener('load', () => {
@@ -13594,14 +13679,6 @@ function loadKxs() {
         }
         const loadingScreen = new LoadingScreen(kxs_logo);
         loadingScreen.show();
-        const backgroundElement = document.getElementById("background");
-        if (backgroundElement && (!kxs_settings.has("isCustomBackgroundEnabled") ||
-            kxs_settings.get("isCustomBackgroundEnabled") === true
-                && vars_client.options.is_custom_background_enabled)) {
-            setTimeout(() => {
-                backgroundElement.style.backgroundImage = `url("${background_image}")`;
-            }, 2900);
-        }
         setFavicon(kxs_logo);
         try {
             const kxsClient = new KxsClient();
@@ -13653,5 +13730,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-12 15:06:01
-
+// Last modified code: 2025-11-16 14:59:02
