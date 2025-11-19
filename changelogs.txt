@@ -1,3 +1,21 @@
+<@&1356012705919668284>  `2.7.6`
+
+> *Crosshair fix*
+
+* **Fix the crosshair replacement mode**
+
+---
+
+<@&1356012705919668284>  `2.7.5`
+
+> *Fixes update*
+
+* **Fix the X button for closing the Right Shift menue**
+* **fix the laggy experiences with the confetti 🎊**
+* **New mod, you can now bring back the survev io main menu music**
+
+---
+
 <@&1356012705919668284>  `2.7.3`
 
 > *Minor Update*
