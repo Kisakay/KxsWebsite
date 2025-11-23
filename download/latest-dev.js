@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.7.6
+// @version      2.8.0
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -5575,6 +5575,16 @@ class KxsClientSecondaryMenu {
                 this.kxsClient.updateLocalStorage();
             },
         });
+        this.addOption(HUD, {
+            label: "Ads Blocker",
+            value: this.kxsClient.isAdsBlockerEnabled,
+            type: ModType.Toggle,
+            icon: '<svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" style="enable-background:new 0 0 192 192" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M164.8 37.6c2.4 1.2 4 3.6 4.1 6.2.4 15-1.2 45.7-20.3 77-16.1 26.4-37.1 41.1-49.4 48.2-2.3 1.3-5 1.3-7.3 0-12.2-7.2-33-22-48.8-48.2-18.9-31.4-20.4-62-20-77 .1-2.7 1.6-5.1 4.1-6.2C40.7 31.1 64.6 22.1 95.5 22c31.4-.1 55.7 9.1 69.3 15.6z" style="fill:none;stroke:#000000;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10"></path><path d="m131.1 63.9-35.9 37.3c-.9.9-2.4.9-3.2-.1L79.6 86.2c-.9-1.1-2-2.1-3.2-2.8-1.4-.9-3.3-1.7-5.7-1.8-3.8-.2-6.6 1.5-8.3 2.9-.9.8-1 2.2-.3 3.1 9.1 10.7 18.1 21.4 27.2 32 2.2 2.6 6.3 2.5 8.3-.3l39.9-54c1-1.4.1-3.4-1.6-3.4-1 0-1.9.2-2.6.5-.7.3-1.5.8-2.2 1.5z"></path></g></svg>',
+            onChange: () => {
+                this.kxsClient.isAdsBlockerEnabled = !this.kxsClient.isAdsBlockerEnabled;
+                this.kxsClient.updateLocalStorage();
+            }
+        });
         vars_client.options.is_waepon_border_enable && this.addOption(HUD, {
             label: "Chromatic Weapon Border",
             value: this.kxsClient.isGunBorderChromatic,
@@ -11033,7 +11043,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.7.6","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.8.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11749,6 +11759,88 @@ class GameIdHelper {
 }
 
 
+;// ./src/FUNC/AdBlocker.ts
+// This code was taked from by Lirus
+class AdBlockerBaby {
+    constructor() {
+        this.whitelist = [
+            'admin',
+            'adapter',
+            'advice',
+            'adopt',
+            'addition',
+            'address'
+        ];
+        this.baseSelectors = [
+            '[id="ad"]',
+            '[id^="ad-"]',
+            '[class^="ad-"]',
+            '[class$="-ad"]',
+            '[class~="ad"]',
+            '[class*=" ad-"]',
+            '[class*="-ad "]',
+            '[class*="_ad_"]',
+            '[class*="banner"]',
+            '[class*="sponsor"]',
+            '[class*="promo"]',
+            '[class*="advert"]',
+            '[data-testid*="ad"]',
+            'iframe[src*="ads"]',
+            'iframe[src*="googlesyndication"]',
+            'iframe[src*="doubleclick"]',
+            '[class*="publift-widget"]',
+            '[id*="publift-widget"]',
+            '[class*="sticky_footer"]',
+            '[class*="sticky-footer"]',
+            '[id*="sticky_footer"]',
+            '[id*="sticky-footer"]',
+            '[id*="ui-stats-ad"]',
+            '[class*="ui-stats-ad"]'
+        ];
+    }
+    isFalsePositive(el) {
+        var _a, _b;
+        const id = ((_a = el.id) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+        const cls = ((_b = el.className) === null || _b === void 0 ? void 0 : _b.toString().toLowerCase()) || '';
+        return this.whitelist.some(w => id.includes(w) || cls.includes(w));
+    }
+    isProbablyAd(el) {
+        var _a;
+        const text = ((_a = el.textContent) === null || _a === void 0 ? void 0 : _a.trim()) || '';
+        const imgs = el.querySelectorAll('img, iframe').length;
+        return imgs > 0 && text.length < 150;
+    }
+    removeAds() {
+        const selectors = [...this.baseSelectors];
+        document.querySelectorAll(selectors.join(',')).forEach(el => {
+            var _a, _b;
+            if (!this.isFalsePositive(el)) {
+                const id = ((_a = el.id) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
+                const cls = ((_b = el.className) === null || _b === void 0 ? void 0 : _b.toString().toLowerCase()) || '';
+                if (id.includes('publift-widget') ||
+                    cls.includes('publift-widget') ||
+                    id.includes('ui-stats-ad') ||
+                    cls.includes('ui-stats-ad') ||
+                    cls.includes('sticky_footer') ||
+                    cls.includes('sticky-footer')) {
+                    el.remove();
+                    console.debug('[AntiPub]', 'Supprimé pub forcée:', el);
+                    return;
+                }
+                if (this.isProbablyAd(el)) {
+                    el.remove();
+                    console.debug('[AntiPub]', 'Supprimé probable pub:', el);
+                }
+            }
+        });
+    }
+    run() {
+        this.removeAds();
+        const observer = new MutationObserver(() => this.removeAds());
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+}
+
 ;// ./src/KxsClient.ts
 var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -11759,6 +11851,7 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -11827,6 +11920,7 @@ class KxsClient {
         this.isCustomBackgroundEnabled = true;
         this.isGameIdHelperEnabled = true;
         this.isCustomMusicEnabled = true;
+        this.isAdsBlockerEnabled = true;
         this.used = true;
         this.ContextIsSecure = window.location.protocol.startsWith("https");
         this.kxsDeveloperOptions = {
@@ -11877,11 +11971,15 @@ class KxsClient {
         this.discordRPC.connect();
         this.pingManager = new PingTest();
         this.hud = new KxsClientHUD(this);
+        this.adsBlocker = new AdBlockerBaby();
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
         this.chat = new KxsChat(this);
         this.voiceChat = new KxsVoiceChat(this, this.kxsNetwork);
         if (this.isSpotifyPlayerEnabled) {
             this.createSimpleSpotifyPlayer();
+        }
+        if (this.isAdsBlockerEnabled) {
+            this.adsBlocker.run();
         }
         this.MainMenuCleaning();
         this.kxsNetwork.connect();
@@ -12202,7 +12300,8 @@ class KxsClient {
             isCustomBackgroundEnabled: this.isCustomBackgroundEnabled,
             used: this.used,
             isGameIdHelperEnabled: this.isGameIdHelperEnabled,
-            isCustomMusicEnabled: this.isCustomMusicEnabled
+            isCustomMusicEnabled: this.isCustomMusicEnabled,
+            isAdsBlockerEnabled: this.isAdsBlockerEnabled
         }));
     }
     ;
@@ -12513,7 +12612,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -12551,6 +12650,7 @@ class KxsClient {
             this.used = (_6 = savedSettings.used) !== null && _6 !== void 0 ? _6 : this.used;
             this.isGameIdHelperEnabled = (_7 = savedSettings.isGameIdHelperEnabled) !== null && _7 !== void 0 ? _7 : this.isGameIdHelperEnabled;
             this.isCustomMusicEnabled = (_8 = savedSettings.isCustomMusicEnabled) !== null && _8 !== void 0 ? _8 : this.isCustomMusicEnabled;
+            this.isAdsBlockerEnabled = (_9 = savedSettings.isAdsBlockerEnabled) !== null && _9 !== void 0 ? _9 : this.isAdsBlockerEnabled;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -13748,4 +13848,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-19 10:12:14
+// Last modified code: 2025-11-23 11:14:32
