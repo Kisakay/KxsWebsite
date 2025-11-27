@@ -1,3 +1,11 @@
+<@&1356012705919668284>  `2.9.0`
+
+> *Kxs x Resurviv*
+
+* **Integrated an new brand client (KxrClient) for resurviv.biz**
+
+---
+
 <@&1356012705919668284>  `2.8.0`
 
 > *Native Ads Blocker*
