@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.8.0
+// @version      2.9.0
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -1099,8 +1099,12 @@ const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboard
 const onboarding_kxzraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxzClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxz.png\" alt=\"KxzClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxzClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxz Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_2.png\" alt=\"Kxz Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding_kxc.html?raw
 const onboarding_kxcraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxcClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxc.png\" alt=\"KxcClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_3.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxcClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxc Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_3.png\" alt=\"Kxc Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+;// ./src/assets/onboarding_kxr.html?raw
+const onboarding_kxrraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxrClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxr.png\" alt=\"KxrClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_4.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxrClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxr Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_4.png\" alt=\"Kxr Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/UTILS/vars.ts
 
+
+// @ts-ignore
 
 // @ts-ignore
 
@@ -1201,6 +1205,37 @@ const CLIENT_REGISTRY = {
             is_brightness_enable: true
         },
         htmlCode: onboardingraw_namespaceObject
+    },
+    kxr: {
+        name: "KxrClient",
+        acronym_upper: "KXR",
+        acronym_start_upper: "Kxr",
+        application_id: "1443348644580298842",
+        rpc_assets: "mp:app-icons/1443348644580298842/686b62c3843ad74516ca81728ac50e6f.png?size=512",
+        domains: ["resurviv.biz"],
+        full_logo: config_namespaceObject.base_url + "/assets/KxrLogoFull.png",
+        icon_logo: config_namespaceObject.base_url + "/assets/KxrClientLogo.png",
+        welcome_sound: "https://kxs.rip/assets/o_r_sound.mp3",
+        options: {
+            is_custom_background_enabled: true,
+            is_dollar_sub_category_enable: true,
+            is_background_music_enabled: true,
+            is_game_history_enabled: true,
+            is_counters_enable: true,
+            is_waepon_border_enable: true,
+            is_focus_mode_emable: true,
+            is_health_bar_enable: true,
+            is_discord_related_things_enable: true,
+            is_spotify_player_enable: true,
+            is_custom_crosshair_enabled: true,
+            is_chroma_thingy_enabled: true,
+            is_import_thingy_enabled: true,
+            is_developer_options: true,
+            is_friends_detector_enable: true,
+            is_kill_leader_tracking_enable: true,
+            is_brightness_enable: true
+        },
+        htmlCode: onboarding_kxrraw_namespaceObject
     },
 };
 function detectClientFromUrl() {
@@ -11043,7 +11078,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.8.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.9.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -13848,4 +13883,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-23 11:14:32
+// Last modified code: 2025-11-27 08:51:36
