@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.9.0
+// @version      2.10.0
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -9982,7 +9982,8 @@ class KxsNetwork {
             op: 7,
             d: {
                 user: this.getUsername(),
-                text
+                text,
+                gameId: this.actualGameId || "lobby"
             }
         };
         this.send(payload);
@@ -10220,9 +10221,10 @@ class KxsChat {
         document.addEventListener('mousedown', this.handleDocumentClick);
     }
     initGlobalChat() {
-        const area = document.getElementById('game-touch-area');
-        if (!area)
+        if (this.chatBox)
             return;
+        // FIX: Always attach to body so it doesn't get hidden when game-touch-area is hidden
+        const area = document.body;
         // Chat box
         const chatBox = document.createElement('div');
         chatBox.id = 'kxs-chat-box';
@@ -10238,14 +10240,16 @@ class KxsChat {
         messagesContainer.style.maxHeight = '300px'; // Hauteur maximale pour éviter qu'il ne devienne trop grand
         chatBox.appendChild(messagesContainer);
         this.messagesContainer = messagesContainer;
-        chatBox.style.position = 'absolute';
-        chatBox.style.left = '50%';
-        chatBox.style.bottom = '38px';
-        chatBox.style.transform = 'translateX(-50%)';
-        chatBox.style.minWidth = '260px';
-        chatBox.style.maxWidth = '480px';
+        // FIX: Use 'fixed' instead of 'absolute' to keep it on screen regardless of scrolling/containers
+        chatBox.style.position = 'fixed';
+        // Chatbox Position (Right under kills section!)
+        chatBox.style.left = '20px';
+        chatBox.style.top = '360px';
+        chatBox.style.bottom = 'unset';
+        chatBox.style.minWidth = '160px';
+        chatBox.style.maxWidth = '260px';
         chatBox.style.minHeight = '150px'; // Hauteur minimale pour le chat box
-        chatBox.style.height = '200px'; // Hauteur par défaut
+        chatBox.style.height = '150px'; // Hauteur par défaut
         // Apply styling based on glassmorphism toggle
         const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
         if (is_glassmorphism_enabled) {
@@ -10269,7 +10273,8 @@ class KxsChat {
         chatBox.style.padding = '7px 14px 4px 14px';
         chatBox.style.fontSize = '15px';
         chatBox.style.fontFamily = 'inherit';
-        chatBox.style.zIndex = '1002';
+        // FIX: Increase Z-Index to ensure it sits above the Homepage Menu (which often has high z-index)
+        chatBox.style.zIndex = '999999';
         chatBox.style.pointerEvents = 'auto';
         chatBox.style.cursor = 'move'; // Indique que c'est déplaçable
         chatBox.style.display = 'flex';
@@ -10492,7 +10497,7 @@ class KxsChat {
         // Rend les messages visibles
         this.messagesContainer.innerHTML = visible_messages.map(m => {
             if (m.isSystem && m.isError) {
-                return `< div style = 'color:#EB3023; font-style:italic; margin-bottom:4px;' > ${m.text} </div>`;
+                return `<div style='color:#EB3023; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
             }
             else if (m.isSystem) {
                 return `<div style='color:#3B82F6; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
@@ -10501,6 +10506,8 @@ class KxsChat {
                 return `<div style='margin-bottom:4px;'><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</div>`;
             }
         }).join('');
+        // Scroll to the bottom of the chatbox
+        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
     toggleChat() {
         if (this.chatBox) {
@@ -11078,7 +11085,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.9.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -12612,11 +12619,6 @@ class KxsClient {
         const applyBackground = (imageUrl) => {
             backgroundElement.style.backgroundImage = `url("${imageUrl}")`;
             extractDominantColor(imageUrl, (color) => {
-                console.log(`
-					
-					
-					
-					`, color);
                 document.body.style.backgroundColor = color;
             });
         };
@@ -13815,7 +13817,6 @@ function loadKxs() {
         /*
             - Avoiding intercepting another page as the root page
         */
-        console.log(kxs_settings.has("isCustomMusicEnabled"), kxs_settings.get("isCustomMusicEnabled"));
         if ((kxs_settings.has("isCustomMusicEnabled") && kxs_settings.get("isCustomMusicEnabled"))) {
             intercept("audio/ambient/menu_music_01.mp3", kxs_settings.get("soundLibrary.background_sound_url") || background_song);
         }
@@ -13883,4 +13884,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-11-27 08:51:36
+// Last modified code: 2025-12-02 17:26:49
