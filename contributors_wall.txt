@@ -8,7 +8,7 @@
 | SoyAlguien  | Base Fork Origin | -                        |
 | Testers     | QA & Feedback    | Alpha/Beta Community     |
 | Users       | Bug Reports      | GreasyFork / GitHub      |
-| M-AkbarAli | Contributors      | Github                   |
+| M-AkbarAli  | Contributors      | Github                   |
 ------------------------------------------------------------
 
 💡 Want to contribute? Visit:
