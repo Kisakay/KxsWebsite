@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.10.0
+// @version      2.10.1
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -7171,6 +7171,8 @@ class KxsClientSecondaryMenu {
         this.menu.appendChild(header);
     }
     addDragListeners() {
+        let baseLeft = 0;
+        let baseTop = 0;
         this.menu.addEventListener('mousedown', (e) => {
             // Ne pas arrêter la propagation si l'événement vient d'un élément interactif
             if (e.target instanceof HTMLElement &&
@@ -7185,32 +7187,50 @@ class KxsClientSecondaryMenu {
                 !e.target.matches("input, select, button, svg, path")) {
                 this.isDragging = true;
                 const rect = this.menu.getBoundingClientRect();
+                // Utiliser la position réelle en pixels (getBoundingClientRect donne toujours des px)
+                baseLeft = rect.left;
+                baseTop = rect.top;
+                // Convertir la position actuelle en px absolus pour éviter les problèmes avec % ou transform
+                // Cela permet de basculer proprement depuis left: 50% + transform vers left: Xpx
+                this.menu.style.left = `${baseLeft}px`;
+                this.menu.style.top = `${baseTop}px`;
+                this.menu.style.transform = 'none';
                 this.dragOffset = {
                     x: e.clientX - rect.left,
                     y: e.clientY - rect.top
                 };
+                // Optimiser pour le drag: désactiver la transition et activer will-change
+                this.menu.style.transition = 'none';
+                this.menu.style.willChange = 'transform';
                 this.menu.style.cursor = "grabbing";
             }
         });
-        // Optimized: use throttled mousemove for better performance
-        let mouseMoveThrottle = false;
+        // Optimized: direct mousemove without throttle for immediate response
         document.addEventListener('mousemove', (e) => {
-            if (this.isDragging && !mouseMoveThrottle) {
-                mouseMoveThrottle = true;
-                requestAnimationFrame(() => {
-                    const x = e.clientX - this.dragOffset.x;
-                    const y = e.clientY - this.dragOffset.y;
-                    this.menu.style.transform = 'none';
-                    this.menu.style.left = `${x}px`;
-                    this.menu.style.top = `${y}px`;
-                    mouseMoveThrottle = false;
-                });
-            }
+            if (!this.isDragging)
+                return;
+            // Calculer la nouvelle position absolue
+            const x = e.clientX - this.dragOffset.x;
+            const y = e.clientY - this.dragOffset.y;
+            // Utiliser transform pour des performances optimales (GPU-accelerated)
+            // Le transform est relatif à la position de base left/top
+            this.menu.style.transform = `translate(${x - baseLeft}px, ${y - baseTop}px)`;
         });
         document.addEventListener('mouseup', (e) => {
             // Arrêter le drag & drop
             const wasDragging = this.isDragging;
-            this.isDragging = false;
+            if (this.isDragging) {
+                this.isDragging = false;
+                // Appliquer la position finale en left/top pour la persistance
+                const rect = this.menu.getBoundingClientRect();
+                this.menu.style.left = `${rect.left}px`;
+                this.menu.style.top = `${rect.top}px`;
+                this.menu.style.transform = 'none';
+                // Réactiver la transition et nettoyer will-change
+                const animationDuration = DesignSystem.animation.normal || '0.3s';
+                this.menu.style.transition = `all ${animationDuration} ease`;
+                this.menu.style.willChange = 'auto';
+            }
             this.menu.style.cursor = "grab";
             // Empêcher la propagation de l'événement mouseup vers la page web
             // seulement si l'événement vient du menu et n'est pas un élément interactif
@@ -10304,6 +10324,18 @@ class KxsChat {
         if (this.chatBox) {
             this.resizeObserver.observe(this.chatBox);
         }
+        const preventMiddleClickScroll = (e) => {
+            if (e.button === 1) { // Button 1 = clic molette
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        };
+        chatBox.addEventListener('mousedown', preventMiddleClickScroll, true);
+        chatBox.addEventListener('auxclick', preventMiddleClickScroll, true);
+        messagesContainer.addEventListener('mousedown', preventMiddleClickScroll, true);
+        messagesContainer.addEventListener('auxclick', preventMiddleClickScroll, true);
         // Rendre la chatbox draggable et resizable UNIQUEMENT si le menu secondaire est ouvert
         const updateChatDraggable = () => {
             const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
@@ -10311,6 +10343,7 @@ class KxsChat {
                 chatBox.style.pointerEvents = 'auto';
                 chatBox.style.cursor = 'move';
                 chatBox.style.resize = 'both'; // Active le redimensionnement avec l'indicateur gris
+                chatBox.style.cursor = 'move';
                 this.kxsClient.makeDraggable(chatBox, 'kxs-chat-box-position');
             }
             else {
@@ -11085,7 +11118,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.0","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -12881,7 +12914,7 @@ class KxsClient {
         // Spotify iframe
         const iframe = document.createElement('iframe');
         iframe.id = 'spotify-player-iframe';
-        iframe.src = 'https://open.spotify.com/embed/playlist/37i9dQZEVXcJZyENOWUFo7?utm_source=generator&theme=1';
+        iframe.src = 'https://open.spotify.com/embed/playlist/37i9dQZF1DWZ7VnoXD1s7S?utm_source=generator&theme=1';
         iframe.width = '100%';
         iframe.height = '152px';
         iframe.frameBorder = '0';
@@ -12925,7 +12958,7 @@ class KxsClient {
 			</svg>
 		`;
         changePlaylistBtn.addEventListener('click', () => {
-            const id = prompt('Enter the Spotify playlist ID:', '37i9dQZEVXcJZyENOWUFo7');
+            const id = prompt('Enter the Spotify playlist ID:', '37i9dQZF1DWZ7VnoXD1s7S');
             if (id) {
                 iframe.src = `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
                 localStorage.setItem('kxsSpotifyPlaylist', id);
@@ -13884,4 +13917,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-12-02 17:26:49
+// Last modified code: 2025-12-07 08:33:07
