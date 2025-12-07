@@ -1,3 +1,11 @@
+<@&1356012705919668284>  `2.10.2`
+
+> *Right Shift Menu Rewamping*
+
+* **RShift menue is no more laggy when moving**
+
+---
+
 <@&1356012705919668284>  `2.10.1`
 
 > *Right Shift Menu Rewamping*
