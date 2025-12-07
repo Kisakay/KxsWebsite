@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.10.1
+// @version      2.10.2
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -3750,7 +3750,6 @@ class HealthWarning {
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
         this.POSITION_KEY = 'lowHpWarning';
-        this.mouseMoveThrottle = false;
         this.warningElement = null;
         this.kxsClient = kxsClient;
         this.createWarningElement();
@@ -3973,34 +3972,53 @@ class HealthWarning {
             this.isDragging = true;
             // Calculate offset from mouse position to element corner
             const rect = this.warningElement.getBoundingClientRect();
+            // Utiliser la position réelle en pixels (getBoundingClientRect donne toujours des px)
+            const baseLeft = rect.left;
+            const baseTop = rect.top;
+            // Convertir la position actuelle en px absolus pour éviter les problèmes
+            this.warningElement.style.left = `${baseLeft}px`;
+            this.warningElement.style.top = `${baseTop}px`;
+            this.warningElement.style.transform = 'none';
+            // Stocker la position de base pour le transform
+            this.warningElement.__baseLeft = baseLeft;
+            this.warningElement.__baseTop = baseTop;
             this.dragOffset = {
                 x: event.clientX - rect.left,
                 y: event.clientY - rect.top
             };
+            // Optimiser pour le drag: désactiver la transition et activer will-change
+            this.warningElement.style.transition = 'none';
+            this.warningElement.style.willChange = 'transform';
             // Prevent text selection during drag
             event.preventDefault();
         }
     }
     handleMouseMove(event) {
-        if (!this.isDragging || !this.warningElement || this.mouseMoveThrottle)
+        if (!this.isDragging || !this.warningElement)
             return;
-        // Optimized: throttle mousemove for better performance
-        this.mouseMoveThrottle = true;
-        requestAnimationFrame(() => {
-            // Calculate new position
-            const newX = event.clientX - this.dragOffset.x;
-            const newY = event.clientY - this.dragOffset.y;
-            // Update element position
-            if (this.warningElement) {
-                this.warningElement.style.left = `${newX}px`;
-                this.warningElement.style.top = `${newY}px`;
-            }
-            this.mouseMoveThrottle = false;
-        });
+        // Calculer la nouvelle position absolue
+        const newX = event.clientX - this.dragOffset.x;
+        const newY = event.clientY - this.dragOffset.y;
+        // Utiliser transform pour des performances optimales (GPU-accelerated)
+        const baseLeft = this.warningElement.__baseLeft || 0;
+        const baseTop = this.warningElement.__baseTop || 0;
+        this.warningElement.style.transform = `translate(${newX - baseLeft}px, ${newY - baseTop}px)`;
     }
     handleMouseUp() {
         if (this.isDragging && this.warningElement) {
             this.isDragging = false;
+            // Appliquer la position finale en left/top pour la persistance
+            const rect = this.warningElement.getBoundingClientRect();
+            this.warningElement.style.left = `${rect.left}px`;
+            this.warningElement.style.top = `${rect.top}px`;
+            this.warningElement.style.transform = 'none';
+            // Réactiver la transition et nettoyer will-change
+            const animationDuration = DesignSystem.animation.normal || '0.3s';
+            this.warningElement.style.transition = `all ${animationDuration} ease`;
+            this.warningElement.style.willChange = 'auto';
+            // Nettoyer les données temporaires
+            delete this.warningElement.__baseLeft;
+            delete this.warningElement.__baseTop;
             // Récupérer les positions actuelles
             const left = parseInt(this.warningElement.style.left);
             const top = parseInt(this.warningElement.style.top);
@@ -11118,7 +11136,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.1","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.2","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11400,7 +11418,6 @@ class GameIdHelper {
         this.isDraggable = false;
         this.isDragging = false;
         this.dragOffset = { x: 0, y: 0 };
-        this.mouseMoveThrottle = false;
         this.clickStartTime = 0;
         this.clickStartPosition = { x: 0, y: 0 };
         this.CLICK_THRESHOLD = 5; // pixels de mouvement pour considérer comme un drag
@@ -11708,16 +11725,29 @@ class GameIdHelper {
             this.isDragging = false;
             // Calculer l'offset depuis la position de la souris jusqu'au coin de l'élément
             const rect = this.warningElement.getBoundingClientRect();
+            // Utiliser la position réelle en pixels (getBoundingClientRect donne toujours des px)
+            const baseLeft = rect.left;
+            const baseTop = rect.top;
+            // Convertir la position actuelle en px absolus pour éviter les problèmes
+            this.warningElement.style.left = `${baseLeft}px`;
+            this.warningElement.style.top = `${baseTop}px`;
+            this.warningElement.style.transform = 'none';
+            // Stocker la position de base pour le transform
+            this.warningElement.__baseLeft = baseLeft;
+            this.warningElement.__baseTop = baseTop;
             this.dragOffset = {
                 x: event.clientX - rect.left,
                 y: event.clientY - rect.top
             };
+            // Optimiser pour le drag: désactiver la transition et activer will-change
+            this.warningElement.style.transition = 'none';
+            this.warningElement.style.willChange = 'transform';
             // Empêcher la sélection de texte pendant le drag
             event.preventDefault();
         }
     }
     handleMouseMove(event) {
-        if (!this.isDraggable || !this.warningElement || this.mouseMoveThrottle)
+        if (!this.isDraggable || !this.warningElement)
             return;
         // Si on a commencé un clic sur l'élément, vérifier si c'est un drag
         if (this.clickStartTime > 0 && !this.isDragging) {
@@ -11730,19 +11760,13 @@ class GameIdHelper {
         }
         // Si on est en train de drag, déplacer l'élément
         if (this.isDragging && this.warningElement) {
-            // Optimisé : throttle mousemove pour de meilleures performances
-            this.mouseMoveThrottle = true;
-            requestAnimationFrame(() => {
-                // Calculer la nouvelle position
-                const newX = event.clientX - this.dragOffset.x;
-                const newY = event.clientY - this.dragOffset.y;
-                // Mettre à jour la position de l'élément
-                if (this.warningElement) {
-                    this.warningElement.style.left = `${newX}px`;
-                    this.warningElement.style.top = `${newY}px`;
-                }
-                this.mouseMoveThrottle = false;
-            });
+            // Calculer la nouvelle position absolue
+            const newX = event.clientX - this.dragOffset.x;
+            const newY = event.clientY - this.dragOffset.y;
+            // Utiliser transform pour des performances optimales (GPU-accelerated)
+            const baseLeft = this.warningElement.__baseLeft || 0;
+            const baseTop = this.warningElement.__baseTop || 0;
+            this.warningElement.style.transform = `translate(${newX - baseLeft}px, ${newY - baseTop}px)`;
         }
     }
     handleMouseUp(event) {
@@ -11751,6 +11775,18 @@ class GameIdHelper {
         // Si on était en train de drag, sauvegarder la position
         if (this.isDragging) {
             this.isDragging = false;
+            // Appliquer la position finale en left/top pour la persistance
+            const rect = this.warningElement.getBoundingClientRect();
+            this.warningElement.style.left = `${rect.left}px`;
+            this.warningElement.style.top = `${rect.top}px`;
+            this.warningElement.style.transform = 'none';
+            // Réactiver la transition et nettoyer will-change
+            const animationDuration = DesignSystem.animation.normal || '0.3s';
+            this.warningElement.style.transition = `all ${animationDuration} ease`;
+            this.warningElement.style.willChange = 'auto';
+            // Nettoyer les données temporaires
+            delete this.warningElement.__baseLeft;
+            delete this.warningElement.__baseTop;
             // Récupérer les positions actuelles
             const left = parseInt(this.warningElement.style.left);
             const top = parseInt(this.warningElement.style.top);
@@ -13917,4 +13953,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-12-07 08:33:07
+// Last modified code: 2025-12-07 09:22:12
