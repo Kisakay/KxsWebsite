@@ -1,3 +1,13 @@
+<@&1356012705919668284>  `2.10.3`
+
+> *Quality of life update (QOL)*
+
+* **Ping Meeter now close socket after new game.**
+  * To be able to change the host if you chose an new server like Eu to NA.
+  * Added uno.cheap resurviv's proxy
+
+---
+
 <@&1356012705919668284>  `2.10.2`
 
 > *HealWarning & GameID Helper*
