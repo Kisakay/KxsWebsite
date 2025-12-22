@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.10.2
+// @version      2.10.3
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
@@ -23,6 +23,7 @@
 // @match        *://zurviv.io/*
 // @match        *://cursev.io/*
 // @match        *://eu-comp.zurviv.io/*
+// @match        *://uno.cheap/*
 // @grant        none
 // ==/UserScript==
 ;
@@ -390,6 +391,7 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
                 __webpack_require__.g.kxsClient.kxsNetwork.gameEnded();
                 __webpack_require__.g.kxsClient.kxsNetwork.gameEnded_ExchangeKey(__webpack_require__.g.kxsClient.getFinalGameBody() || {});
                 globalThis.kxsClient.aliveplayer.stopObserving();
+                __webpack_require__.g.kxsClient.pingManager.stop();
                 globalThis.kxsClient.kxsNetwork.actualGameId = null;
                 return originalClose(code, reason);
             };
@@ -1092,7 +1094,7 @@ class SimplifiedDatabase {
 
 
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io","cursev.io","eu-comp.zurviv.io"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io","cursev.io","eu-comp.zurviv.io","uno.cheap"],"grant":["none"]}');
 ;// ./src/assets/onboarding.html?raw
 const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding_kxz.html?raw
@@ -1212,7 +1214,7 @@ const CLIENT_REGISTRY = {
         acronym_start_upper: "Kxr",
         application_id: "1443348644580298842",
         rpc_assets: "mp:app-icons/1443348644580298842/686b62c3843ad74516ca81728ac50e6f.png?size=512",
-        domains: ["resurviv.biz"],
+        domains: ["resurviv.biz", "uno.cheap"],
         full_logo: config_namespaceObject.base_url + "/assets/KxrLogoFull.png",
         icon_logo: config_namespaceObject.base_url + "/assets/KxrClientLogo.png",
         welcome_sound: "https://kxs.rip/assets/o_r_sound.mp3",
@@ -11136,7 +11138,7 @@ class KxsVoiceChat {
 
 
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.2","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/exchangeManager.ts
 
 class ExchangeManager {
@@ -11164,6 +11166,7 @@ class PingTest {
         this.sendTime = 0;
         this.retryCount = 0;
         this.isConnecting = false;
+        this.isStopped = false;
         this.url = "";
         this.hasPing = false;
         this.reconnectTimer = null;
@@ -11180,12 +11183,16 @@ class PingTest {
         }
         this.keepAliveTimer = setInterval(() => {
             var _a, _b, _c;
+            if (this.isStopped)
+                return;
             if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
                 this.ws.send(this.ptcDataBuf);
             }
             else if (((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSED || ((_c = this.ws) === null || _c === void 0 ? void 0 : _c.readyState) === WebSocket.CLOSING) {
                 // Redémarrer la connexion si elle est fermée
-                this.restart();
+                if (!this.isStopped) {
+                    this.restart();
+                }
             }
         }, 5000); // envoie toutes les 5s
     }
@@ -11207,8 +11214,14 @@ class PingTest {
     start() {
         if (this.isConnecting)
             return;
+        this.isStopped = false;
         this.isConnecting = true;
-        this.startWebSocketPing();
+        // On attend avant de démarrer la connexion pour éviter les rate-limit de la websocket
+        setTimeout(() => {
+            if (!this.isStopped) {
+                this.startWebSocketPing();
+            }
+        }, 4000);
         // Vérifier régulièrement l'état de la connexion
         this.startConnectionCheck();
     }
@@ -11220,7 +11233,7 @@ class PingTest {
         // Vérifier l'état de la connexion toutes les 10 secondes
         this.connectionCheckTimer = setInterval(() => {
             // Si on n'a pas de ping valide ou que la connexion est fermée, on tente de reconnecter
-            if (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            if (!this.isStopped && (!this.hasPing || !this.ws || this.ws.readyState !== WebSocket.OPEN)) {
                 this.restart();
             }
         }, 10000);
@@ -11231,13 +11244,17 @@ class PingTest {
         const ws = new WebSocket(this.url);
         ws.binaryType = "arraybuffer";
         ws.onopen = () => {
+            if (this.isStopped) {
+                ws.close();
+                return;
+            }
             this.ws = ws;
             this.retryCount = 0;
             this.isConnecting = false;
             this.sendPing();
             setTimeout(() => {
                 var _a;
-                if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
+                if (!this.isStopped && ((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) !== WebSocket.OPEN) {
                     this.restart();
                 }
             }, 3000); // 3s pour sécuriser
@@ -11249,6 +11266,8 @@ class PingTest {
             setTimeout(() => this.sendPing(), 1000);
         };
         ws.onerror = (error) => {
+            if (this.isStopped)
+                return;
             this.ping = 0;
             this.hasPing = false;
             this.retryCount++;
@@ -11259,35 +11278,47 @@ class PingTest {
                 clearTimeout(this.reconnectTimer);
             }
             this.reconnectTimer = setTimeout(() => {
-                this.ws = null; // S'assurer que l'ancienne connexion est effacée
-                this.startWebSocketPing();
+                if (!this.isStopped) {
+                    this.ws = null; // S'assurer que l'ancienne connexion est effacée
+                    this.startWebSocketPing();
+                }
             }, retryDelay);
         };
         ws.onclose = (event) => {
             this.hasPing = false;
             this.ws = null;
             this.isConnecting = false;
-            // Tentative de reconnexion après une fermeture
-            if (this.reconnectTimer) {
-                clearTimeout(this.reconnectTimer);
+            // Tentative de reconnexion après une fermeture seulement si pas arrêté volontairement
+            if (!this.isStopped) {
+                if (this.reconnectTimer) {
+                    clearTimeout(this.reconnectTimer);
+                }
+                this.reconnectTimer = setTimeout(() => {
+                    if (!this.isStopped) {
+                        this.start();
+                    }
+                }, 2000); // Attendre 2 secondes avant de reconnecter
             }
-            this.reconnectTimer = setTimeout(() => {
-                this.start();
-            }, 2000); // Attendre 2 secondes avant de reconnecter
         };
     }
     sendPing() {
         var _a, _b;
+        if (this.isStopped)
+            return;
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.sendTime = Date.now();
             this.ws.send(this.ptcDataBuf);
         }
         else if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.CLOSED || ((_b = this.ws) === null || _b === void 0 ? void 0 : _b.readyState) === WebSocket.CLOSING) {
             // Si la WebSocket est fermée au moment d'envoyer le ping, on tente de reconnecter
-            this.restart();
+            if (!this.isStopped) {
+                this.restart();
+            }
         }
     }
     stop() {
+        // Marquer comme arrêté pour empêcher toute reconnexion automatique
+        this.isStopped = true;
         // Annuler tous les timers
         if (this.reconnectTimer) {
             clearTimeout(this.reconnectTimer);
@@ -11329,9 +11360,13 @@ class PingTest {
             };
         }
         else {
-            // Si on détecte un problème ici, planifier une reconnexion
-            if (!this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
-                this.reconnectTimer = setTimeout(() => this.restart(), 1000);
+            // Si on détecte un problème ici, planifier une reconnexion seulement si pas arrêté
+            if (!this.isStopped && !this.reconnectTimer && (!this.ws || this.ws.readyState !== WebSocket.CONNECTING)) {
+                this.reconnectTimer = setTimeout(() => {
+                    if (!this.isStopped) {
+                        this.restart();
+                    }
+                }, 1000);
             }
             return {
                 ping: -1, // -1 indique que le ping n'est pas dispo, mais jamais null
@@ -12699,7 +12734,7 @@ class KxsClient {
             }
             this.backgroundInterval = setInterval(() => {
                 applyBackground(backgroundValue);
-            }, 2900);
+            }, 1000);
         }
         else if (isCustomEnabled && client.options.is_custom_background_enabled) {
             // Fallback if no stored background - apply default background
@@ -12709,12 +12744,12 @@ class KxsClient {
             else {
                 setTimeout(() => {
                     applyBackground(background_image);
-                }, 2900);
+                }, 1000);
             }
             // Set interval to keep applying default background
             this.backgroundInterval = setInterval(() => {
                 applyBackground(background_image);
-            }, 2900);
+            }, 1000);
         }
     }
     loadLocalStorage() {
@@ -13946,11 +13981,11 @@ function loadKxs() {
             setTimeout(() => {
                 showClickMeAnimation();
             }, 500);
-        }, 1400);
+        }, 2000);
     }
 }
 loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-12-07 09:22:12
+// Last modified code: 2025-12-22 13:21:21
