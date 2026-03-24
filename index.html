@@ -1,1444 +1,962 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KxsClient | The Future of Gaming</title>
-    
-    <!-- Meta Tags for SEO -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://kxs.rip/">
-    <meta property="og:title" content="KxsClient - The Future of Survev.io">
-    <meta property="og:description" content="Experience a new level of gaming with the upcoming KxsClient. Ultra-fast, secure, and fully customizable.">
-    <meta property="og:image" content="https://kxs.rip/assets/KysClient.gif">
-    <meta name="theme-color" content="#00D4FF">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            /* Colors */
-            --primary: #00D4FF;
-            --primary-dark: #0099CC;
-            --secondary: #FF006E;
-            --accent: #8B5CF6;
-            --success: #10B981;
-            
-            /* Background */
-            --bg-primary: #0A0B0F;
-            --bg-secondary: #151821;
-            --bg-tertiary: #1E2028;
-            
-            /* Glass effects */
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            
-            /* Text */
-            --text-primary: #FFFFFF;
-            --text-secondary: #B8BCC8;
-            --text-muted: #6B7280;
-            
-            /* Spacing */
-            --container-padding: 1.5rem;
-            --section-padding: 4rem 0;
-            
-            /* Transitions */
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Background Effects */
-        .bg-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.3;
-            z-index: -2;
-            background-image: 
-                linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
-
-        .bg-gradient {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -3;
-            background: radial-gradient(ellipse at top, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-                        radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-                        radial-gradient(ellipse at bottom left, rgba(255, 0, 110, 0.1) 0%, transparent 50%);
-        }
-
-        /* Glass Container */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--container-padding);
-        }
-
-        /* Header */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            padding: 1rem 0;
-            transition: var(--transition);
-        }
-
-        .header.scrolled {
-            background: rgba(10, 11, 15, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-tutorial {
-            color: #FF0000 !important;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-tutorial:hover {
-            color: #FF4444 !important;
-        }
-
-        .nav-tutorial .fab {
-            animation: pulse-youtube 2s infinite;
-        }
-
-        .mobile-menu {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: var(--transition);
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
-        }
-
-        .btn-secondary {
-            background: var(--glass-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .btn-tutorial {
-            background: linear-gradient(135deg, #FF0000, #CC0000);
-            color: white;
-            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-tutorial::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn-tutorial:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 0, 0, 0.4);
-        }
-
-        .btn-tutorial:hover::before {
-            left: 100%;
-        }
-
-        .btn-tutorial .fab {
-            animation: pulse-youtube 2s infinite;
-        }
-
-        @keyframes pulse-youtube {
-            0%, 100% { 
-                transform: scale(1); 
-            }
-            50% { 
-                transform: scale(1.1); 
-                filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-            }
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: var(--section-padding);
-            position: relative;
-        }
-
-        .hero-content {
-            text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            line-height: 1.2;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 3rem;
-        }
-
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: block;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* Demo Video */
-        .demo-video {
-            margin: 3rem auto;
-            max-width: 800px;
-        }
-
-        .video-container {
-            position: relative;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-        }
-
-        .video-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .video-container img,
-        .video-container video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        /* Features Section */
-        .features {
-            padding: var(--section-padding);
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .section-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            padding: 2rem;
-            border-radius: 1rem;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-            z-index: -1;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature-card:hover::before {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .feature-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-            color: white;
-        }
-
-        .feature-card h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card p {
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* Reviews Section */
-        .reviews {
-            padding: var(--section-padding);
-            background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.02));
-        }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .review-card {
-            padding: 2rem;
-            border-radius: 1rem;
-            position: relative;
-            transition: var(--transition);
-        }
-
-        .review-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-            z-index: -1;
-        }
-
-        .review-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .review-stars {
-            color: #FFC107;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
-        .review-text {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            font-style: italic;
-        }
-
-        .review-author {
-            font-weight: 600;
-            color: var(--primary);
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .verified-badge {
-            font-size: 0.8rem;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-weight: 400;
-        }
-
-        /* Overall Rating Styles */
-        .overall-rating {
-            text-align: center;
-            padding: 3rem 2rem;
-            border-radius: 1rem;
-            margin-bottom: 4rem;
-            position: relative;
-        }
-
-        .overall-rating::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-            z-index: -1;
-        }
-
-        .rating-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 3rem;
-            margin-bottom: 3rem;
-            flex-wrap: wrap;
-        }
-
-        .large-stars {
-            display: flex;
-            gap: 0.5rem;
-            font-size: 2rem;
-            color: #FFC107;
-        }
-
-        .large-stars .fa-star {
-            filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.5));
-            transition: var(--transition);
-        }
-
-        .large-stars .fa-star:hover {
-            transform: scale(1.1);
-            filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.8));
-        }
-
-        .rating-number {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .rating-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .stat-label {
-            width: 80px;
-            text-align: right;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .stat-bar {
-            flex: 1;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .stat-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 4px;
-            position: relative;
-            transition: width 1s ease;
-        }
-
-        .stat-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 4px;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 2px;
-            animation: pulse 2s infinite;
-        }
-
-        .stat-value {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--primary);
-            width: 30px;
-            text-align: center;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Contact Section */
-        .contact {
-            padding: var(--section-padding);
-        }
-
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-
-        .contact-card {
-            text-align: center;
-            padding: 2.5rem 2rem;
-            border-radius: 1rem;
-            position: relative;
-            transition: var(--transition);
-        }
-
-        .contact-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 1rem;
-            z-index: -1;
-        }
-
-        .contact-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .contact-icon {
-            width: 4rem;
-            height: 4rem;
-            border-radius: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .contact-card h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .contact-card p {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-        }
-
-        /* Footer */
-        .footer {
-            padding: var(--section-padding);
-            border-top: 1px solid var(--glass-border);
-            background: var(--bg-secondary);
-        }
-
-        .footer-content {
-            text-align: center;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .social-link {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 0.5rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .social-link:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .footer-copy {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            :root {
-                --container-padding: 1rem;
-                --section-padding: 3rem 0;
-            }
-
-            .nav-links {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 100%;
-                height: 100vh;
-                background: rgba(10, 11, 15, 0.95);
-                backdrop-filter: blur(20px);
-                flex-direction: column;
-                justify-content: center;
-                gap: 3rem;
-                transition: var(--transition);
-            }
-
-            .nav-links.active {
-                right: 0;
-            }
-
-            .mobile-menu {
-                display: block;
-                z-index: 1001;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 280px;
-                justify-content: center;
-            }
-
-            .hero-stats {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
-            }
-
-            .features-grid,
-            .reviews-grid,
-            .contact-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-links {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            /* Reviews responsive adjustments */
-            .rating-container {
-                flex-direction: column;
-                gap: 1.5rem;
-            }
-
-            .rating-number {
-                font-size: 2.5rem;
-            }
-
-            .large-stars {
-                font-size: 1.5rem;
-            }
-
-            .rating-stats {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .stat-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 0.5rem;
-            }
-
-            .stat-label {
-                text-align: center;
-                width: auto;
-            }
-
-            .overall-rating {
-                padding: 2rem 1rem;
-            }
-        }
-
-        /* Scroll animations */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Back to top button */
-        .back-to-top {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 3rem;
-            height: 3rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .back-to-top.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .back-to-top:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KxsClient | Survev.io Client</title>
+  <meta name="description" content="KxsClient official landing page with purple branding, gameplay previews, and direct install links." />
+  <meta name="theme-color" content="#D4AEFF" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #0c0714;
+      --bg-soft: #171027;
+      --surface: #21163a;
+      --surface-2: #2a1d48;
+      --line: rgba(212, 174, 255, 0.22);
+      --text: #f5efff;
+      --muted: #c6b6df;
+
+      --purple-1: #d4aeff;
+      --purple-2: #b98bff;
+      --purple-3: #a469ff;
+      --pink: #f2acfa;
+      --red: #ff3131;
+
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --shadow: 0 24px 55px rgba(0, 0, 0, 0.33);
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(212, 174, 255, 0.2), transparent 30%),
+        radial-gradient(circle at 90% 10%, rgba(164, 105, 255, 0.22), transparent 35%),
+        radial-gradient(circle at 85% 90%, rgba(242, 172, 250, 0.14), transparent 28%),
+        linear-gradient(165deg, #0b0613, #120b1f 46%, #0f0918);
+      overflow-x: hidden;
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    body.loaded {
+      opacity: 1;
+    }
+
+    ::selection {
+      background: rgba(168, 85, 247, 0.3);
+      color: #fff;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: radial-gradient(#fff 0.7px, transparent 0.7px);
+      background-size: 4px 4px;
+      z-index: 0;
+    }
+
+    .container {
+      width: min(var(--max), 92vw);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(10px);
+      background: rgba(12, 7, 20, 0.78);
+      border-bottom: 1px solid rgba(212, 174, 255, 0.14);
+      transition: background 320ms cubic-bezier(0.16, 1, 0.3, 1), border-color 320ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .topbar.scrolled {
+      background: rgba(12, 7, 20, 0.92);
+      border-bottom-color: rgba(212, 174, 255, 0.26);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .topbar .container {
+      padding: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: nowrap;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-family: "Sora", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+    }
+
+    .brand img {
+      width: auto;
+      height: 34px;
+      max-width: 210px;
+      object-fit: contain;
+      object-position: left center;
+      border-radius: 0;
+      box-shadow: 0 0 22px rgba(212, 174, 255, 0.44);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(212, 174, 255, 0.08);
+      color: var(--text);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: 150ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(212, 174, 255, 0.08);
+    }
+
+    .nav .download {
+      color: #1a0d2c;
+      background: linear-gradient(130deg, var(--purple-1), var(--pink));
+    }
+
+    .hero {
+      padding: 54px 0 26px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .hero-copy {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, rgba(38, 25, 63, 0.92), rgba(24, 17, 40, 0.95));
+      box-shadow: var(--shadow);
+    }
+
+    .live-badge {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 174, 255, 0.28);
+      background: rgba(212, 174, 255, 0.08);
+      color: var(--purple-1);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--purple-2);
+      box-shadow: 0 0 0 rgba(185, 139, 255, 0.5);
+      animation: pingDot 1.8s infinite;
+    }
+
+    .hero-copy {
+      padding: clamp(22px, 4vw, 38px);
+      display: grid;
+      gap: 14px;
+      align-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: -120% -40%;
+      background: radial-gradient(circle, rgba(212, 174, 255, 0.16) 0%, transparent 55%);
+      animation: heroGlow 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .chip {
+      width: fit-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #180b2a;
+      background: linear-gradient(120deg, var(--purple-1), var(--pink));
+    }
+
+    h1 {
+      font-family: "Sora", sans-serif;
+      font-size: clamp(2.1rem, 5.2vw, 3.8rem);
+      line-height: 1.04;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .hero-copy p {
+      color: var(--muted);
+      font-size: 1.04rem;
+      max-width: 58ch;
+    }
+
+    .cta-row {
+      margin-top: 4px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.93rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      padding: 10px 14px;
+      transition: 150ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      color: #190c2b;
+      background: linear-gradient(130deg, var(--purple-1), var(--pink));
+      box-shadow: 0 12px 24px rgba(185, 139, 255, 0.36);
+    }
+
+    .btn-ghost {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(212, 174, 255, 0.08);
+    }
+
+
+
+    .section {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, rgba(35, 23, 57, 0.92), rgba(20, 14, 34, 0.95));
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .glass-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(212, 174, 255, 0.12) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 220ms ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::after {
+      opacity: 1;
+    }
+
+    .section h2 {
+      font-family: "Sora", sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .highlights {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .highlight {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(212, 174, 255, 0.05);
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), border-color 260ms ease, background 260ms ease;
+    }
+
+    .highlight:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212, 174, 255, 0.35);
+      background: rgba(212, 174, 255, 0.09);
+    }
+
+    .highlight i {
+      color: var(--purple-1);
+      font-size: 1.05rem;
+    }
+
+    .highlight b {
+      font-size: 0.96rem;
+    }
+
+    .highlight p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shot {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #09060f;
+      aspect-ratio: 16 / 9;
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), border-color 260ms ease;
+    }
+
+    .shot:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212, 174, 255, 0.35);
+    }
+
+    .shot img,
+    .shot video,
+    .shot iframe {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: 0;
+      background: #09060f;
+    }
+
+    .shot img,
+    .shot video {
+      object-fit: cover;
+      transition: transform 220ms ease;
+    }
+
+    .shot:hover img,
+    .shot:hover video {
+      transform: scale(1.04);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(212, 174, 255, 0.06);
+      padding: 12px;
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), border-color 260ms ease, background 260ms ease;
+    }
+
+    .step:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212, 174, 255, 0.35);
+      background: rgba(212, 174, 255, 0.1);
+    }
+
+    .step b {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: #1a0d2d;
+      background: linear-gradient(120deg, var(--purple-1), var(--pink));
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 0.4px;
+    }
+
+    .step p {
+      color: var(--muted);
+      font-size: 0.89rem;
+      line-height: 1.44;
+    }
+
+    .links {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .link-card {
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(212, 174, 255, 0.06);
+      padding: 12px;
+      display: grid;
+      gap: 5px;
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), border-color 260ms ease, background 260ms ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212, 174, 255, 0.35);
+      background: rgba(212, 174, 255, 0.1);
+    }
+
+    .link-card i { color: var(--purple-1); }
+    .link-card small { color: var(--muted); }
+
+    .status {
+      margin-top: 12px;
+      border: 1px dashed rgba(212, 174, 255, 0.36);
+      border-radius: 12px;
+      padding: 11px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+      border-top: 1px solid rgba(212, 174, 255, 0.16);
+      padding-top: 12px;
+    }
+
+    .hero-stat {
+      text-align: center;
+      border: 1px solid rgba(212, 174, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(212, 174, 255, 0.05);
+      padding: 9px 6px;
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-size: 1.2rem;
+      color: var(--purple-1);
+      font-family: "Sora", sans-serif;
+    }
+
+    .hero-stat span {
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.55px;
+    }
+
+    footer {
+      margin-top: 18px;
+      border-top: 1px solid rgba(212, 174, 255, 0.16);
+      background: rgba(10, 6, 16, 0.72);
+      padding: 18px 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .footer-brand img {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+    }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: #9f8fb8;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .mobile-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 7, 20, 0.95);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transform: translateX(100%);
+      transition: transform 380ms cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 40;
+    }
+
+    .mobile-panel.open {
+      transform: translateX(0);
+    }
+
+    .mobile-panel a {
+      text-decoration: none;
+      color: var(--text);
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      min-width: 220px;
+      text-align: center;
+      padding: 10px 14px;
+      background: rgba(212, 174, 255, 0.08);
+    }
+
+    #back-to-top {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 12px;
+      color: #180b2a;
+      background: linear-gradient(130deg, var(--purple-1), var(--pink));
+      box-shadow: 0 10px 24px rgba(185, 139, 255, 0.4);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 280ms ease, transform 280ms ease;
+      z-index: 35;
+    }
+
+    #back-to-top.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    @keyframes heroGlow {
+      0%, 100% { transform: translate(-8%, -6%); opacity: 0.65; }
+      50% { transform: translate(10%, 8%); opacity: 1; }
+    }
+
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 12px 24px rgba(185, 139, 255, 0.36); }
+      50% { box-shadow: 0 16px 30px rgba(185, 139, 255, 0.52); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px) scale(0.985);
+      filter: blur(6px);
+      transition:
+        opacity 520ms cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms),
+        transform 520ms cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms),
+        filter 520ms cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    @media (max-width: 1030px) {
+      .gallery {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .highlights,
+      .steps,
+      .links,
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .mobile-menu-btn {
+        display: inline-flex;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-copy {
+        text-align: left;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+      .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+
+      #back-to-top {
+        transition: none !important;
+      }
+    }
+
+    @keyframes pingDot {
+      0% { box-shadow: 0 0 0 0 rgba(185, 139, 255, 0.5); }
+      70% { box-shadow: 0 0 0 10px rgba(185, 139, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(185, 139, 255, 0); }
+    }
+  </style>
 </head>
 <body>
-    <!-- Background Effects -->
-    <div class="bg-gradient"></div>
-    <div class="bg-grid"></div>
+  <div id="bg-blob-1" style="position:fixed;top:-12%;left:-10%;width:42vw;height:42vw;border-radius:999px;background:rgba(168,85,247,.18);filter:blur(120px);pointer-events:none;z-index:0;"></div>
+  <div id="bg-blob-2" style="position:fixed;bottom:-14%;right:-12%;width:44vw;height:44vw;border-radius:999px;background:rgba(59,7,100,.35);filter:blur(120px);pointer-events:none;z-index:0;"></div>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="#top">
+        <img src="assets/KxsLogoFull.png" alt="KxsClient" />
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#highlights">Highlights</a>
+        <a href="#screens">Screens</a>
+        <a href="#install">Install</a>
+        <a href="https://youtu.be/O5tadXq7Jok" target="_blank" rel="noreferrer">Tutorial</a>
+        <a class="download" href="https://kxs.rip/download/latest-dev.js">Download</a>
+      </nav>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars" id="mobile-menu-icon"></i>
+      </button>
+    </div>
+  </header>
+  <div class="mobile-panel" id="mobile-panel">
+    <a href="#highlights" class="mobile-link">Highlights</a>
+    <a href="#screens" class="mobile-link">Screens</a>
+    <a href="#install" class="mobile-link">Install</a>
+    <a href="https://youtu.be/O5tadXq7Jok" target="_blank" rel="noreferrer" class="mobile-link">Tutorial</a>
+    <a href="https://kxs.rip/download/latest-dev.js" class="mobile-link">Download</a>
+  </div>
 
-    <!-- Header -->
-    <header class="header" id="header">
-        <nav class="container nav">
-            <a href="#" class="logo">
-                <i class="fas fa-cube"></i>
-                KxsClient
-            </a>
-            <div class="nav-links" id="nav-links">
-                <a href="#features">Features</a>
-                <a href="#reviews">Reviews</a>
-                <a href="#contact">Contact</a>
-                <a href="https://youtu.be/O5tadXq7Jok" target="_blank" class="nav-tutorial">
-                    <i class="fab fa-youtube"></i>
-                    Tutorial
-                </a>
-                <a href="https://kxs.rip/download/latest-dev.js" class="btn btn-primary">
-                    <i class="fas fa-download"></i>
-                    Download
-                </a>
-            </div>
-            <button class="mobile-menu" id="mobile-menu">
-                <i class="fas fa-bars"></i>
-            </button>
-        </nav>
-    </header>
-
-    <!-- Hero Section -->
+  <main id="top" class="container">
     <section class="hero">
-        <div class="container">
-            <div class="hero-content fade-in">
-                <h1>
-                    Redefining <span class="gradient-text">Survev.io</span>
-                    <br>Experience
-                </h1>
-                <p>
-                    KxsClient is a revolutionary game client that enhances your experience with optimized performance, 
-                    advanced features, and an elegant futuristic interface.
-                </p>
-                <div class="hero-buttons">
-                    <a href="https://kxs.rip/download/latest-dev.js" class="btn btn-primary">
-                        <i class="fas fa-download"></i>
-                        Download Now
-                    </a>
-                    <a href="https://youtu.be/O5tadXq7Jok" target="_blank" class="btn btn-tutorial">
-                        <i class="fab fa-youtube"></i>
-                        Installation Tutorial
-                    </a>
-                    <a href="#features" class="btn btn-secondary">
-                        <i class="fas fa-info-circle"></i>
-                        Learn More
-                    </a>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">50+</span>
-                        <span class="stat-label">Active Users</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">158%</span>
-                        <span class="stat-label">Performance</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">5.0</span>
-                        <span class="stat-label">Rating</span>
-                    </div>
-                </div>
-            </div>
+      <article class="hero-copy">
+        <span class="chip">Official KxsClient</span>
+        <span class="live-badge"><span class="live-dot"></span>KxsClient live build</span>
+        <h1>A better Survev.io experience, without the bs.</h1>
+        <p>
+          KxsClient is built for players who want smoother fights, faster UI response, and better control in-game.
+          Install it, tune it, and play your way.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://kxs.rip/download/latest-dev.js"><i class="fa-solid fa-download"></i>Download KxsClient</a>
+          <a class="btn btn-ghost" href="https://discord.wf/kxsclient"><i class="fa-brands fa-discord"></i>Join Discord</a>
+          <a class="btn btn-ghost" href="https://github.com/Kisakay/KxsClient"><i class="fa-brands fa-github"></i>GitHub</a>
         </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><strong>50+</strong><span>Active Users</span></div>
+          <div class="hero-stat"><strong>158%</strong><span>Performance</span></div>
+          <div class="hero-stat"><strong>5.0</strong><span>Rating</span></div>
+        </div>
+      </article>
+
     </section>
 
-    <!-- Demo Video -->
-    <section class="demo-video container fade-in">
-        <div class="video-container">
-            <img src="assets/KysClient.gif" alt="KxsClient Demo" />
-        </div>
+    <section id="highlights" class="section">
+      <h2>Why Players Use KxsClient</h2>
+      <div class="highlights">
+        <article class="highlight glass-card">
+          <i class="fa-solid fa-bolt"></i>
+          <b>Feels Faster In-Game</b>
+          <p>Cleaner response, less friction, and a more consistent feel when fights get chaotic.</p>
+        </article>
+        <article class="highlight glass-card">
+          <i class="fa-solid fa-sliders"></i>
+          <b>Real Config Control</b>
+          <p>Hit <strong>RSHIFT</strong> and dial visuals/performance exactly how you like them.</p>
+        </article>
+        <article class="highlight glass-card">
+          <i class="fa-solid fa-shield"></i>
+          <b>Simple To Run</b>
+          <p>Quick setup, direct updates, and support links that are easy to find when you need help.</p>
+        </article>
+      </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title">Powerful <span class="gradient-text">Features</span></h2>
-                <p class="section-subtitle">
-                    Discover why thousands of players choose KxsClient to enhance their gaming experience
-                </p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Optimized Performance</h3>
-                    <p>Enjoy smooth gaming with stable FPS and reduced latency, even on modest configurations.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-palette"></i>
-                    </div>
-                    <h3>Customizable Interface</h3>
-                    <p>Adapt the interface to your preferences with fully customizable themes and layouts.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Enhanced Security</h3>
-                    <p>Play with peace of mind thanks to our advanced protection system.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-sliders-h"></i>
-                    </div>
-                    <h3>Advanced Options</h3>
-                    <p>Access advanced settings to optimize your gaming experience.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Social Features</h3>
-                    <p>Connect with friends and join games together with integrated social features.</p>
-                </div>
-                <div class="feature-card fade-in">
-                    <div class="feature-icon">
-                        <i class="fas fa-magic"></i>
-                    </div>
-                    <h3>Visual Effects</h3>
-                    <p>Enjoy enhanced visual effects that make the game more immersive.</p>
-                </div>
-            </div>
-        </div>
+    <section id="screens" class="section">
+      <h2>Gameplay / Tutorial</h2>
+      <div class="gallery">
+        <figure class="shot glass-card">
+          <video controls preload="metadata" playsinline>
+            <source src="/video/video1.mp4" type="video/mp4">
+          </video>
+        </figure>
+        <figure class="shot glass-card">
+          <iframe
+            src="https://www.youtube.com/embed/xt1WPl1sRUo"
+            title="KxsClient Gameplay Tutorial 1"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </figure>
+        <figure class="shot glass-card">
+          <iframe
+            src="https://www.youtube.com/embed/VqvjQYys0L4"
+            title="KxsClient Gameplay Tutorial 2"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </figure>
+        <figure class="shot glass-card">
+          <iframe
+            src="https://www.youtube.com/embed/O5tadXq7Jok"
+            title="KxsClient Gameplay Tutorial 3"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </figure>
+      </div>
     </section>
 
-    <!-- Reviews Section -->
-    <section class="reviews" id="reviews">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title">What Players <span class="gradient-text">Say</span></h2>
-                <p class="section-subtitle">
-                    See what our community thinks about KxsClient
-                </p>
-            </div>
-
-            <!-- Overall Rating Section -->
-            <div class="overall-rating fade-in">
-                <div class="rating-container">
-                    <div class="large-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="rating-number">5.0</div>
-                </div>
-                <div class="rating-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Performance</span>
-                        <div class="stat-bar">
-                            <div class="stat-fill" style="width: 98%"></div>
-                        </div>
-                        <span class="stat-value">9.8</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Interface</span>
-                        <div class="stat-bar">
-                            <div class="stat-fill" style="width: 99%"></div>
-                        </div>
-                        <span class="stat-value">9.9</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Security</span>
-                        <div class="stat-bar">
-                            <div class="stat-fill" style="width: 100%"></div>
-                        </div>
-                        <span class="stat-value">10</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="reviews-grid">
-                <div class="review-card fade-in">
-                    <div class="review-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="review-text">
-                        "KxsClient has completely transformed my gaming experience! The performance boost is incredible!"
-                    </p>
-                    <div class="review-author">
-                        <strong>Baby Xeno</strong>
-                        <span class="verified-badge">
-                            <i class="fas fa-check-circle"></i> Verified User
-                        </span>
-                    </div>
-                </div>
-                <div class="review-card fade-in">
-                    <div class="review-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="review-text">
-                        "I love the customizable interface! It makes everything so much easier to navigate."
-                    </p>
-                    <div class="review-author">
-                        <strong>Namerio</strong>
-                        <span class="verified-badge">
-                            <i class="fas fa-check-circle"></i> Verified User
-                        </span>
-                    </div>
-                </div>
-                <div class="review-card fade-in">
-                    <div class="review-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="review-text">
-                        "The security features give me peace of mind while gaming. Highly recommend!"
-                    </p>
-                    <div class="review-author">
-                        <strong>C-Duke</strong>
-                        <span class="verified-badge">
-                            <i class="fas fa-check-circle"></i> Verified User
-                        </span>
-                    </div>
-                </div>
-                <div class="review-card fade-in">
-                    <div class="review-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <p class="review-text">
-                        "Amazing visuals and smooth gameplay. KxsClient is a game changer!"
-                    </p>
-                    <div class="review-author">
-                        <strong>Gamerio</strong>
-                        <span class="verified-badge">
-                            <i class="fas fa-check-circle"></i> Verified User
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <section id="install" class="section">
+      <h2>How To Install</h2>
+      <div class="steps">
+        <article class="step glass-card">
+          <b>STEP 01</b>
+          <p>Download <strong>latest-dev.js</strong> and import it in your userscript manager.</p>
+        </article>
+        <article class="step glass-card">
+          <b>STEP 02</b>
+          <p>Open Survev.io and press <strong>RSHIFT</strong> to open the KxsClient menu.</p>
+        </article>
+        <article class="step glass-card">
+          <b>STEP 03</b>
+          <p>Watch the tutorial if needed, then tune your settings and queue up.</p>
+        </article>
+      </div>
     </section>
 
-    <!-- Contact Section -->
-    <section class="contact" id="contact">
-        <div class="container">
-            <div class="section-header fade-in">
-                <h2 class="section-title">Get in <span class="gradient-text">Touch</span></h2>
-                <p class="section-subtitle">
-                    Need help or have questions? Our team is here to assist you
-                </p>
-            </div>
-            <div class="contact-grid">
-                <div class="contact-card fade-in">
-                    <div class="contact-icon">
-                        <i class="fab fa-discord"></i>
-                    </div>
-                    <h3>Discord</h3>
-                    <p>Join our community for support and updates</p>
-                    <a href="https://discord.wf/kxsclient" class="btn btn-primary">Join Server</a>
-                </div>
-                <div class="contact-card fade-in">
-                    <div class="contact-icon">
-                        <i class="fab fa-github"></i>
-                    </div>
-                    <h3>GitHub</h3>
-                    <p>Contribute to the project and report issues</p>
-                    <a href="https://github.com/Kisakay/KxsClient" class="btn btn-primary">View Repository</a>
-                </div>
-                <div class="contact-card fade-in">
-                    <div class="contact-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <h3>Email</h3>
-                    <p>Contact us directly for support</p>
-                    <a href="mailto:kisakay@mailfence.com" class="btn btn-primary">Send Email</a>
-                </div>
-            </div>
-        </div>
+    <section class="section">
+      <h2>Quick Access</h2>
+      <div class="links">
+        <a class="link-card glass-card" href="https://kxs.rip/download/latest-dev.js">
+          <i class="fa-solid fa-download"></i>
+          <strong>Download Script</strong>
+          <small>Get latest-dev.js</small>
+        </a>
+        <a class="link-card glass-card" href="https://youtu.be/O5tadXq7Jok" target="_blank" rel="noreferrer">
+          <i class="fa-brands fa-youtube"></i>
+          <strong>Tutorial Video</strong>
+          <small>Full setup walkthrough</small>
+        </a>
+        <a class="link-card glass-card" href="https://discord.wf/kxsclient">
+          <i class="fa-brands fa-discord"></i>
+          <strong>Discord Server</strong>
+          <small>Updates, support, community</small>
+        </a>
+      </div>
+      <div class="status">
+        Built for one thing: giving you a better Survev.io experience with KxsClient.
+      </div>
     </section>
+  </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="#features">Features</a>
-                    <a href="#reviews">Reviews</a>
-                    <a href="#contact">Contact</a>
-                    <a href="https://youtu.be/O5tadXq7Jok" target="_blank">
-                        <i class="fab fa-youtube"></i> Tutorial
-                    </a>
-                    <a href="https://kxs.rip/download/latest-dev.js">Download</a>
-                </div>
-                <div class="social-links">
-                    <a href="https://discord.wf/kxsclient" class="social-link">
-                        <i class="fab fa-discord"></i>
-                    </a>
-                    <a href="https://github.com/Kisakay/KxsClient" class="social-link">
-                        <i class="fab fa-github"></i>
-                    </a>
-                </div>
-                <p class="footer-copy">
-                    Made with ❤️ by <a href="https://github.com/Kisakay" style="color: var(--primary);">Kisakay</a> | 
-                    © 2023-2025 KxsClient
-                </p>
-            </div>
-        </div>
-    </footer>
+  <footer>
+    <div class="container footer-row">
+      <div class="footer-brand">
+        <img src="assets/KysClientLogo.png" alt="KxsClient logo" />
+        <span>KxsClient</span>
+      </div>
+      <p class="footer-copy">Built by <a href="https://github.com/Kisakay" style="color:#d4aeff;text-decoration:none;">Kisakay</a>. © 2023-<span id="year"></span> KxsClient. All rights reserved.</p>
+    </div>
+  </footer>
+  <button id="back-to-top" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
 
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="back-to-top">
-        <i class="fas fa-arrow-up"></i>
-    </button>
+  <script>
+    const navbar = document.querySelector(".topbar");
+    const backToTop = document.getElementById("back-to-top");
+    const blob1 = document.getElementById("bg-blob-1");
+    const blob2 = document.getElementById("bg-blob-2");
+    const onScroll = () => {
+      if (!navbar) return;
+      navbar.classList.toggle("scrolled", window.scrollY > 20);
+      if (backToTop) backToTop.classList.toggle("show", window.scrollY > 280);
+      if (blob1) blob1.style.transform = `translateY(${window.scrollY * 0.05}px)`;
+      if (blob2) blob2.style.transform = `translateY(${window.scrollY * 0.08}px)`;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
 
-    <script>
-        // Mobile menu toggle
-        const mobileMenu = document.getElementById('mobile-menu');
-        const navLinks = document.getElementById('nav-links');
+    const revealTargets = [
+      ...document.querySelectorAll(".hero-copy, .section, .highlight, .shot, .step, .link-card, .status")
+    ];
 
-        mobileMenu.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const icon = mobileMenu.querySelector('i');
-            
-            if (navLinks.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
+    revealTargets.forEach((el, i) => {
+      el.classList.add("reveal");
+      el.style.setProperty("--reveal-delay", `${Math.min(i * 22, 180)}ms`);
+    });
+
+    const io = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
+
+    revealTargets.forEach((el) => io.observe(el));
+
+    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+    const mobileMenuIcon = document.getElementById("mobile-menu-icon");
+    const mobilePanel = document.getElementById("mobile-panel");
+    const mobileLinks = document.querySelectorAll(".mobile-link");
+    let mobileOpen = false;
+
+    const setMobileState = (open) => {
+      mobileOpen = open;
+      if (!mobilePanel || !mobileMenuIcon) return;
+      mobilePanel.classList.toggle("open", mobileOpen);
+      mobileMenuIcon.className = mobileOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+      document.body.style.overflow = mobileOpen ? "hidden" : "";
+    };
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener("click", () => setMobileState(!mobileOpen));
+    }
+
+    mobileLinks.forEach((link) => link.addEventListener("click", () => setMobileState(false)));
+
+    if (backToTop) {
+      backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    }
+
+    document.querySelectorAll(".glass-card").forEach((card) => {
+      card.addEventListener("mousemove", (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty("--mx", `${x}px`);
+        card.style.setProperty("--my", `${y}px`);
+      });
+    });
+
+    document.querySelectorAll(".btn, .link-card").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const ripple = document.createElement("span");
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        ripple.style.position = "absolute";
+        ripple.style.width = `${size}px`;
+        ripple.style.height = `${size}px`;
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        ripple.style.borderRadius = "999px";
+        ripple.style.background = "rgba(255,255,255,0.28)";
+        ripple.style.pointerEvents = "none";
+        ripple.style.transform = "scale(0)";
+        ripple.style.transition = "transform 560ms ease, opacity 560ms ease";
+        btn.appendChild(ripple);
+        requestAnimationFrame(() => {
+          ripple.style.transform = "scale(3.6)";
+          ripple.style.opacity = "0";
         });
+        setTimeout(() => ripple.remove(), 580);
+      });
+    });
 
-        // Close mobile menu when clicking on links
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                const icon = mobileMenu.querySelector('i');
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            });
-        });
+    window.addEventListener("load", () => {
+      document.body.classList.add("loaded");
+    });
 
-        // Header scroll effect
-        const header = document.getElementById('header');
-        
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // Scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-
-        // Observe all fade-in elements
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
-
-        // Back to top button
-        const backToTop = document.getElementById('back-to-top');
-
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTop.classList.add('visible');
-            } else {
-                backToTop.classList.remove('visible');
-            }
-        });
-
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        // Add subtle parallax effect to background
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const bgGrid = document.querySelector('.bg-grid');
-            const bgGradient = document.querySelector('.bg-gradient');
-            
-            if (bgGrid) {
-                bgGrid.style.transform = `translateY(${scrolled * 0.1}px)`;
-            }
-            
-            if (bgGradient) {
-                bgGradient.style.transform = `translateY(${scrolled * 0.05}px)`;
-            }
-        });
-
-        // Add loading animation
-        window.addEventListener('load', () => {
-            document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 0.5s ease';
-            
-            setTimeout(() => {
-                document.body.style.opacity = '1';
-            }, 100);
-        });
-
-        // Add interactive hover effects for feature cards
-        document.querySelectorAll('.feature-card, .review-card, .contact-card').forEach(card => {
-            card.addEventListener('mouseenter', function(e) {
-                const rect = this.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                this.style.setProperty('--mouse-x', x + 'px');
-                this.style.setProperty('--mouse-y', y + 'px');
-            });
-        });
-
-        // Enhanced button click effects
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const ripple = document.createElement('span');
-                const rect = this.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    left: ${x}px;
-                    top: ${y}px;
-                    background: rgba(255, 255, 255, 0.3);
-                    border-radius: 50%;
-                    transform: scale(0);
-                    animation: ripple 0.6s linear;
-                    pointer-events: none;
-                `;
-                
-                this.style.position = 'relative';
-                this.style.overflow = 'hidden';
-                this.appendChild(ripple);
-                
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
-            });
-        });
-
-        // Add ripple animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
-                }
-            }
-            
-            .feature-card::after,
-            .review-card::after,
-            .contact-card::after {
-                content: '';
-                position: absolute;
-                top: var(--mouse-y, 50%);
-                left: var(--mouse-x, 50%);
-                width: 200px;
-                height: 200px;
-                background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
-                border-radius: 50%;
-                transform: translate(-50%, -50%) scale(0);
-                transition: transform 0.3s ease;
-                pointer-events: none;
-                z-index: -1;
-            }
-            
-            .feature-card:hover::after,
-            .review-card:hover::after,
-            .contact-card:hover::after {
-                transform: translate(-50%, -50%) scale(1);
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
+
