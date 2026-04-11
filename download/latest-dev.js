@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Kxs Client - Survev.io Client
 // @namespace    https://github.com/Kisakay/KxsClient
-// @version      2.10.3
+// @version      3.0.0-final-offline-before-archive
 // @description  A client to enhance the survev.io in-game experience with many features, as well as future features.
 // @author       Kisakay
 // @license      AGPL-3.0
 // @run-at       document-end
-// @downloadURL  https://kxs.rip/download/latest-dev.js
-// @icon         https://kxs.rip/assets/KysClientLogo.png
+// @downloadURL  https://kxsclient.kisakay.com/download/latest-dev.js
+// @icon         https://kxsclient.kisakay.com/assets/KysClientLogo.png
 // @match        *://survev.io/*
 // @match        *://66.179.254.36/*
 // @match        *://185.126.158.61/*
@@ -15,7 +15,7 @@
 // @match        *://leia-uwu.github.io/survev/*
 // @match        *://survev.leia-is.gay/*
 // @match        *://survivx.org/*
-// @match        *://kxs.rip/*
+// @match        *://kxsclient.kisakay.com/*
 // @match        *://localhost:3000/*
 // @match        *://veldreth.com/*
 // @match        *://eu-comp.net/*
@@ -30,336 +30,6 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 123:
-/***/ ((module) => {
-
-
-
-const numeric = /^[0-9]+$/
-const compareIdentifiers = (a, b) => {
-  const anum = numeric.test(a)
-  const bnum = numeric.test(b)
-
-  if (anum && bnum) {
-    a = +a
-    b = +b
-  }
-
-  return a === b ? 0
-    : (anum && !bnum) ? -1
-    : (bnum && !anum) ? 1
-    : a < b ? -1
-    : 1
-}
-
-const rcompareIdentifiers = (a, b) => compareIdentifiers(b, a)
-
-module.exports = {
-  compareIdentifiers,
-  rcompareIdentifiers,
-}
-
-
-/***/ }),
-
-/***/ 272:
-/***/ ((module) => {
-
-
-
-const debug = (
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_DEBUG &&
-  /\bsemver\b/i.test(process.env.NODE_DEBUG)
-) ? (...args) => console.error('SEMVER', ...args)
-  : () => {}
-
-module.exports = debug
-
-
-/***/ }),
-
-/***/ 560:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-const SemVer = __webpack_require__(908)
-const compare = (a, b, loose) =>
-  new SemVer(a, loose).compare(new SemVer(b, loose))
-
-module.exports = compare
-
-
-/***/ }),
-
-/***/ 580:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-const compare = __webpack_require__(560)
-const gt = (a, b, loose) => compare(a, b, loose) > 0
-module.exports = gt
-
-
-/***/ }),
-
-/***/ 587:
-/***/ ((module) => {
-
-
-
-// parse out just the options we care about
-const looseOption = Object.freeze({ loose: true })
-const emptyOpts = Object.freeze({ })
-const parseOptions = options => {
-  if (!options) {
-    return emptyOpts
-  }
-
-  if (typeof options !== 'object') {
-    return looseOption
-  }
-
-  return options
-}
-module.exports = parseOptions
-
-
-/***/ }),
-
-/***/ 718:
-/***/ ((module, exports, __webpack_require__) => {
-
-
-
-const {
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
-  MAX_LENGTH,
-} = __webpack_require__(874)
-const debug = __webpack_require__(272)
-exports = module.exports = {}
-
-// The actual regexps go on exports.re
-const re = exports.re = []
-const safeRe = exports.safeRe = []
-const src = exports.src = []
-const safeSrc = exports.safeSrc = []
-const t = exports.t = {}
-let R = 0
-
-const LETTERDASHNUMBER = '[a-zA-Z0-9-]'
-
-// Replace some greedy regex tokens to prevent regex dos issues. These regex are
-// used internally via the safeRe object since all inputs in this library get
-// normalized first to trim and collapse all extra whitespace. The original
-// regexes are exported for userland consumption and lower level usage. A
-// future breaking change could export the safer regex only with a note that
-// all input should have extra whitespace removed.
-const safeRegexReplacements = [
-  ['\\s', 1],
-  ['\\d', MAX_LENGTH],
-  [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH],
-]
-
-const makeSafeRegex = (value) => {
-  for (const [token, max] of safeRegexReplacements) {
-    value = value
-      .split(`${token}*`).join(`${token}{0,${max}}`)
-      .split(`${token}+`).join(`${token}{1,${max}}`)
-  }
-  return value
-}
-
-const createToken = (name, value, isGlobal) => {
-  const safe = makeSafeRegex(value)
-  const index = R++
-  debug(name, index, value)
-  t[name] = index
-  src[index] = value
-  safeSrc[index] = safe
-  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
-  safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
-}
-
-// The following Regular Expressions can be used for tokenizing,
-// validating, and parsing SemVer version strings.
-
-// ## Numeric Identifier
-// A single `0`, or a non-zero digit followed by zero or more digits.
-
-createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
-createToken('NUMERICIDENTIFIERLOOSE', '\\d+')
-
-// ## Non-numeric Identifier
-// Zero or more digits, followed by a letter or hyphen, and then zero or
-// more letters, digits, or hyphens.
-
-createToken('NONNUMERICIDENTIFIER', `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`)
-
-// ## Main Version
-// Three dot-separated numeric identifiers.
-
-createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` +
-                   `(${src[t.NUMERICIDENTIFIER]})\\.` +
-                   `(${src[t.NUMERICIDENTIFIER]})`)
-
-createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
-                        `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
-                        `(${src[t.NUMERICIDENTIFIERLOOSE]})`)
-
-// ## Pre-release Version Identifier
-// A numeric identifier, or a non-numeric identifier.
-// Non-numberic identifiers include numberic identifiers but can be longer.
-// Therefore non-numberic identifiers must go first.
-
-createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NONNUMERICIDENTIFIER]
-}|${src[t.NUMERICIDENTIFIER]})`)
-
-createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NONNUMERICIDENTIFIER]
-}|${src[t.NUMERICIDENTIFIERLOOSE]})`)
-
-// ## Pre-release Version
-// Hyphen, followed by one or more dot-separated pre-release version
-// identifiers.
-
-createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]
-}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`)
-
-createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
-}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`)
-
-// ## Build Metadata Identifier
-// Any combination of digits, letters, or hyphens.
-
-createToken('BUILDIDENTIFIER', `${LETTERDASHNUMBER}+`)
-
-// ## Build Metadata
-// Plus sign, followed by one or more period-separated build metadata
-// identifiers.
-
-createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]
-}(?:\\.${src[t.BUILDIDENTIFIER]})*))`)
-
-// ## Full Version String
-// A main version, followed optionally by a pre-release version and
-// build metadata.
-
-// Note that the only major, minor, patch, and pre-release sections of
-// the version string are capturing groups.  The build metadata is not a
-// capturing group, because it should not ever be used in version
-// comparison.
-
-createToken('FULLPLAIN', `v?${src[t.MAINVERSION]
-}${src[t.PRERELEASE]}?${
-  src[t.BUILD]}?`)
-
-createToken('FULL', `^${src[t.FULLPLAIN]}$`)
-
-// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-// common in the npm registry.
-createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]
-}${src[t.PRERELEASELOOSE]}?${
-  src[t.BUILD]}?`)
-
-createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
-
-createToken('GTLT', '((?:<|>)?=?)')
-
-// Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifer, meaning "any version"
-// Only the first item is strictly required.
-createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
-createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
-
-createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
-                   `(?:${src[t.PRERELEASE]})?${
-                     src[t.BUILD]}?` +
-                   `)?)?`)
-
-createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
-                        `(?:${src[t.PRERELEASELOOSE]})?${
-                          src[t.BUILD]}?` +
-                        `)?)?`)
-
-createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`)
-createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`)
-
-// Coercion.
-// Extract anything that could conceivably be a part of a valid semver
-createToken('COERCEPLAIN', `${'(^|[^\\d])' +
-              '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` +
-              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
-              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`)
-createToken('COERCE', `${src[t.COERCEPLAIN]}(?:$|[^\\d])`)
-createToken('COERCEFULL', src[t.COERCEPLAIN] +
-              `(?:${src[t.PRERELEASE]})?` +
-              `(?:${src[t.BUILD]})?` +
-              `(?:$|[^\\d])`)
-createToken('COERCERTL', src[t.COERCE], true)
-createToken('COERCERTLFULL', src[t.COERCEFULL], true)
-
-// Tilde ranges.
-// Meaning is "reasonably at or greater than"
-createToken('LONETILDE', '(?:~>?)')
-
-createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true)
-exports.tildeTrimReplace = '$1~'
-
-createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`)
-createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`)
-
-// Caret ranges.
-// Meaning is "at least and backwards compatible with"
-createToken('LONECARET', '(?:\\^)')
-
-createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true)
-exports.caretTrimReplace = '$1^'
-
-createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`)
-createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`)
-
-// A simple gt/lt/eq thing, or just "" to indicate "any version"
-createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`)
-createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`)
-
-// An expression to strip any whitespace between the gtlt and the thing
-// it modifies, so that `> 1.2.3` ==> `>1.2.3`
-createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]
-}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true)
-exports.comparatorTrimReplace = '$1$2$3'
-
-// Something like `1.2.3 - 1.2.4`
-// Note that these all use the loose form, because they'll be
-// checked against either the strict or loose comparator form
-// later.
-createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` +
-                   `\\s+-\\s+` +
-                   `(${src[t.XRANGEPLAIN]})` +
-                   `\\s*$`)
-
-createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` +
-                        `\\s+-\\s+` +
-                        `(${src[t.XRANGEPLAINLOOSE]})` +
-                        `\\s*$`)
-
-// Star ranges basically just allow anything at all.
-createToken('STAR', '(<|>)?=?\\s*\\*')
-// >=0.0.0 is like a star
-createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
-createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
-
-
-/***/ }),
 
 /***/ 746:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
@@ -378,21 +48,14 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
             : new OriginalWebSocket(url);
         if (typeof url === "string" && url.includes("gameId=")) {
             const gameId = url.split("gameId=")[1];
-            globalThis.kxsClient.kxsNetwork.actualGameId = gameId;
+            globalThis.kxsClient.actualGameId = gameId;
             // do things
-            globalThis.kxsClient.kxsNetwork.sendGameInfoToWebSocket(gameId);
-            globalThis.kxsClient.exchangeManager.sendGameInfo(gameId);
             __webpack_require__.g.kxsClient.pingManager.setServerFromWebsocketHooking(new URL(url));
-            globalThis.kxsClient.aliveplayer.startObserving((newValue) => {
-                globalThis.kxsClient.kxsNetwork.PlayerAlive_ExchangeKey(newValue !== null && newValue !== void 0 ? newValue : "");
-            });
             const originalClose = ws.close.bind(ws);
             ws.close = function (code, reason) {
-                __webpack_require__.g.kxsClient.kxsNetwork.gameEnded();
-                __webpack_require__.g.kxsClient.kxsNetwork.gameEnded_ExchangeKey(__webpack_require__.g.kxsClient.getFinalGameBody() || {});
                 globalThis.kxsClient.aliveplayer.stopObserving();
                 __webpack_require__.g.kxsClient.pingManager.stop();
-                globalThis.kxsClient.kxsNetwork.actualGameId = null;
+                globalThis.kxsClient.actualGameId = null;
                 return originalClose(code, reason);
             };
         }
@@ -410,376 +73,6 @@ createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
     // Remplace le constructeur global
     window.WebSocket = HookedWebSocket;
 })();
-
-
-/***/ }),
-
-/***/ 874:
-/***/ ((module) => {
-
-
-
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
-const SEMVER_SPEC_VERSION = '2.0.0'
-
-const MAX_LENGTH = 256
-const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
-/* istanbul ignore next */ 9007199254740991
-
-// Max safe segment length for coercion.
-const MAX_SAFE_COMPONENT_LENGTH = 16
-
-// Max safe length for a build identifier. The max length minus 6 characters for
-// the shortest version with a build 0.0.0+BUILD.
-const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6
-
-const RELEASE_TYPES = [
-  'major',
-  'premajor',
-  'minor',
-  'preminor',
-  'patch',
-  'prepatch',
-  'prerelease',
-]
-
-module.exports = {
-  MAX_LENGTH,
-  MAX_SAFE_COMPONENT_LENGTH,
-  MAX_SAFE_BUILD_LENGTH,
-  MAX_SAFE_INTEGER,
-  RELEASE_TYPES,
-  SEMVER_SPEC_VERSION,
-  FLAG_INCLUDE_PRERELEASE: 0b001,
-  FLAG_LOOSE: 0b010,
-}
-
-
-/***/ }),
-
-/***/ 908:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-
-const debug = __webpack_require__(272)
-const { MAX_LENGTH, MAX_SAFE_INTEGER } = __webpack_require__(874)
-const { safeRe: re, t } = __webpack_require__(718)
-
-const parseOptions = __webpack_require__(587)
-const { compareIdentifiers } = __webpack_require__(123)
-class SemVer {
-  constructor (version, options) {
-    options = parseOptions(options)
-
-    if (version instanceof SemVer) {
-      if (version.loose === !!options.loose &&
-        version.includePrerelease === !!options.includePrerelease) {
-        return version
-      } else {
-        version = version.version
-      }
-    } else if (typeof version !== 'string') {
-      throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version}".`)
-    }
-
-    if (version.length > MAX_LENGTH) {
-      throw new TypeError(
-        `version is longer than ${MAX_LENGTH} characters`
-      )
-    }
-
-    debug('SemVer', version, options)
-    this.options = options
-    this.loose = !!options.loose
-    // this isn't actually relevant for versions, but keep it so that we
-    // don't run into trouble passing this.options around.
-    this.includePrerelease = !!options.includePrerelease
-
-    const m = version.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL])
-
-    if (!m) {
-      throw new TypeError(`Invalid Version: ${version}`)
-    }
-
-    this.raw = version
-
-    // these are actually numbers
-    this.major = +m[1]
-    this.minor = +m[2]
-    this.patch = +m[3]
-
-    if (this.major > MAX_SAFE_INTEGER || this.major < 0) {
-      throw new TypeError('Invalid major version')
-    }
-
-    if (this.minor > MAX_SAFE_INTEGER || this.minor < 0) {
-      throw new TypeError('Invalid minor version')
-    }
-
-    if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
-      throw new TypeError('Invalid patch version')
-    }
-
-    // numberify any prerelease numeric ids
-    if (!m[4]) {
-      this.prerelease = []
-    } else {
-      this.prerelease = m[4].split('.').map((id) => {
-        if (/^[0-9]+$/.test(id)) {
-          const num = +id
-          if (num >= 0 && num < MAX_SAFE_INTEGER) {
-            return num
-          }
-        }
-        return id
-      })
-    }
-
-    this.build = m[5] ? m[5].split('.') : []
-    this.format()
-  }
-
-  format () {
-    this.version = `${this.major}.${this.minor}.${this.patch}`
-    if (this.prerelease.length) {
-      this.version += `-${this.prerelease.join('.')}`
-    }
-    return this.version
-  }
-
-  toString () {
-    return this.version
-  }
-
-  compare (other) {
-    debug('SemVer.compare', this.version, this.options, other)
-    if (!(other instanceof SemVer)) {
-      if (typeof other === 'string' && other === this.version) {
-        return 0
-      }
-      other = new SemVer(other, this.options)
-    }
-
-    if (other.version === this.version) {
-      return 0
-    }
-
-    return this.compareMain(other) || this.comparePre(other)
-  }
-
-  compareMain (other) {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options)
-    }
-
-    return (
-      compareIdentifiers(this.major, other.major) ||
-      compareIdentifiers(this.minor, other.minor) ||
-      compareIdentifiers(this.patch, other.patch)
-    )
-  }
-
-  comparePre (other) {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options)
-    }
-
-    // NOT having a prerelease is > having one
-    if (this.prerelease.length && !other.prerelease.length) {
-      return -1
-    } else if (!this.prerelease.length && other.prerelease.length) {
-      return 1
-    } else if (!this.prerelease.length && !other.prerelease.length) {
-      return 0
-    }
-
-    let i = 0
-    do {
-      const a = this.prerelease[i]
-      const b = other.prerelease[i]
-      debug('prerelease compare', i, a, b)
-      if (a === undefined && b === undefined) {
-        return 0
-      } else if (b === undefined) {
-        return 1
-      } else if (a === undefined) {
-        return -1
-      } else if (a === b) {
-        continue
-      } else {
-        return compareIdentifiers(a, b)
-      }
-    } while (++i)
-  }
-
-  compareBuild (other) {
-    if (!(other instanceof SemVer)) {
-      other = new SemVer(other, this.options)
-    }
-
-    let i = 0
-    do {
-      const a = this.build[i]
-      const b = other.build[i]
-      debug('build compare', i, a, b)
-      if (a === undefined && b === undefined) {
-        return 0
-      } else if (b === undefined) {
-        return 1
-      } else if (a === undefined) {
-        return -1
-      } else if (a === b) {
-        continue
-      } else {
-        return compareIdentifiers(a, b)
-      }
-    } while (++i)
-  }
-
-  // preminor will bump the version up to the next minor release, and immediately
-  // down to pre-release. premajor and prepatch work the same way.
-  inc (release, identifier, identifierBase) {
-    if (release.startsWith('pre')) {
-      if (!identifier && identifierBase === false) {
-        throw new Error('invalid increment argument: identifier is empty')
-      }
-      // Avoid an invalid semver results
-      if (identifier) {
-        const match = `-${identifier}`.match(this.options.loose ? re[t.PRERELEASELOOSE] : re[t.PRERELEASE])
-        if (!match || match[1] !== identifier) {
-          throw new Error(`invalid identifier: ${identifier}`)
-        }
-      }
-    }
-
-    switch (release) {
-      case 'premajor':
-        this.prerelease.length = 0
-        this.patch = 0
-        this.minor = 0
-        this.major++
-        this.inc('pre', identifier, identifierBase)
-        break
-      case 'preminor':
-        this.prerelease.length = 0
-        this.patch = 0
-        this.minor++
-        this.inc('pre', identifier, identifierBase)
-        break
-      case 'prepatch':
-        // If this is already a prerelease, it will bump to the next version
-        // drop any prereleases that might already exist, since they are not
-        // relevant at this point.
-        this.prerelease.length = 0
-        this.inc('patch', identifier, identifierBase)
-        this.inc('pre', identifier, identifierBase)
-        break
-      // If the input is a non-prerelease version, this acts the same as
-      // prepatch.
-      case 'prerelease':
-        if (this.prerelease.length === 0) {
-          this.inc('patch', identifier, identifierBase)
-        }
-        this.inc('pre', identifier, identifierBase)
-        break
-      case 'release':
-        if (this.prerelease.length === 0) {
-          throw new Error(`version ${this.raw} is not a prerelease`)
-        }
-        this.prerelease.length = 0
-        break
-
-      case 'major':
-        // If this is a pre-major version, bump up to the same major version.
-        // Otherwise increment major.
-        // 1.0.0-5 bumps to 1.0.0
-        // 1.1.0 bumps to 2.0.0
-        if (
-          this.minor !== 0 ||
-          this.patch !== 0 ||
-          this.prerelease.length === 0
-        ) {
-          this.major++
-        }
-        this.minor = 0
-        this.patch = 0
-        this.prerelease = []
-        break
-      case 'minor':
-        // If this is a pre-minor version, bump up to the same minor version.
-        // Otherwise increment minor.
-        // 1.2.0-5 bumps to 1.2.0
-        // 1.2.1 bumps to 1.3.0
-        if (this.patch !== 0 || this.prerelease.length === 0) {
-          this.minor++
-        }
-        this.patch = 0
-        this.prerelease = []
-        break
-      case 'patch':
-        // If this is not a pre-release version, it will increment the patch.
-        // If it is a pre-release it will bump up to the same patch version.
-        // 1.2.0-5 patches to 1.2.0
-        // 1.2.0 patches to 1.2.1
-        if (this.prerelease.length === 0) {
-          this.patch++
-        }
-        this.prerelease = []
-        break
-      // This probably shouldn't be used publicly.
-      // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
-      case 'pre': {
-        const base = Number(identifierBase) ? 1 : 0
-
-        if (this.prerelease.length === 0) {
-          this.prerelease = [base]
-        } else {
-          let i = this.prerelease.length
-          while (--i >= 0) {
-            if (typeof this.prerelease[i] === 'number') {
-              this.prerelease[i]++
-              i = -2
-            }
-          }
-          if (i === -1) {
-            // didn't increment anything
-            if (identifier === this.prerelease.join('.') && identifierBase === false) {
-              throw new Error('invalid increment argument: identifier already exists')
-            }
-            this.prerelease.push(base)
-          }
-        }
-        if (identifier) {
-          // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-          // 1.2.0-beta.fooblz or 1.2.0-beta bumps to 1.2.0-beta.0
-          let prerelease = [identifier, base]
-          if (identifierBase === false) {
-            prerelease = [identifier]
-          }
-          if (compareIdentifiers(this.prerelease[0], identifier) === 0) {
-            if (isNaN(this.prerelease[1])) {
-              this.prerelease = prerelease
-            }
-          } else {
-            this.prerelease = prerelease
-          }
-        }
-        break
-      }
-      default:
-        throw new Error(`invalid increment argument: ${release}`)
-    }
-    this.raw = this.format()
-    if (this.build.length) {
-      this.raw += `+${this.build.join('.')}`
-    }
-    return this
-  }
-}
-
-module.exports = SemVer
 
 
 /***/ })
@@ -811,30 +104,6 @@ module.exports = SemVer
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/global */
 /******/ 	(() => {
 /******/ 		__webpack_require__.g = (function() {
@@ -847,13 +116,7 @@ module.exports = SemVer
 /******/ 		})();
 /******/ 	})();
 /******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
-/******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./src/UTILS/websocket-hook.ts
 var websocket_hook = __webpack_require__(746);
@@ -1094,15 +357,15 @@ class SimplifiedDatabase {
 
 
 ;// ./config.json
-const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxs.rip","api_url":"https://network.kxs.rip","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxs.rip","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io","cursev.io","eu-comp.zurviv.io","uno.cheap"],"grant":["none"]}');
+const config_namespaceObject = /*#__PURE__*/JSON.parse('{"base_url":"https://kxsclient.kisakay.com","fileName":"KxsClient.user.js","match":["survev.io","66.179.254.36","185.126.158.61","resurviv.biz","leia-uwu.github.io/survev","survev.leia-is.gay","survivx.org","kxsclient.kisakay.com","localhost:3000","veldreth.com","eu-comp.net","66.179.92.117","zurviv.io","cursev.io","eu-comp.zurviv.io","uno.cheap"],"grant":["none"]}');
 ;// ./src/assets/onboarding.html?raw
-const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+const onboardingraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxsClient !</h1>\r\n\t\t\t<p class=\"subtitle\">The only client you need</p>\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/o_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxsClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxs Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/o_2.png\" alt=\"Kxs Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding_kxz.html?raw
-const onboarding_kxzraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxzClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxz.png\" alt=\"KxzClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxzClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxz Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_2.png\" alt=\"Kxz Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+const onboarding_kxzraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxzClient !</h1>\r\n\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/whats_kxz.png\" alt=\"KxzClient tagline\"\r\n\t\t\t\tclass=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/oz_1.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxzClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxz Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/oz_2.png\" alt=\"Kxz Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding_kxc.html?raw
-const onboarding_kxcraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxcClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxc.png\" alt=\"KxcClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_3.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxcClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxc Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_3.png\" alt=\"Kxc Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+const onboarding_kxcraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxcClient !</h1>\r\n\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/whats_kxc.png\" alt=\"KxcClient tagline\"\r\n\t\t\t\tclass=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/oz_3.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxcClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxc Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/o_3.png\" alt=\"Kxc Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/assets/onboarding_kxr.html?raw
-const onboarding_kxrraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxrClient !</h1>\r\n\t\t\t<img src=\"https://kxs.rip/assets/whats_kxr.png\" alt=\"KxrClient tagline\" class=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/o_4.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxrClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxr Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxs.rip/assets/oz_4.png\" alt=\"Kxr Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
+const onboarding_kxrraw_namespaceObject = "<div class=\"popup-overlay\" id=\"onboarding-overlay\">\r\n\t<div class=\"popup-content\">\r\n\t\t<div class=\"popup-header\">\r\n\t\t\t<div></div> <!-- Empty div for spacing -->\r\n\t\t\t<button class=\"discord-button\" id=\"discord-btn\">\r\n\t\t\t\t<svg class=\"discord-icon\" viewBox=\"0 0 24 24\">\r\n\t\t\t\t\t<path\r\n\t\t\t\t\t\td=\"M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.195.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z\" />\r\n\t\t\t\t</svg>\r\n\t\t\t\tJoin Discord\r\n\t\t\t</button>\r\n\t\t</div>\r\n\t\t<div class=\"container\">\r\n\t\t\t<h1>Hey i'm KxrClient !</h1>\r\n\t\t\t<img src=\"https://kxkxsclient.kisakay.comip/assets/whats_kxr.png\" alt=\"KxrClient tagline\"\r\n\t\t\t\tclass=\"subtitle-image\" />\r\n\r\n\t\t\t<div class=\"steps\">\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>1. Configuration</h3>\r\n\t\t\t\t\t\t<p>Press <strong>RSHIFT</strong> to open the configuration menu and customize your gaming\r\n\t\t\t\t\t\t\texperience according to your preferences.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/o_4.png\" alt=\"Configuration Menu\" />\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>2. Updates</h3>\r\n\t\t\t\t\t\t<p>KxrClient is in continuous development. Refresh the page or restart the client to\r\n\t\t\t\t\t\t\tautomatically get the latest improvements.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\t<div class=\"step\">\r\n\t\t\t\t\t<div class=\"step-content\">\r\n\t\t\t\t\t\t<h3>3. Kxr Network</h3>\r\n\t\t\t\t\t\t<p>Join our community! Enable voice and text chat to communicate with other players in real-time\r\n\t\t\t\t\t\t\tduring your games.</p>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\t\t\t\t<div class=\"step-large-image\">\r\n\t\t\t\t\t<img src=\"https://kxsclient.kisakay.com/assets/oz_4.png\" alt=\"Kxr Network Features\" />\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\r\n\t\t\t<button class=\"play-button\" id=\"play-now-btn\">Play now</button>\r\n\t\t</div>\r\n\t</div>\r\n</div>";
 ;// ./src/UTILS/vars.ts
 
 
@@ -1124,7 +387,7 @@ const CLIENT_REGISTRY = {
         domains: ["zurviv.io", "eu-comp.zurviv.io"],
         full_logo: config_namespaceObject.base_url + "/assets/KxzLogoFull.png",
         icon_logo: config_namespaceObject.base_url + "/assets/KxzClientLogo.png",
-        welcome_sound: "https://kxs.rip/assets/o_z_sound.mp3",
+        welcome_sound: "https://kxsclient.kisakay.com/assets/o_z_sound.mp3",
         options: {
             is_custom_background_enabled: false,
             is_dollar_sub_category_enable: false,
@@ -1155,7 +418,7 @@ const CLIENT_REGISTRY = {
         domains: ["cursev.io"],
         full_logo: config_namespaceObject.base_url + "/assets/KxcLogoFull.png",
         icon_logo: config_namespaceObject.base_url + "/assets/KxcClientLogo.png",
-        welcome_sound: "https://kxs.rip/assets/o_c_sound.mp3",
+        welcome_sound: "https://kxsclient.kisakay.com/assets/o_c_sound.mp3",
         options: {
             is_custom_background_enabled: false,
             is_dollar_sub_category_enable: true,
@@ -1186,7 +449,7 @@ const CLIENT_REGISTRY = {
         domains: true,
         full_logo: config_namespaceObject.base_url + "/assets/KysClient.gif",
         icon_logo: config_namespaceObject.base_url + "/assets/KysClientLogo.png",
-        welcome_sound: "https://kxs.rip/assets/o_sound.mp3",
+        welcome_sound: "https://kxsclient.kisakay.com/assets/o_sound.mp3",
         options: {
             is_custom_background_enabled: true,
             is_dollar_sub_category_enable: true,
@@ -1217,7 +480,7 @@ const CLIENT_REGISTRY = {
         domains: ["resurviv.biz", "uno.cheap"],
         full_logo: config_namespaceObject.base_url + "/assets/KxrLogoFull.png",
         icon_logo: config_namespaceObject.base_url + "/assets/KxrClientLogo.png",
-        welcome_sound: "https://kxs.rip/assets/o_r_sound.mp3",
+        welcome_sound: "https://kxsclient.kisakay.com/assets/o_r_sound.mp3",
         options: {
             is_custom_background_enabled: true,
             is_dollar_sub_category_enable: true,
@@ -2438,15 +1701,15 @@ class EasterEgg {
         // Save original page title
         this.originalPageTitle = document.title;
         // Check if we're on the target website
-        if (window.location.hostname === 'kxs.rip' || window.location.hostname === 'www.kxs.rip') {
+        if (window.location.hostname === 'kxsclient.kisakay.com' || window.location.hostname === 'www.kxsclient.kisakay.com') {
             // Initialize sounds
-            this.zelda3Sound = new Audio('https://kxs.rip/assets/message.mp3'); // Replace with actual Zelda sound
-            this.periodSound = new Audio('https://kxs.rip/assets/message-finish.mp3'); // Sound for the final period
-            this.ambientSound = new Audio('https://kxs.rip/assets/hell_ambiance.m4a'); // Replace with actual ambient URL
-            this.buttonClickSound = new Audio('https://kxs.rip/assets/enter.mp3'); // Button click sound
-            this.arrowKeySound = new Audio('https://kxs.rip/assets/arrow.mp3'); // Arrow key sound
-            this.enterKeySound = new Audio('https://kxs.rip/assets/enter.mp3'); // Enter key sound
-            this.closeMenuSound = new Audio('https://kxs.rip/assets/close.mp3'); // Close menu sound
+            this.zelda3Sound = new Audio('https://kxsclient.kisakay.com/assets/message.mp3'); // Replace with actual Zelda sound
+            this.periodSound = new Audio('https://kxsclient.kisakay.com/assets/message-finish.mp3'); // Sound for the final period
+            this.ambientSound = new Audio('https://kxsclient.kisakay.com/assets/hell_ambiance.m4a'); // Replace with actual ambient URL
+            this.buttonClickSound = new Audio('https://kxsclient.kisakay.com/assets/enter.mp3'); // Button click sound
+            this.arrowKeySound = new Audio('https://kxsclient.kisakay.com/assets/arrow.mp3'); // Arrow key sound
+            this.enterKeySound = new Audio('https://kxsclient.kisakay.com/assets/enter.mp3'); // Enter key sound
+            this.closeMenuSound = new Audio('https://kxsclient.kisakay.com/assets/close.mp3'); // Close menu sound
             if (this.ambientSound) {
                 this.ambientSound.loop = true;
             }
@@ -4663,358 +3926,6 @@ class StatsParser {
 }
 
 
-// EXTERNAL MODULE: ./node_modules/semver/functions/gt.js
-var gt = __webpack_require__(580);
-var gt_default = /*#__PURE__*/__webpack_require__.n(gt);
-;// ./src/creditpage.html?raw
-const creditpageraw_namespaceObject = "<!DOCTYPE html>\n<html lang=\"en\">\n\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>KxsClient - Credits</title>\n\t<style>\n\t\t* {\n\t\t\tmargin: 0;\n\t\t\tpadding: 0;\n\t\t\tbox-sizing: border-box;\n\t\t}\n\n\t\tbody {\n\t\t\tfont-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;\n\t\t\tbackground: #0d1117;\n\t\t\tcolor: #c9d1d9;\n\t\t\theight: 100vh;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t}\n\n\t\t.tabs {\n\t\t\tdisplay: flex;\n\t\t\tbackground: #161b22;\n\t\t\tborder-bottom: 1px solid #21262d;\n\t\t}\n\n\t\t.tab {\n\t\t\tpadding: 12px 24px;\n\t\t\tcursor: pointer;\n\t\t\tbackground: transparent;\n\t\t\tborder: none;\n\t\t\tcolor: #7d8590;\n\t\t\tfont: inherit;\n\t\t\ttransition: all 0.15s ease;\n\t\t\tborder-bottom: 2px solid transparent;\n\t\t}\n\n\t\t.tab:hover {\n\t\t\tcolor: #c9d1d9;\n\t\t\tbackground: #21262d;\n\t\t}\n\n\t\t.tab.active {\n\t\t\tcolor: #58a6ff;\n\t\t\tborder-bottom-color: #58a6ff;\n\t\t}\n\n\t\t.content-area {\n\t\t\tflex: 1;\n\t\t\toverflow: hidden;\n\t\t}\n\n\t\t.content {\n\t\t\theight: 100%;\n\t\t\tpadding: 24px;\n\t\t\toverflow-y: auto;\n\t\t\twhite-space: pre-wrap;\n\t\t\tfont-size: 13px;\n\t\t\tline-height: 1.6;\n\t\t\tdisplay: none;\n\t\t}\n\n\t\t.content.active {\n\t\t\tdisplay: block;\n\t\t}\n\n\t\t.loading {\n\t\t\tdisplay: flex;\n\t\t\tjustify-content: center;\n\t\t\talign-items: center;\n\t\t\theight: 200px;\n\t\t\tcolor: #7d8590;\n\t\t\tfont-size: 14px;\n\t\t}\n\n\t\t.error {\n\t\t\tcolor: #f85149;\n\t\t\ttext-align: center;\n\t\t\tpadding: 24px;\n\t\t\tfont-size: 14px;\n\t\t}\n\n\t\t::-webkit-scrollbar {\n\t\t\twidth: 8px;\n\t\t}\n\n\t\t::-webkit-scrollbar-track {\n\t\t\tbackground: #0d1117;\n\t\t}\n\n\t\t::-webkit-scrollbar-thumb {\n\t\t\tbackground: #30363d;\n\t\t\tborder-radius: 4px;\n\t\t}\n\n\t\t::-webkit-scrollbar-thumb:hover {\n\t\t\tbackground: #484f58;\n\t\t}\n\t</style>\n</head>\n\n<body>\n\t<div class=\"tabs\">\n\t\t<button class=\"tab active\" onclick=\"switchTab('credits', this)\">credits</button>\n\t\t<button class=\"tab\" onclick=\"switchTab('contributors', this)\">contributors</button>\n\t\t<button class=\"tab\" onclick=\"switchTab('changelogs', this)\">changelogs</button>\n\t</div>\n\n\t<div class=\"content-area\">\n\t\t<div id=\"credits-content\" class=\"content active\">\n\t\t\t<div class=\"loading\">Loading credits.txt...</div>\n\t\t</div>\n\t\t<div id=\"contributors-content\" class=\"content\">\n\t\t\t<div class=\"loading\">Loading contributors_wall.txt...</div>\n\t\t</div>\n\t\t<div id=\"changelogs-content\" class=\"content\">\n\t\t\t<div class=\"loading\">Loading changelogs.txt...</div>\n\t\t</div>\n\t</div>\n\n\t<script>\n\t\tlet loadedTabs = new Set();\n\n\t\tfunction switchTab(tabName) {\n\t\t\t// Update tab states\n\t\t\tdocument.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));\n\t\t\tdocument.querySelectorAll('.content').forEach(content => content.classList.remove('active'));\n\n\t\t\t// Activate selected tab\n\t\t\tconst tabButton = Array.from(document.querySelectorAll('.tab'))\n\t\t\t\t.find(btn => btn.textContent.toLowerCase() === tabName);\n\t\t\tif (tabButton) tabButton.classList.add('active');\n\t\t\tconst contentElement = document.getElementById(`${tabName}-content`);\n\t\t\tcontentElement.classList.add('active');\n\n\t\t\t// Load content if not already loaded\n\t\t\tif (!loadedTabs.has(tabName)) {\n\t\t\t\tloadContent(tabName);\n\t\t\t}\n\t\t}\n\n\t\tasync function loadContent(type) {\n\t\t\tconst contentElement = document.getElementById(`${type}-content`);\n\t\t\tconst urls = {\n\t\t\t\t'credits': 'https://kxs.rip/credits.txt',\n\t\t\t\t'contributors': 'https://kxs.rip/contributors_wall.txt',\n\t\t\t\t'changelogs': 'https://kxs.rip/changelogs.txt'\n\t\t\t};\n\n\t\t\ttry {\n\t\t\t\tconst response = await fetch(urls[type]);\n\t\t\t\tif (!response.ok) throw new Error(`Failed to load ${type}`);\n\t\t\t\tconst text = await response.text();\n\t\t\t\tcontentElement.textContent = text;\n\t\t\t\tloadedTabs.add(type);\n\t\t\t} catch (error) {\n\t\t\t\tcontentElement.innerHTML = `<div class=\"error\">Error loading ${type}: ${error.message}</div>`;\n\t\t\t}\n\t\t}\n\n\t\t// Load initial content\n\t\tswitchTab('%%FOCUS_TAB%%');\n\t</script>\n</body>\n\n</html>";
-;// ./src/UTILS/credits-helper.ts
-// @ts-ignore
-
-// Function to create and show the "Click on me" animation above the version link
-function showClickMeAnimation() {
-    // Get the position of the version link to position the animation above it
-    const startBottomMiddle = document.getElementById("start-bottom-middle");
-    if (!startBottomMiddle)
-        return;
-    const versionLink = startBottomMiddle.getElementsByTagName("a")[0];
-    if (!versionLink)
-        return;
-    // Get the position of the version link
-    const linkRect = versionLink.getBoundingClientRect();
-    // Create the animation container
-    const animationContainer = document.createElement('div');
-    animationContainer.id = 'click-me-animation';
-    animationContainer.style.cssText = `
-        position: fixed;
-        bottom: ${window.innerHeight - linkRect.top}px;
-        left: ${linkRect.left + (linkRect.width / 2)}px;
-        z-index: 10000;
-        pointer-events: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        animation: fadeInBounce 1s ease-out;
-        transform: translateX(-50%);
-    `;
-    // Create the text element
-    const textElement = document.createElement('div');
-    textElement.textContent = 'Click on me';
-    textElement.style.cssText = `
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        font-weight: bold;
-        margin-bottom: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        animation: pulse 2s infinite;
-        white-space: nowrap;
-    `;
-    // Create the arrow element pointing down to the version link
-    const arrowElement = document.createElement('div');
-    arrowElement.innerHTML = '▼';
-    arrowElement.style.cssText = `
-        color: #fff;
-        font-size: 20px;
-        animation: bounce 1.5s infinite;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        margin-top: -5px;
-    `;
-    // Add CSS animations to the document
-    const styleElement = document.createElement('style');
-    styleElement.textContent = `
-        @keyframes fadeInBounce {
-            0% {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-20px);
-            }
-            60% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(5px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-       
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-8px);
-            }
-            60% {
-                transform: translateY(-4px);
-            }
-        }
-       
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-       
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-20px);
-            }
-        }
-    `;
-    document.head.appendChild(styleElement);
-    // Assemble the animation
-    animationContainer.appendChild(textElement);
-    animationContainer.appendChild(arrowElement);
-    document.body.appendChild(animationContainer);
-    // Auto-hide after 8 seconds
-    setTimeout(() => {
-        animationContainer.style.animation = 'fadeOut 0.5s ease-in forwards';
-        setTimeout(() => {
-            if (animationContainer.parentNode) {
-                animationContainer.parentNode.removeChild(animationContainer);
-            }
-            if (styleElement.parentNode) {
-                styleElement.parentNode.removeChild(styleElement);
-            }
-        }, 500);
-    }, 4000);
-    return animationContainer;
-}
-// Function to create and open the credits window
-function openCreditsWindow(focusTab = "credits") {
-    // Use the imported HTML content
-    const htmlContent = creditpageraw_namespaceObject.replace('%%FOCUS_TAB%%', focusTab);
-    // Create a blob URL from the HTML content
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const blobUrl = URL.createObjectURL(blob);
-    // Open the window with the blob URL
-    const creditsWindow = window.open(blobUrl, 'KxsCredits', 'width=800,height=600,scrollbars=yes,resizable=yes');
-    if (!creditsWindow) {
-        alert('Please allow popups for this site to view credits.');
-        URL.revokeObjectURL(blobUrl); // Clean up if window couldn't open
-        return;
-    }
-    // Clean up the blob URL after the window loads
-    creditsWindow.addEventListener('load', () => {
-        URL.revokeObjectURL(blobUrl);
-    });
-}
-
-
-;// ./src/FUNC/UpdateChecker.ts
-var UpdateChecker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-class UpdateChecker {
-    constructor(kxsClient) {
-        this.remoteScriptUrl = `${config_namespaceObject.api_url}/cors/${encodeURIComponent(config_namespaceObject.base_url + "/download/latest-dev.js")}`;
-        this.kxsClient = kxsClient;
-        if (this.kxsClient.isAutoUpdateEnabled) {
-            this.checkForUpdate();
-        }
-    }
-    copyScriptToClipboard() {
-        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch(this.remoteScriptUrl, {
-                    method: "GET",
-                    headers: {
-                        "cache-control": "no-cache, no-store, must-revalidate",
-                        "pragma": "no-cache",
-                        "expires": "0"
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error("Error retrieving script: " + response.statusText);
-                }
-                const scriptContent = yield response.text();
-                yield navigator.clipboard.writeText(scriptContent);
-                this.kxsClient.nm.showNotification("Script copied to clipboard!", "success", 2300);
-            }
-            catch (error) {
-                throw new Error("Error copying script to clipboard: " + error);
-            }
-        });
-    }
-    getNewScriptVersion() {
-        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch(this.remoteScriptUrl, {
-                    method: "GET",
-                    headers: {
-                        "cache-control": "no-cache, no-store, must-revalidate",
-                        "pragma": "no-cache",
-                        "expires": "0"
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error("Error retrieving remote script: " + response.statusText);
-                }
-                const scriptContent = yield response.text();
-                const versionMatch = scriptContent.match(/\/\/\s*@version\s+([\d.]+)/);
-                if (versionMatch && versionMatch[1]) {
-                    return versionMatch[1];
-                }
-                else {
-                    throw new Error("Script version was not found in the file.");
-                }
-            }
-            catch (error) {
-                throw new Error("Error retrieving remote script: " + error);
-            }
-        });
-    }
-    checkForUpdate() {
-        return UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            const localScriptVersion = yield this.getCurrentScriptVersion();
-            const hostedScriptVersion = yield this.getNewScriptVersion();
-            this.hostedScriptVersion = hostedScriptVersion;
-            // Vérifie si la version hébergée est supérieure à la version locale
-            if (gt_default()(hostedScriptVersion, localScriptVersion)) {
-                this.displayUpdateNotification();
-            }
-            else {
-                this.kxsClient.nm.showNotification("Client is up to date", "success", 2300);
-            }
-        });
-    }
-    displayUpdateNotification() {
-        const modal = document.createElement("div");
-        modal.style.position = "fixed";
-        modal.style.top = "50%";
-        modal.style.left = "50%";
-        modal.style.transform = "translate(-50%, -50%)";
-        modal.style.backgroundColor = "rgb(250, 250, 250)";
-        modal.style.borderRadius = "10px";
-        modal.style.padding = "20px";
-        modal.style.width = "500px";
-        modal.style.boxShadow = "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)";
-        modal.style.border = "1px solid rgb(229, 229, 229)";
-        modal.style.zIndex = "10000";
-        const header = document.createElement("div");
-        header.style.display = "flex";
-        header.style.alignItems = "center";
-        header.style.marginBottom = "15px";
-        const title = document.createElement("h3");
-        title.textContent = "Update Available";
-        title.style.margin = "0";
-        title.style.fontSize = "18px";
-        title.style.fontWeight = "600";
-        header.appendChild(title);
-        const buttonContainer = document.createElement("div");
-        buttonContainer.style.marginLeft = "auto";
-        buttonContainer.style.display = "flex";
-        buttonContainer.style.alignItems = "center";
-        buttonContainer.style.gap = "10px";
-        const changelogButton = document.createElement("button");
-        changelogButton.textContent = "See changelog";
-        changelogButton.style.border = "1px solid rgb(229, 229, 229)";
-        changelogButton.style.background = "white";
-        changelogButton.style.fontSize = "13px";
-        changelogButton.style.cursor = "pointer";
-        changelogButton.style.padding = "6px 12px";
-        changelogButton.style.borderRadius = "6px";
-        changelogButton.style.fontWeight = "500";
-        changelogButton.style.color = "rgb(75, 85, 99)";
-        changelogButton.style.transition = "background-color 0.2s ease";
-        changelogButton.onmouseover = () => changelogButton.style.backgroundColor = "rgb(243, 244, 246)";
-        changelogButton.onmouseout = () => changelogButton.style.backgroundColor = "white";
-        changelogButton.onclick = () => openCreditsWindow("changelogs");
-        buttonContainer.appendChild(changelogButton);
-        const closeButton = document.createElement("button");
-        closeButton.innerHTML = "×";
-        closeButton.style.border = "none";
-        closeButton.style.background = "none";
-        closeButton.style.fontSize = "24px";
-        closeButton.style.cursor = "pointer";
-        closeButton.style.padding = "0 5px";
-        closeButton.onclick = () => modal.remove();
-        buttonContainer.appendChild(closeButton);
-        header.appendChild(buttonContainer);
-        const content = document.createElement("div");
-        content.innerHTML = `<div style="margin-bottom: 20px;">
-			<p style="margin-bottom: 10px; font-weight: 500;">A new version of KxsClient is available!</p>
-			<p style="margin-bottom: 10px;">
-				Current version: <span style="font-weight: 500;">${this.getCurrentScriptVersion()}</span> | 
-				New version: <span style="font-weight: 500; color: #4f46e5;">${this.hostedScriptVersion}</span>
-			</p>
-			<p style="margin-bottom: 15px;">To update, follow these steps:</p>
-			<ol style="margin-left: 20px; margin-bottom: 15px;">
-				<li style="margin-bottom: 8px;">Click "Copy Script" below</li>
-				<li style="margin-bottom: 8px;">Open your script manager (Tampermonkey, Violentmonkey, etc.)</li>
-				<li style="margin-bottom: 8px;">Overwrite the current script with the new one and paste the content</li>
-				<li style="margin-bottom: 8px;">Save the script (Ctrl+S or Cmd+S)</li>
-				<li>Reload the game page</li>
-			</ol>
-		</div>`;
-        content.style.color = "rgb(75, 85, 99)";
-        content.style.fontSize = "14px";
-        content.style.lineHeight = "1.5";
-        const updateButton = document.createElement("button");
-        updateButton.textContent = "Copy Script";
-        updateButton.style.backgroundColor = "rgb(79, 70, 229)";
-        updateButton.style.color = "white";
-        updateButton.style.padding = "10px 16px";
-        updateButton.style.borderRadius = "6px";
-        updateButton.style.border = "none";
-        updateButton.style.cursor = "pointer";
-        updateButton.style.width = "100%";
-        updateButton.style.fontWeight = "500";
-        updateButton.style.fontSize = "15px";
-        updateButton.style.transition = "background-color 0.2s ease";
-        updateButton.onmouseover = () => updateButton.style.backgroundColor = "rgb(67, 56, 202)";
-        updateButton.onmouseout = () => updateButton.style.backgroundColor = "rgb(79, 70, 229)";
-        updateButton.onclick = () => UpdateChecker_awaiter(this, void 0, void 0, function* () {
-            try {
-                yield this.copyScriptToClipboard();
-                updateButton.textContent = "Script copied!";
-                updateButton.style.backgroundColor = "rgb(16, 185, 129)";
-                setTimeout(() => {
-                    if (updateButton.isConnected) {
-                        updateButton.textContent = "Copy Script";
-                        updateButton.style.backgroundColor = "rgb(79, 70, 229)";
-                    }
-                }, 3000);
-            }
-            catch (error) {
-                this.kxsClient.nm.showNotification("Error: " + error.message, "error", 5000);
-            }
-        });
-        modal.appendChild(header);
-        modal.appendChild(content);
-        modal.appendChild(updateButton);
-        document.body.appendChild(modal);
-    }
-    getCurrentScriptVersion() {
-        return this.kxsClient.pkg.version;
-    }
-}
-
-
 ;// ./src/SERVER/DiscordRichPresence.ts
 
 class DiscordWebSocket {
@@ -5283,7 +4194,7 @@ class NotificationManager {
 
 ;// ./src/types/hudMenu.ts
 const category = ["ALL", "HUD", "SERVER", "MECHANIC", "$MISC", "$CONFIG"];
-const X0 = ["Kxs Network", "Developer Options"];
+const X0 = (/* unused pure expression or super */ null && (["Kxs Network", "Developer Options"]));
 var ModType;
 (function (ModType) {
     ModType[ModType["Toggle"] = 1] = "Toggle";
@@ -5439,46 +4350,6 @@ class KxsClientSecondaryMenu {
         let SERVER = this.addSection("SERVER");
         let MISC = this.addSection("$MISC");
         let CONFIG = this.addSection("$CONFIG");
-        this.addOption(SERVER, {
-            label: vars_client.acronym_start_upper + " Network",
-            value: true,
-            type: ModType.Sub,
-            icon: '<svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>network</title> <path d="M27 21.75c-0.795 0.004-1.538 0.229-2.169 0.616l0.018-0.010-2.694-2.449c0.724-1.105 1.154-2.459 1.154-3.913 0-1.572-0.503-3.027-1.358-4.212l0.015 0.021 3.062-3.062c0.57 0.316 1.249 0.503 1.971 0.508h0.002c2.347 0 4.25-1.903 4.25-4.25s-1.903-4.25-4.25-4.25c-2.347 0-4.25 1.903-4.25 4.25v0c0.005 0.724 0.193 1.403 0.519 1.995l-0.011-0.022-3.062 3.062c-1.147-0.84-2.587-1.344-4.144-1.344-0.868 0-1.699 0.157-2.467 0.443l0.049-0.016-0.644-1.17c0.726-0.757 1.173-1.787 1.173-2.921 0-2.332-1.891-4.223-4.223-4.223s-4.223 1.891-4.223 4.223c0 2.332 1.891 4.223 4.223 4.223 0.306 0 0.605-0.033 0.893-0.095l-0.028 0.005 0.642 1.166c-1.685 1.315-2.758 3.345-2.758 5.627 0 0.605 0.076 1.193 0.218 1.754l-0.011-0.049-0.667 0.283c-0.78-0.904-1.927-1.474-3.207-1.474-2.334 0-4.226 1.892-4.226 4.226s1.892 4.226 4.226 4.226c2.334 0 4.226-1.892 4.226-4.226 0-0.008-0-0.017-0-0.025v0.001c-0.008-0.159-0.023-0.307-0.046-0.451l0.003 0.024 0.667-0.283c1.303 2.026 3.547 3.349 6.1 3.349 1.703 0 3.268-0.589 4.503-1.574l-0.015 0.011 2.702 2.455c-0.258 0.526-0.41 1.144-0.414 1.797v0.001c0 2.347 1.903 4.25 4.25 4.25s4.25-1.903 4.25-4.25c0-2.347-1.903-4.25-4.25-4.25v0zM8.19 5c0-0.966 0.784-1.75 1.75-1.75s1.75 0.784 1.75 1.75c0 0.966-0.784 1.75-1.75 1.75v0c-0.966-0.001-1.749-0.784-1.75-1.75v-0zM5 22.42c-0.966-0.001-1.748-0.783-1.748-1.749s0.783-1.749 1.749-1.749c0.966 0 1.748 0.782 1.749 1.748v0c-0.001 0.966-0.784 1.749-1.75 1.75h-0zM27 3.25c0.966 0 1.75 0.784 1.75 1.75s-0.784 1.75-1.75 1.75c-0.966 0-1.75-0.784-1.75-1.75v0c0.001-0.966 0.784-1.749 1.75-1.75h0zM11.19 16c0-0.001 0-0.002 0-0.003 0-2.655 2.152-4.807 4.807-4.807 1.328 0 2.53 0.539 3.4 1.409l0.001 0.001 0.001 0.001c0.87 0.87 1.407 2.072 1.407 3.399 0 2.656-2.153 4.808-4.808 4.808s-4.808-2.153-4.808-4.808c0-0 0-0 0-0v0zM27 27.75c-0.966 0-1.75-0.784-1.75-1.75s0.784-1.75 1.75-1.75c0.966 0 1.75 0.784 1.75 1.75v0c-0.001 0.966-0.784 1.749-1.75 1.75h-0z"></path> </g></svg>',
-            fields: [
-                {
-                    label: "Spoof Nickname",
-                    icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>hacker-solid</title> <g id="Layer_2" data-name="Layer 2"> <g id="invisible_box" data-name="invisible box"> <rect width="48" height="48" fill="none"></rect> </g> <g id="Q3_icons" data-name="Q3 icons"> <g> <path d="M24,30a60.3,60.3,0,0,1-13-1.3L7,27.6V40.2a1.9,1.9,0,0,0,1.5,1.9l12,2.9a2.4,2.4,0,0,0,2.1-.8L24,42.5l1.4,1.7A2.1,2.1,0,0,0,27,45h.5l12-2.9A1.9,1.9,0,0,0,41,40.2V27.6l-4,1.1A60.3,60.3,0,0,1,24,30Zm-7,8c-2,0-4-1.9-4-3s2-1,4-1,4,.9,4,2S19,38,17,38Zm14,0c-2,0-4-.9-4-2s2-2,4-2,4-.1,4,1S33,38,31,38Z"></path> <path d="M39.4,16,37.3,6.2A4,4,0,0,0,33.4,3H29.1a3.9,3.9,0,0,0-3.4,1.9L24,7.8,22.3,4.9A3.9,3.9,0,0,0,18.9,3H14.6a4,4,0,0,0-3.9,3.2L8.6,16C4.5,17.3,2,19,2,21c0,3.9,9.8,7,22,7s22-3.1,22-7C46,19,43.5,17.3,39.4,16Z"></path> </g> </g> </g> </g></svg>',
-                    type: ModType.Toggle,
-                    value: this.kxsClient.kxsNetworkSettings.nickname_anonymized,
-                    onChange: () => {
-                        this.kxsClient.kxsNetworkSettings.nickname_anonymized = !this.kxsClient.kxsNetworkSettings.nickname_anonymized;
-                        this.kxsClient.updateLocalStorage();
-                    }
-                },
-                {
-                    label: "Voice Chat",
-                    value: this.kxsClient.isVoiceChatEnabled,
-                    icon: '<svg fill="#000000" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <defs> <style> .cls-1 { fill: none; } </style> </defs> <path d="M26,30H24V27H20a5.0055,5.0055,0,0,1-5-5V20.7207l-2.3162-.772a1,1,0,0,1-.5412-1.4631L15,13.7229V11a9.01,9.01,0,0,1,9-9h5V4H24a7.0078,7.0078,0,0,0-7,7v3a.9991.9991,0,0,1-.1426.5144l-2.3586,3.9312,1.8174.6057A1,1,0,0,1,17,20v2a3.0033,3.0033,0,0,0,3,3h5a1,1,0,0,1,1,1Z"></path> <rect x="19" y="12" width="4" height="2"></rect> <path d="M9.3325,25.2168a7.0007,7.0007,0,0,1,0-10.4341l1.334,1.49a5,5,0,0,0,0,7.4537Z"></path> <path d="M6.3994,28.8008a11.0019,11.0019,0,0,1,0-17.6006L7.6,12.8a9.0009,9.0009,0,0,0,0,14.4014Z"></path> <rect id="_Transparent_Rectangle_" data-name="<Transparent Rectangle>" class="cls-1" width="32" height="32"></rect> </g></svg>',
-                    type: ModType.Toggle,
-                    onChange: () => {
-                        this.kxsClient.isVoiceChatEnabled = !this.kxsClient.isVoiceChatEnabled;
-                        this.kxsClient.updateLocalStorage();
-                        this.kxsClient.voiceChat.toggleVoiceChat();
-                    },
-                },
-                {
-                    label: "Chat",
-                    value: this.kxsClient.isKxsChatEnabled,
-                    icon: '<svg fill="#000000" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M232.727,238.545v186.182H281.6l-13.964,69.818l97.745-69.818H512V238.545H232.727z M477.091,389.818H365.382h-11.187 l-9.103,6.502l-25.912,18.508l5.003-25.01H281.6h-13.964V273.455h209.455V389.818z"></path> </g> </g> <g> <g> <path d="M279.273,17.455H0v186.182h65.164l97.745,69.818l-13.964-69.818h130.327V17.455z M244.364,168.727h-95.418h-42.582 l5.003,25.01L85.455,175.23l-9.104-6.502H65.164H34.909V52.364h209.455V168.727z"></path> </g> </g> <g> <g> <rect x="180.364" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="122.182" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="64" y="93.091" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="413.091" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="354.909" y="314.182" width="34.909" height="34.909"></rect> </g> </g> <g> <g> <rect x="296.727" y="314.182" width="34.909" height="34.909"></rect> </g> </g> </g></svg>',
-                    type: ModType.Toggle,
-                    onChange: () => {
-                        this.kxsClient.isKxsChatEnabled = !this.kxsClient.isKxsChatEnabled;
-                        this.kxsClient.updateLocalStorage();
-                        this.kxsClient.chat.toggleChat();
-                    },
-                }
-            ],
-        });
         vars_client.options.is_game_history_enabled && this.addOption(MISC, {
             label: "Game History",
             value: true,
@@ -5742,16 +4613,6 @@ class KxsClientSecondaryMenu {
                 else {
                     (_b = this.kxsClient.healWarning) === null || _b === void 0 ? void 0 : _b.hide();
                 }
-                this.kxsClient.updateLocalStorage();
-            },
-        });
-        this.addOption(SERVER, {
-            label: "Update Checker",
-            value: this.kxsClient.isAutoUpdateEnabled,
-            type: ModType.Toggle,
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18.4721 16.7023C17.3398 18.2608 15.6831 19.3584 13.8064 19.7934C11.9297 20.2284 9.95909 19.9716 8.25656 19.0701C6.55404 18.1687 5.23397 16.6832 4.53889 14.8865C3.84381 13.0898 3.82039 11.1027 4.47295 9.29011C5.12551 7.47756 6.41021 5.96135 8.09103 5.02005C9.77184 4.07875 11.7359 3.77558 13.6223 4.16623C15.5087 4.55689 17.1908 5.61514 18.3596 7.14656C19.5283 8.67797 20.1052 10.5797 19.9842 12.5023M19.9842 12.5023L21.4842 11.0023M19.9842 12.5023L18.4842 11.0023" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 8V12L15 15" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
-            onChange: (value) => {
-                this.kxsClient.isAutoUpdateEnabled = !this.kxsClient.isAutoUpdateEnabled;
                 this.kxsClient.updateLocalStorage();
             },
         });
@@ -6226,9 +5087,6 @@ class KxsClientSecondaryMenu {
                 if (this.activeCategory === 'ALL' || section.category === this.activeCategory) {
                     section.options.forEach((option) => {
                         // Create a unique key for each option
-                        if ((this.kxsClient.kxsNetwork["1"] === true) && X0.includes(option.label)) {
-                            return;
-                        }
                         const optionKey = `${option.label}-${section.category}`;
                         // Check if option matches search term (including subfields)
                         const labelMatches = this.searchTerm !== '' && option.label.toLowerCase().includes(this.searchTerm);
@@ -9721,1443 +8579,8 @@ class GameHistoryMenu {
 }
 
 
-;// ./src/HUD/MOD/BroadcastHUD.ts
-/**
- * BroadcastHUD - Displays broadcast messages in a glassmorphism HUD
- * matching the online menu style from KxsClient
- */
-class BroadcastHUD {
-    /**
-     * Get the singleton instance of BroadcastHUD
-     * @param kxsClient Reference to the KxsClient instance
-     * @returns BroadcastHUD instance
-     */
-    static getInstance(kxsClient) {
-        if (!BroadcastHUD.instance) {
-            BroadcastHUD.instance = new BroadcastHUD(kxsClient);
-        }
-        return BroadcastHUD.instance;
-    }
-    /**
-     * Private constructor to enforce singleton pattern
-     * @param kxsClient Reference to the KxsClient instance
-     */
-    constructor(kxsClient) {
-        this.currentMessage = "";
-        this.isVisible = false;
-        this.hideTimeout = null;
-        this.progressAnimation = null;
-        this.kxsClient = kxsClient;
-        this.container = document.createElement("div");
-        this.messageElement = document.createElement("div");
-        this.progressBar = document.createElement("div");
-        this.createHUD();
-    }
-    /**
-     * Create the HUD container and elements
-     */
-    createHUD() {
-        // Check if glassmorphism is enabled
-        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
-        // Apply the appropriate styling based on glassmorphism toggle
-        Object.assign(this.container.style, {
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            padding: "8px 18px 0 18px", // Remove bottom padding to accommodate progress bar
-            zIndex: "999",
-            minWidth: "280px",
-            maxWidth: "400px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            opacity: "0",
-            pointerEvents: "none",
-            transition: "all 0.3s ease",
-            transform: "translateY(-20px)",
-            // Apply different styles based on glassmorphism toggle
-            background: is_glassmorphism_enabled ? "rgba(255, 255, 255, 0.1)" : "rgba(50, 50, 50, 0.95)",
-            backdropFilter: is_glassmorphism_enabled ? "blur(20px) saturate(180%)" : "none",
-            WebkitBackdropFilter: is_glassmorphism_enabled ? "blur(20px) saturate(180%)" : "none",
-            border: is_glassmorphism_enabled ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid #555",
-            borderRadius: is_glassmorphism_enabled ? "16px" : "10px",
-            boxShadow: is_glassmorphism_enabled ?
-                "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)" :
-                "0 4px 15px rgba(0, 0, 0, 0.4)",
-            fontSize: "15px",
-            userSelect: "none",
-            fontFamily: "inherit",
-            overflow: "hidden" // Ensure progress bar doesn't overflow
-        });
-        // Create header
-        const header = document.createElement("div");
-        Object.assign(header.style, {
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "8px",
-            width: "100%"
-        });
-        // Create notification dot (similar to online dot)
-        const dot = document.createElement("span");
-        Object.assign(dot.style, {
-            display: "inline-block",
-            width: "12px",
-            height: "12px",
-            borderRadius: "50%",
-            background: "#3fae2a",
-            marginRight: "10px",
-            boxShadow: "0 0 8px #3fae2a"
-        });
-        // Create title
-        const title = document.createElement("div");
-        title.textContent = `BROADCAST MESSAGE FROM ${client.acronym_upper} CREATOR`;
-        Object.assign(title.style, {
-            fontWeight: "bold",
-            color: "#fff",
-            fontSize: "15px"
-        });
-        header.appendChild(dot);
-        header.appendChild(title);
-        // Create message element
-        Object.assign(this.messageElement.style, {
-            fontFamily: "inherit",
-            fontSize: "14px",
-            lineHeight: "1.5",
-            color: "#fff",
-            width: "100%",
-            wordBreak: "break-word"
-        });
-        // Create decorative line
-        const decorativeLine = document.createElement("div");
-        Object.assign(decorativeLine.style, {
-            background: "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.05) 100%)",
-            width: "100%",
-            margin: "8px 0"
-        });
-        // Create progress bar at the bottom
-        Object.assign(this.progressBar.style, {
-            height: is_glassmorphism_enabled ? "4px" : "3px",
-            marginTop: "10px",
-            background: "linear-gradient(to right, #3fae2a, #6ae95f)",
-            transformOrigin: "left",
-            transform: "scaleX(0)",
-            transition: "transform 0.2s linear",
-            alignSelf: "flex-start",
-            marginLeft: "-18px", // To compensate for container padding
-            width: "calc(100% + 36px)" // Extend full width including padding
-        });
-        // Assemble HUD
-        this.container.appendChild(header);
-        this.container.appendChild(decorativeLine);
-        this.container.appendChild(this.messageElement);
-        this.container.appendChild(this.progressBar);
-        // Add to document
-        document.body.appendChild(this.container);
-        // Create animation style for the dot
-        if (!document.getElementById('kxs-broadcast-style')) {
-            const style = document.createElement('style');
-            style.id = 'kxs-broadcast-style';
-            style.innerHTML = `
-                @keyframes kxs-broadcast-pulse {
-                    0% { box-shadow:0 0 8px #3fae2a; opacity: 1; }
-                    100% { box-shadow:0 0 16px #3fae2a; opacity: 0.6; }
-                }
-            `;
-            document.head.appendChild(style);
-            // Apply animation to dot
-            dot.style.animation = "kxs-broadcast-pulse 1s infinite alternate";
-        }
-    }
-    /**
-     * Show a broadcast message in the HUD
-     * @param message The message to display
-     * @param duration How long to show the message (ms)
-     */
-    showMessage(message, duration = 8000) {
-        if (!this.container || !this.messageElement)
-            return;
-        // Clear any existing timeout and animation
-        if (this.hideTimeout !== null) {
-            clearTimeout(this.hideTimeout);
-            this.hideTimeout = null;
-        }
-        if (this.progressAnimation) {
-            this.progressAnimation.cancel();
-            this.progressAnimation = null;
-        }
-        // Reset progress bar
-        this.progressBar.style.transform = "scaleX(0)";
-        // Update message
-        this.currentMessage = message;
-        this.messageElement.textContent = message;
-        // Show HUD if not already visible
-        if (!this.isVisible) {
-            this.container.style.opacity = "1";
-            this.container.style.transform = "translateY(0)";
-            this.container.style.pointerEvents = "auto";
-            this.isVisible = true;
-        }
-        else {
-            // Apply a quick pulse effect to draw attention to the new message
-            const dot = this.container.querySelector('span');
-            if (dot) {
-                dot.style.animation = "none";
-                setTimeout(() => {
-                    if (dot) {
-                        dot.style.animation = "kxs-broadcast-pulse 1s infinite alternate";
-                    }
-                }, 10);
-            }
-        }
-        // Animate progress bar
-        this.progressAnimation = this.progressBar.animate([
-            { transform: "scaleX(0)" },
-            { transform: "scaleX(1)" }
-        ], {
-            duration: duration,
-            easing: "linear",
-            fill: "forwards"
-        });
-        // Set timeout to hide the message
-        this.hideTimeout = setTimeout(() => {
-            this.hideMessage();
-        }, duration);
-    }
-    /**
-     * Hide the broadcast message HUD
-     */
-    hideMessage() {
-        if (!this.container)
-            return;
-        this.container.style.opacity = "0";
-        this.container.style.transform = "translateY(-20px)";
-        this.container.style.pointerEvents = "none";
-        this.isVisible = false;
-        if (this.hideTimeout !== null) {
-            clearTimeout(this.hideTimeout);
-            this.hideTimeout = null;
-        }
-        if (this.progressAnimation) {
-            this.progressAnimation.cancel();
-            this.progressAnimation = null;
-        }
-        // Reset progress bar
-        this.progressBar.style.transform = "scaleX(0)";
-    }
-}
-BroadcastHUD.instance = null;
-
-;// ./src/NETWORK/KxsNetwork.ts
-
-
-class KxsNetwork {
-    constructor(kxsClient) {
-        this.currentGamePlayers = [];
-        this.ws = null;
-        this.heartbeatInterval = 0;
-        this.HOST = config_namespaceObject.api_url;
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 3;
-        this.reconnectTimeout = 0;
-        this.reconnectDelay = 15000;
-        this.kxsUsers = 0;
-        this.privateUsername = this.generateRandomUsername();
-        this.kxs_users = [];
-        this[0x1] = false;
-        this.connected = false;
-        this.actualGameId = null;
-        this.kxsClient = kxsClient;
-    }
-    connect() {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.kxsClient.logger.log('[KxsNetwork] WebSocket already connected');
-            return;
-        }
-        this.ws = new WebSocket(this.getWebSocketURL());
-        this.ws.onopen = () => {
-            this.kxsClient.logger.log('[KxsNetwork] WebSocket connection established');
-            // Reset reconnect attempts on successful connection
-            this.reconnectAttempts = 0;
-            this.reconnectDelay = 1000;
-        };
-        this.ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            this.handleMessage(data);
-        };
-        this.ws.onerror = (error) => {
-            this.kxsClient.nm.showNotification('WebSocket error: ' + error.type, 'error', 900);
-        };
-        this.ws.onclose = () => {
-            this.kxsClient.nm.showNotification('Disconnected from KxsNetwork', 'info', 1100);
-            clearInterval(this.heartbeatInterval);
-            this.connected = true;
-            // Try to reconnect
-            this.attemptReconnect();
-        };
-    }
-    attemptReconnect() {
-        if ((this.reconnectAttempts < this.maxReconnectAttempts) && this.kxsClient.kxsNetwork["1"] === false) {
-            this.reconnectAttempts++;
-            // Use exponential backoff for reconnection attempts
-            const delay = this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1);
-            this.kxsClient.logger.log(`[KxsNetwork] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms`);
-            // Clear any existing timeout
-            if (this.reconnectTimeout) {
-                clearTimeout(this.reconnectTimeout);
-            }
-            // Set timeout for reconnection
-            this.reconnectTimeout = setTimeout(() => {
-                this.connect();
-            }, delay);
-        }
-        else {
-            this.kxsClient.logger.log(this[1] ? '[KxsNetwork] Blacklisted' : '[KxsNetwork] Maximum reconnection attempts reached');
-            this.kxsClient.nm.showNotification(this[1] ? 'You are blacklisted' : 'Failed to reconnect after multiple attempts', 'error', 2000);
-        }
-    }
-    sendGlobalChatMessage(text) {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN)
-            return;
-        const payload = {
-            op: 7,
-            d: {
-                user: this.getUsername(),
-                text,
-                gameId: this.actualGameId || "lobby"
-            }
-        };
-        this.send(payload);
-    }
-    generateRandomUsername() {
-        let char = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        let username = '';
-        for (let i = 0; i < 6; i++) {
-            username += char[Math.floor(Math.random() * char.length)];
-        }
-        return "kxs_" + username;
-    }
-    getUsername() {
-        return this.kxsClient.kxsNetworkSettings.nickname_anonymized ?
-            this.privateUsername
-            :
-                this.kxsClient.getUsername();
-    }
-    capitalizeFirstLetter(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-    identify() {
-        const payload = {
-            op: 2,
-            d: {
-                username: this.getUsername(),
-                isVoiceChat: this.kxsClient.isVoiceChatEnabled,
-                v: this.capitalizeFirstLetter(__webpack_require__.g.client.name) + "@" + this.kxsClient.pkg.version,
-                exchangeKey: this.kxsClient.kxsDeveloperOptions.exchange.password || null,
-                isMobile: this.kxsClient.isMobile(),
-                isSecure: this.kxsClient.ContextIsSecure
-            }
-        };
-        this.send(payload);
-    }
-    handleMessage(_data) {
-        const { op, d } = _data;
-        switch (op) {
-            case 1: //Heart
-                {
-                    if (d === null || d === void 0 ? void 0 : d.count)
-                        this.kxsUsers = d.count;
-                    if (d === null || d === void 0 ? void 0 : d.players)
-                        this.kxs_users = d.players;
-                }
-                break;
-            case 2: // Dispatch
-                {
-                    if (d === null || d === void 0 ? void 0 : d.uuid) {
-                        this.connected = true;
-                    }
-                }
-                break;
-            case 3: // Kxs user join game
-                {
-                    if (d && Array.isArray(d.players)) {
-                        const myName = this.getUsername();
-                        const previousPlayers = this.currentGamePlayers;
-                        const currentPlayers = d.players.filter((name) => name !== myName);
-                        // Détecter les nouveaux joueurs (hors soi-même)
-                        const newPlayers = currentPlayers.filter((name) => !previousPlayers.includes(name));
-                        for (const newPlayer of newPlayers) {
-                            if (this.kxsClient.isKxsChatEnabled) {
-                                this.kxsClient.chat.addSystemMessage(`${newPlayer} joined the game as a ${client.acronym_start_upper} player`);
-                            }
-                            else {
-                                this.kxsClient.nm.showNotification(`🎉 ${newPlayer} is a ${client.acronym_start_upper} player!`, 'info', 3500);
-                            }
-                        }
-                        this.currentGamePlayers = currentPlayers;
-                    }
-                }
-                break;
-            case 7: // Global chat message
-                {
-                    if (d && d.user && d.text) {
-                        this.kxsClient.chat.addChatMessage(d.user, d.text);
-                    }
-                    else if (d && d.error && !d.user) {
-                        this.kxsClient.chat.addErrorMessage(d.error);
-                    }
-                }
-                break;
-            case 10: // Hello
-                {
-                    const { heartbeat_interval } = d;
-                    this.startHeartbeat(heartbeat_interval);
-                    this.identify();
-                }
-                break;
-            case 24: // Handle gbl
-                {
-                    let { error, reason, timestamp, ign } = d;
-                    if (!error || !reason || !timestamp || !ign)
-                        return;
-                    this.kxsClient.handleGBL(error, reason, timestamp, ign);
-                }
-                break;
-            case 98: // VOICE CHAT UPDATE
-                {
-                    if (d && !d.isVoiceChat && d.user) {
-                        this.kxsClient.voiceChat.removeUserFromVoice(d.user);
-                    }
-                }
-                break;
-            case 87: // BROADCAST MESSAGE
-                {
-                    if (d && d.msg) {
-                        // Get the broadcast HUD instance and show the message
-                        const broadcastHUD = BroadcastHUD.getInstance(this.kxsClient);
-                        broadcastHUD.showMessage(d.msg, d.duration || 8000);
-                    }
-                }
-                break;
-        }
-    }
-    startHeartbeat(interval) {
-        // Clear existing interval if it exists
-        if (this.heartbeatInterval) {
-            clearInterval(this.heartbeatInterval);
-        }
-        this.heartbeatInterval = setInterval(() => {
-            this.send({
-                op: 1,
-                d: {}
-            });
-        }, interval);
-    }
-    send(data) {
-        var _a;
-        if (((_a = this.ws) === null || _a === void 0 ? void 0 : _a.readyState) === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(data));
-        }
-    }
-    disconnect() {
-        if (this.ws) {
-            // Clear all timers
-            clearInterval(this.heartbeatInterval);
-            clearTimeout(this.reconnectTimeout);
-            // Reset reconnection state
-            this.reconnectAttempts = 0;
-            // Close the connection
-            this.ws.close();
-        }
-    }
-    reconnect() {
-        this.disconnect();
-        this.connect();
-    }
-    sendGameInfoToWebSocket(gameId) {
-        if (!this.connected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-            return;
-        }
-        try {
-            const payload = {
-                op: 3, // Custom operation code for game info
-                d: {
-                    type: 'find_game_response',
-                    gameId,
-                    user: this.getUsername()
-                }
-            };
-            this.send(payload);
-        }
-        catch (error) {
-        }
-    }
-    getWebSocketURL() {
-        let isSecured = this.HOST.startsWith("https://");
-        let protocols = isSecured ? "wss://" : "ws://";
-        return protocols + this.HOST.split("/")[2];
-    }
-    getHTTPURL() {
-        return this.HOST;
-    }
-    getOnlineCount() {
-        return this.kxsUsers;
-    }
-    getKxsUsers() {
-        return this.kxs_users;
-    }
-    gameEnded() {
-        var _a;
-        (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 4, d: {} }));
-    }
-    gameEnded_ExchangeKey(body) {
-        var _a;
-        (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 16, d: { data: body } }));
-    }
-    PlayerAlive_ExchangeKey(count) {
-        var _a;
-        (_a = this.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({ op: 15, d: { alive: count } }));
-    }
-}
-
-
-;// ./src/UTILS/KxsChat.ts
-class KxsChat {
-    constructor(kxsClient) {
-        this.chatInput = null;
-        this.chatBox = null;
-        this.messagesContainer = null;
-        this.chatMessages = [];
-        this.chatOpen = false;
-        this.resizeObserver = null;
-        this.handleKeyDown = (e) => {
-            if (e.key === 'Enter' && !this.chatOpen && document.activeElement !== this.chatInput) {
-                e.preventDefault();
-                this.openChatInput();
-            }
-            else if (e.key === 'Escape' && this.chatOpen) {
-                this.closeChatInput();
-            }
-        };
-        // Gestionnaire de clic sur le document pour fermer le chat quand on clique ailleurs
-        this.handleDocumentClick = (e) => {
-            // Si le chat est ouvert et qu'on clique en dehors du chat
-            if (this.chatOpen && this.chatBox && this.chatInput) {
-                // Vérifie si le clic est en dehors du chatBox
-                const target = e.target;
-                if (!this.chatBox.contains(target) && target !== this.chatInput) {
-                    // Ferme le chat si on clique ailleurs
-                    this.closeChatInput();
-                }
-            }
-        };
-        this.kxsClient = kxsClient;
-        this.initGlobalChat();
-        // Initialize chat visibility based on the current setting
-        if (this.chatBox && !this.kxsClient.isKxsChatEnabled) {
-            this.chatBox.style.display = 'none';
-            window.removeEventListener('keydown', this.handleKeyDown);
-        }
-        // Ajouter un gestionnaire de clic global pour fermer le chat lorsqu'on clique ailleurs
-        document.addEventListener('mousedown', this.handleDocumentClick);
-    }
-    initGlobalChat() {
-        if (this.chatBox)
-            return;
-        // FIX: Always attach to body so it doesn't get hidden when game-touch-area is hidden
-        const area = document.body;
-        // Chat box
-        const chatBox = document.createElement('div');
-        chatBox.id = 'kxs-chat-box';
-        // Messages container
-        const messagesContainer = document.createElement('div');
-        messagesContainer.id = 'kxs-chat-messages';
-        messagesContainer.style.display = 'flex';
-        messagesContainer.style.flexDirection = 'column';
-        messagesContainer.style.gap = '3px';
-        messagesContainer.style.flexGrow = '1'; // Prend tout l'espace disponible
-        messagesContainer.style.overflow = 'hidden'; // Masque le contenu qui dépasse au lieu d'afficher une barre de défilement
-        messagesContainer.style.minHeight = '100px'; // Hauteur minimale pour assurer l'espace
-        messagesContainer.style.maxHeight = '300px'; // Hauteur maximale pour éviter qu'il ne devienne trop grand
-        chatBox.appendChild(messagesContainer);
-        this.messagesContainer = messagesContainer;
-        // FIX: Use 'fixed' instead of 'absolute' to keep it on screen regardless of scrolling/containers
-        chatBox.style.position = 'fixed';
-        // Chatbox Position (Right under kills section!)
-        chatBox.style.left = '20px';
-        chatBox.style.top = '360px';
-        chatBox.style.bottom = 'unset';
-        chatBox.style.minWidth = '160px';
-        chatBox.style.maxWidth = '260px';
-        chatBox.style.minHeight = '150px'; // Hauteur minimale pour le chat box
-        chatBox.style.height = '150px'; // Hauteur par défaut
-        // Apply styling based on glassmorphism toggle
-        const is_glassmorphism_enabled = this.kxsClient.isGlassmorphismEnabled;
-        if (is_glassmorphism_enabled) {
-            // Glassmorphism style
-            chatBox.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
-            chatBox.style.backdropFilter = 'blur(40px) saturate(180%)';
-            chatBox.style['-webkitBackdropFilter'] = 'blur(40px) saturate(180%)';
-            chatBox.style.border = '1px solid rgba(255, 255, 255, 0.3)';
-            chatBox.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)';
-        }
-        else {
-            // Classic style - solid gray background without blur
-            chatBox.style.background = 'rgba(50, 50, 50, 0.95)';
-            chatBox.style.backdropFilter = 'none';
-            chatBox.style['-webkitBackdropFilter'] = 'none';
-            chatBox.style.border = '1px solid #555';
-            chatBox.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-        }
-        chatBox.style.color = '#fff';
-        chatBox.style.borderRadius = '15px';
-        chatBox.style.padding = '7px 14px 4px 14px';
-        chatBox.style.fontSize = '15px';
-        chatBox.style.fontFamily = 'inherit';
-        // FIX: Increase Z-Index to ensure it sits above the Homepage Menu (which often has high z-index)
-        chatBox.style.zIndex = '999999';
-        chatBox.style.pointerEvents = 'auto';
-        chatBox.style.cursor = 'move'; // Indique que c'est déplaçable
-        chatBox.style.display = 'flex';
-        chatBox.style.flexDirection = 'column';
-        chatBox.style.gap = '3px';
-        chatBox.style.opacity = '0.5';
-        chatBox.style.overflow = 'hidden'; // Nécessaire pour le redimensionnement
-        // Charger la position sauvegardée dès l'initialisation
-        const savedPosition = localStorage.getItem('kxs-chat-box-position');
-        if (savedPosition) {
-            try {
-                const { x, y } = JSON.parse(savedPosition);
-                chatBox.style.left = `${x}px`;
-                chatBox.style.top = `${y}px`;
-                chatBox.style.position = 'absolute';
-            }
-            catch (e) { }
-        }
-        area.appendChild(chatBox);
-        this.chatBox = chatBox;
-        // Configurer un ResizeObserver pour détecter les changements de taille de la chatBox
-        this.resizeObserver = new ResizeObserver(() => {
-            // Quand la taille change, mettre à jour l'affichage des messages
-            this.renderMessages();
-        });
-        // Observer la chatBox pour les changements de dimensions
-        if (this.chatBox) {
-            this.resizeObserver.observe(this.chatBox);
-        }
-        const preventMiddleClickScroll = (e) => {
-            if (e.button === 1) { // Button 1 = clic molette
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                return false;
-            }
-        };
-        chatBox.addEventListener('mousedown', preventMiddleClickScroll, true);
-        chatBox.addEventListener('auxclick', preventMiddleClickScroll, true);
-        messagesContainer.addEventListener('mousedown', preventMiddleClickScroll, true);
-        messagesContainer.addEventListener('auxclick', preventMiddleClickScroll, true);
-        // Rendre la chatbox draggable et resizable UNIQUEMENT si le menu secondaire est ouvert
-        const updateChatDraggable = () => {
-            const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
-            if (isMenuOpen) {
-                chatBox.style.pointerEvents = 'auto';
-                chatBox.style.cursor = 'move';
-                chatBox.style.resize = 'both'; // Active le redimensionnement avec l'indicateur gris
-                chatBox.style.cursor = 'move';
-                this.kxsClient.makeDraggable(chatBox, 'kxs-chat-box-position');
-            }
-            else {
-                chatBox.style.pointerEvents = 'none';
-                chatBox.style.cursor = 'default';
-                chatBox.style.resize = 'none'; // Désactive le redimensionnement
-            }
-        };
-        // Initial state
-        updateChatDraggable();
-        // Observe menu changes
-        const observer = new MutationObserver(updateChatDraggable);
-        if (this.kxsClient.secondaryMenu && this.kxsClient.secondaryMenu.menu) {
-            observer.observe(this.kxsClient.secondaryMenu.menu, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-        // Optionnel : timer pour fallback (si le menu est modifié autrement)
-        setInterval(updateChatDraggable, 500);
-        // Input
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = 'Press Enter to write...';
-        input.id = 'kxs-chat-input';
-        input.style.width = '100%';
-        input.style.boxSizing = 'border-box';
-        input.style.padding = '8px 12px';
-        input.style.borderRadius = '8px';
-        input.style.border = 'none';
-        // Apply styling based on glassmorphism toggle for input
-        if (this.kxsClient.isGlassmorphismEnabled) {
-            // Glassmorphism style
-            input.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04))';
-            input.style.backdropFilter = 'blur(25px) saturate(150%)';
-            input.style['-webkit-backdrop-filter'] = 'blur(25px) saturate(150%)';
-            input.style.border = '1px solid rgba(255, 255, 255, 0.35)';
-            input.style.boxShadow = '0 4px 20px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)';
-        }
-        else {
-            // Classic style - solid gray background without blur
-            input.style.background = 'rgba(60, 60, 60, 0.95)';
-            input.style.backdropFilter = 'none';
-            input.style['-webkit-backdrop-filter'] = 'none';
-            input.style.border = '1px solid #666';
-            input.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
-        }
-        input.style.color = '#fff';
-        input.style.fontSize = '15px';
-        input.style.fontFamily = 'inherit';
-        input.style.zIndex = '1003';
-        input.style.outline = 'none';
-        input.style.display = this.chatOpen ? 'block' : 'none';
-        input.style.opacity = '0.5';
-        input.style.marginTop = 'auto'; // Pour coller l'input en bas
-        chatBox.appendChild(input); // Ajoute l'input dans la chatBox
-        this.chatInput = input;
-        // Ajuste le style de chatBox pour le layout
-        chatBox.style.display = 'flex';
-        chatBox.style.flexDirection = 'column';
-        chatBox.style.gap = '3px';
-        chatBox.style.justifyContent = 'flex-end'; // S'assure que l'input est en bas
-        // Focus automatique sur l'input quand on clique dessus ou sur la chatBox
-        input.addEventListener('focus', () => {
-            // Rien de spécial, mais peut servir à customiser plus tard
-        });
-        chatBox.addEventListener('mousedown', (e) => {
-            // Focus l'input si clic sur la chatBox (hors drag)
-            if (e.target === chatBox) {
-                input.focus();
-            }
-        });
-        input.addEventListener('mousedown', () => {
-            input.focus();
-        });
-        ['keydown', 'keypress', 'keyup'].forEach(eventType => {
-            input.addEventListener(eventType, (e) => {
-                const ke = e;
-                if (eventType === 'keydown') {
-                    if (ke.key === 'Enter') {
-                        const txt = input.value.trim();
-                        if (txt) {
-                            this.kxsClient.kxsNetwork.sendGlobalChatMessage(txt);
-                            input.value = '';
-                            this.closeChatInput();
-                        }
-                        else {
-                            // Ne ferme pas l'input si rien n'a été écrit
-                            input.value = '';
-                        }
-                    }
-                    else if (ke.key === 'Escape') {
-                        this.closeChatInput();
-                    }
-                }
-                e.stopImmediatePropagation();
-                e.stopPropagation();
-            }, true);
-        });
-        // Gestion clavier
-        window.addEventListener('keydown', this.handleKeyDown);
-        this.addSystemMessage(`Wanna disable the chat ? Right Shift => ${client.acronym_start_upper} Network => Chat 🙂`);
-    }
-    openChatInput() {
-        if (!this.chatInput)
-            return;
-        this.chatInput.placeholder = 'Press Enter to write...';
-        this.chatInput.value = '';
-        this.chatInput.style.display = 'block';
-        this.chatInput.focus();
-        this.chatOpen = true;
-    }
-    closeChatInput() {
-        if (!this.chatInput)
-            return;
-        this.chatInput.style.display = 'none';
-        this.chatInput.blur();
-        this.chatOpen = false;
-    }
-    addChatMessage(user, text) {
-        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
-            return;
-        this.chatMessages.push({ user, text, isSystem: false, isError: false });
-        this.renderMessages();
-    }
-    /**
-     * Ajoute un message système dans le chat
-     * @param text Texte du message système
-     */
-    addSystemMessage(text) {
-        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
-            return;
-        // Ajouter le message système avec un marqueur spécifique isSystem = true
-        this.chatMessages.push({ user: "", text, isSystem: true, isError: false });
-        this.renderMessages();
-    }
-    /**
-     * Ajoute un message système dans le chat
-     * @param text Texte du message système
-     */
-    addErrorMessage(text) {
-        if (!this.chatBox || !this.kxsClient.isKxsChatEnabled)
-            return;
-        // Ajouter le message système avec un marqueur spécifique isSystem = true
-        this.chatMessages.push({ user: "", text, isSystem: true, isError: true });
-        this.renderMessages();
-    }
-    /**
-     * Calcule le nombre de messages qui peuvent s'afficher dans la division du chat
-     * @returns Le nombre de messages qui peuvent s'afficher
-     */
-    calculateVisibleMessageCount() {
-        if (!this.chatBox || !this.messagesContainer)
-            return 5; // Valeur par défaut
-        // Obtenir les dimensions réelles du conteneur de messages
-        const rect = this.messagesContainer.getBoundingClientRect();
-        const container_height = rect.height;
-        // Si la hauteur est toujours trop petite, utiliser une valeur par défaut
-        if (container_height < 50) {
-            // Utiliser la hauteur du chatBox comme base et soustraire l'espace pour l'input
-            const chat_box_height = this.chatBox.clientHeight;
-            const input_height = this.chatInput ? this.chatInput.clientHeight : 40; // Valeur par défaut si input n'est pas disponible
-            const padding = 20; // Estimation du padding total
-            const estimated_container_height = chat_box_height - input_height - padding;
-            // Estimation de la hauteur moyenne d'un message (en pixels)
-            const average_message_height = 22; // ~22px par message avec la taille de police actuelle
-            // Calcul du nombre de messages qui peuvent s'afficher
-            const visible_count = Math.max(1, Math.floor(estimated_container_height / average_message_height));
-            return visible_count;
-        }
-        // Estimation de la hauteur moyenne d'un message (en pixels)
-        const average_message_height = 22; // ~22px par message avec la taille de police actuelle
-        // Calcul du nombre de messages qui peuvent s'afficher
-        const visible_count = Math.max(1, Math.floor(container_height / average_message_height));
-        return visible_count;
-    }
-    /**
-     * Rend les messages du chat avec leur style approprié
-     */
-    renderMessages() {
-        if (!this.messagesContainer)
-            return;
-        // Calcule combien de messages peuvent s'afficher
-        const visible_count = this.calculateVisibleMessageCount();
-        // Sélectionne les messages les plus récents qui peuvent s'afficher
-        const visible_messages = this.chatMessages.slice(-visible_count);
-        // Rend les messages visibles
-        this.messagesContainer.innerHTML = visible_messages.map(m => {
-            if (m.isSystem && m.isError) {
-                return `<div style='color:#EB3023; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
-            }
-            else if (m.isSystem) {
-                return `<div style='color:#3B82F6; font-style:italic; margin-bottom:4px;'>${m.text}</div>`;
-            }
-            else {
-                return `<div style='margin-bottom:4px;'><b style='color:#3fae2a;'>${m.user}</b>: ${m.text}</div>`;
-            }
-        }).join('');
-        // Scroll to the bottom of the chatbox
-        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-    }
-    toggleChat() {
-        if (this.chatBox) {
-            this.chatBox.style.display = this.kxsClient.isKxsChatEnabled ? 'flex' : 'none';
-        }
-        if (this.kxsClient.isKxsChatEnabled) {
-            window.addEventListener('keydown', this.handleKeyDown);
-            // S'assurer que le gestionnaire de clic est actif
-            document.addEventListener('mousedown', this.handleDocumentClick);
-        }
-        else {
-            this.closeChatInput();
-            window.removeEventListener('keydown', this.handleKeyDown);
-            // Retirer le gestionnaire de clic si le chat est désactivé
-            document.removeEventListener('mousedown', this.handleDocumentClick);
-        }
-        const message = this.kxsClient.isKxsChatEnabled ? 'Chat enabled' : 'Chat disabled';
-        const type = this.kxsClient.isKxsChatEnabled ? 'success' : 'info';
-        this.kxsClient.nm.showNotification(message, type, 600);
-    }
-}
-
-
-;// ./src/UTILS/KxsVoiceChat.ts
-var KxsVoiceChat_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-class KxsVoiceChat {
-    constructor(kxsClient, kxsNetwork) {
-        this.audioCtx = null;
-        this.micStream = null;
-        this.micSource = null;
-        this.processor = null;
-        // Overlay elements
-        this.overlayContainer = null;
-        this.activeUsers = new Map();
-        this.mutedUsers = new Set();
-        this.activityCheckInterval = null;
-        this.isOverlayVisible = true;
-        this.isLocalMuted = false;
-        this.localMuteButton = null;
-        // Constants
-        this.ACTIVITY_THRESHOLD = 0.01;
-        this.INACTIVITY_TIMEOUT = 2000;
-        this.REMOVAL_TIMEOUT = 30000;
-        this.ACTIVITY_CHECK_INTERVAL = 500;
-        this.kxsClient = kxsClient;
-        this.kxsNetwork = kxsNetwork;
-        this.createOverlayContainer();
-    }
-    /**
-     * Remove a user from voice chat (e.g., when muted)
-     */
-    removeUserFromVoice(username) {
-        if (this.activeUsers.has(username)) {
-            this.activeUsers.delete(username);
-            this.updateOverlayUI();
-        }
-    }
-    startVoiceChat() {
-        return KxsVoiceChat_awaiter(this, void 0, void 0, function* () {
-            if (!this.kxsClient.isVoiceChatEnabled)
-                return;
-            this.cleanup();
-            this.showOverlay();
-            try {
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                this.micStream = yield navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        sampleRate: 48000,
-                        channelCount: 1,
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    }
-                });
-                this.micSource = this.audioCtx.createMediaStreamSource(this.micStream);
-                this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
-                this.micSource.connect(this.processor);
-                this.processor.connect(this.audioCtx.destination);
-                // Set up audio processing
-                this.setupAudioProcessing();
-                this.setupWebSocketListeners();
-            }
-            catch (error) {
-                alert("Unable to initialize voice chat: " + error.message);
-                this.cleanup();
-            }
-        });
-    }
-    setupAudioProcessing() {
-        if (!this.processor)
-            return;
-        this.processor.onaudioprocess = (e) => {
-            if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN)
-                return;
-            // Ne pas envoyer les données audio si l'utilisateur local est muté
-            if (this.isLocalMuted)
-                return;
-            const input = e.inputBuffer.getChannelData(0);
-            const int16 = new Int16Array(input.length);
-            for (let i = 0; i < input.length; i++) {
-                int16[i] = Math.max(-32768, Math.min(32767, input[i] * 32767));
-            }
-            this.kxsNetwork.ws.send(JSON.stringify({ op: 99, d: Array.from(int16) }));
-        };
-    }
-    setupWebSocketListeners() {
-        if (!this.kxsNetwork.ws)
-            return;
-        this.kxsNetwork.ws.addEventListener('message', this.handleAudioMessage.bind(this));
-    }
-    handleAudioMessage(msg) {
-        let parsed;
-        try {
-            parsed = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
-        }
-        catch (_a) {
-            return;
-        }
-        if (!parsed || parsed.op !== 99 || !parsed.d || !parsed.u)
-            return;
-        try {
-            // Skip if user is muted
-            if (this.mutedUsers.has(parsed.u))
-                return;
-            const int16Data = new Int16Array(parsed.d);
-            const floatData = new Float32Array(int16Data.length);
-            // Calculate audio level for visualization
-            let audioLevel = 0;
-            for (let i = 0; i < int16Data.length; i++) {
-                floatData[i] = int16Data[i] / 32767;
-                audioLevel += floatData[i] * floatData[i];
-            }
-            audioLevel = Math.sqrt(audioLevel / int16Data.length);
-            // Update user activity in the overlay
-            this.updateUserActivity(parsed.u, audioLevel);
-            // Play the audio
-            this.playAudio(floatData);
-        }
-        catch (error) {
-            this.kxsClient.logger.error("Audio processing error:", error);
-        }
-    }
-    playAudio(floatData) {
-        if (!this.audioCtx)
-            return;
-        const buffer = this.audioCtx.createBuffer(1, floatData.length, this.audioCtx.sampleRate);
-        buffer.getChannelData(0).set(floatData);
-        const source = this.audioCtx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(this.audioCtx.destination);
-        source.start();
-    }
-    stopVoiceChat() {
-        this.cleanup();
-        this.hideOverlay();
-    }
-    cleanup() {
-        if (this.processor) {
-            this.processor.disconnect();
-            this.processor = null;
-        }
-        if (this.micSource) {
-            this.micSource.disconnect();
-            this.micSource = null;
-        }
-        if (this.micStream) {
-            this.micStream.getTracks().forEach(track => track.stop());
-            this.micStream = null;
-        }
-        if (this.audioCtx) {
-            this.audioCtx.close();
-            this.audioCtx = null;
-        }
-        if (this.activityCheckInterval) {
-            window.clearInterval(this.activityCheckInterval);
-            this.activityCheckInterval = null;
-        }
-    }
-    toggleVoiceChat() {
-        var _a, _b;
-        if (this.kxsClient.isVoiceChatEnabled) {
-            (_a = this.kxsNetwork.ws) === null || _a === void 0 ? void 0 : _a.send(JSON.stringify({
-                op: 98,
-                d: { isVoiceChat: true }
-            }));
-            this.startVoiceChat();
-        }
-        else {
-            this.stopVoiceChat();
-            (_b = this.kxsNetwork.ws) === null || _b === void 0 ? void 0 : _b.send(JSON.stringify({
-                op: 98,
-                d: { isVoiceChat: false }
-            }));
-        }
-    }
-    createOverlayContainer() {
-        var _a, _b;
-        this.overlayContainer = document.createElement('div');
-        this.overlayContainer.id = 'kxs-voice-chat-overlay';
-        // Get glassmorphism setting from KxsClient
-        const isGlassmorphismEnabled = (_b = (_a = globalThis.kxsClient) === null || _a === void 0 ? void 0 : _a.isGlassmorphismEnabled) !== null && _b !== void 0 ? _b : true;
-        // Common styles for both modes
-        const commonStyles = {
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            width: '200px',
-            color: 'white',
-            padding: '10px',
-            zIndex: '1000',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '14px',
-            display: 'none',
-            cursor: 'move'
-        };
-        if (isGlassmorphismEnabled) {
-            // Apply glassmorphism styles
-            Object.assign(this.overlayContainer.style, Object.assign(Object.assign({}, commonStyles), { backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', webkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.2)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', borderRadius: '15px' }));
-        }
-        else {
-            // Apply classic styles
-            Object.assign(this.overlayContainer.style, Object.assign(Object.assign({}, commonStyles), { backgroundColor: 'rgba(70, 70, 70, 0.95)', border: '1px solid #555', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)', borderRadius: '8px' }));
-        }
-        // Charger la position sauvegardée si elle existe
-        const savedPosition = localStorage.getItem('kxs-voice-chat-position');
-        if (savedPosition) {
-            try {
-                const { x, y } = JSON.parse(savedPosition);
-                this.overlayContainer.style.left = `${x}px`;
-                this.overlayContainer.style.top = `${y}px`;
-                this.overlayContainer.style.right = 'auto';
-            }
-            catch (e) { }
-        }
-        // Add title and controls container (for title and mute button)
-        const controlsContainer = document.createElement('div');
-        Object.assign(controlsContainer.style, {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '5px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
-            paddingBottom: '5px'
-        });
-        // Title
-        const title = document.createElement('div');
-        title.textContent = 'Voice Chat';
-        Object.assign(title.style, {
-            fontWeight: 'bold'
-        });
-        // Fonction pour mettre à jour l'état draggable selon la visibilité du menu RSHIFT
-        const updateVoiceChatDraggable = () => {
-            const isMenuOpen = this.kxsClient.secondaryMenu.getMenuVisibility();
-            if (isMenuOpen) {
-                this.overlayContainer.style.pointerEvents = 'auto';
-                this.overlayContainer.style.cursor = 'move';
-                this.kxsClient.makeDraggable(this.overlayContainer, 'kxs-voice-chat-position');
-            }
-            else {
-                this.overlayContainer.style.pointerEvents = 'none';
-                this.overlayContainer.style.cursor = 'default';
-            }
-        };
-        // Initial state
-        updateVoiceChatDraggable();
-        // Observer les changements du menu
-        const observer = new MutationObserver(updateVoiceChatDraggable);
-        if (this.kxsClient.secondaryMenu && this.kxsClient.secondaryMenu.menu) {
-            observer.observe(this.kxsClient.secondaryMenu.menu, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-        // Fallback timer pour s'assurer de l'état correct
-        setInterval(updateVoiceChatDraggable, 500);
-        // Create local mute button
-        this.localMuteButton = this.createLocalMuteButton();
-        // Add elements to controls container
-        controlsContainer.appendChild(title);
-        controlsContainer.appendChild(this.localMuteButton);
-        this.overlayContainer.appendChild(controlsContainer);
-        // Container for users
-        const usersContainer = document.createElement('div');
-        usersContainer.id = 'kxs-voice-chat-users';
-        this.overlayContainer.appendChild(usersContainer);
-        document.body.appendChild(this.overlayContainer);
-        this.startActivityCheck();
-    }
-    showOverlay() {
-        if (!this.overlayContainer)
-            return;
-        this.overlayContainer.style.display = 'block';
-        this.isOverlayVisible = true;
-        if (!this.activityCheckInterval) {
-            this.startActivityCheck();
-        }
-    }
-    hideOverlay() {
-        if (!this.overlayContainer)
-            return;
-        this.overlayContainer.style.display = 'none';
-        this.isOverlayVisible = false;
-    }
-    toggleOverlay() {
-        if (this.isOverlayVisible) {
-            this.hideOverlay();
-        }
-        else {
-            this.showOverlay();
-        }
-        return this.isOverlayVisible;
-    }
-    updateUserActivity(username, audioLevel) {
-        const now = Date.now();
-        const isActive = audioLevel > this.ACTIVITY_THRESHOLD;
-        let user = this.activeUsers.get(username);
-        if (!user) {
-            user = {
-                username,
-                isActive,
-                lastActivity: now,
-                audioLevel,
-                isMuted: this.mutedUsers.has(username)
-            };
-            this.activeUsers.set(username, user);
-        }
-        else {
-            user.isActive = isActive;
-            user.lastActivity = now;
-            user.audioLevel = audioLevel;
-            user.isMuted = this.mutedUsers.has(username);
-        }
-        this.updateOverlayUI();
-    }
-    startActivityCheck() {
-        this.activityCheckInterval = window.setInterval(() => {
-            const now = Date.now();
-            let updated = false;
-            this.activeUsers.forEach((user, username) => {
-                // Set inactive if no activity for the specified timeout
-                if (now - user.lastActivity > this.INACTIVITY_TIMEOUT && user.isActive) {
-                    user.isActive = false;
-                    updated = true;
-                }
-                // Remove users inactive for longer period
-                if (now - user.lastActivity > this.REMOVAL_TIMEOUT) {
-                    this.activeUsers.delete(username);
-                    updated = true;
-                }
-            });
-            if (updated) {
-                this.updateOverlayUI();
-            }
-        }, this.ACTIVITY_CHECK_INTERVAL);
-    }
-    updateOverlayUI() {
-        if (!this.overlayContainer || !this.isOverlayVisible)
-            return;
-        const usersContainer = document.getElementById('kxs-voice-chat-users');
-        if (!usersContainer)
-            return;
-        // Clear existing users
-        usersContainer.innerHTML = '';
-        // Add users or show "no users" message
-        if (this.activeUsers.size === 0) {
-            this.renderNoUsersMessage(usersContainer);
-        }
-        else {
-            this.activeUsers.forEach(user => {
-                this.renderUserElement(usersContainer, user);
-            });
-        }
-    }
-    renderNoUsersMessage(container) {
-        const noUsers = document.createElement('div');
-        noUsers.textContent = 'No active users';
-        Object.assign(noUsers.style, {
-            color: 'rgba(255, 255, 255, 0.6)',
-            fontStyle: 'italic',
-            textAlign: 'center',
-            padding: '5px'
-        });
-        container.appendChild(noUsers);
-    }
-    renderUserElement(container, user) {
-        const userElement = document.createElement('div');
-        userElement.className = 'kxs-voice-chat-user';
-        Object.assign(userElement.style, {
-            display: 'flex',
-            alignItems: 'center',
-            margin: '3px 0',
-            padding: '3px',
-            borderRadius: '8px',
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(5px)',
-            webkitBackdropFilter: 'blur(5px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 4px 16px 0 rgba(31, 38, 135, 0.2)'
-        });
-        // Status indicator
-        const indicator = this.createStatusIndicator(user);
-        // Username label
-        const usernameLabel = document.createElement('span');
-        usernameLabel.textContent = user.username;
-        Object.assign(usernameLabel.style, {
-            flexGrow: '1',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-        });
-        // Mute button - FIX: Create this element properly
-        const muteButton = this.createMuteButton(user);
-        // Add elements to container
-        userElement.appendChild(indicator);
-        userElement.appendChild(usernameLabel);
-        userElement.appendChild(muteButton);
-        container.appendChild(userElement);
-    }
-    createStatusIndicator(user) {
-        const indicator = document.createElement('div');
-        Object.assign(indicator.style, {
-            width: '14px',
-            height: '14px',
-            borderRadius: '50%',
-            marginRight: '8px',
-            cursor: 'pointer'
-        });
-        indicator.title = user.isMuted ? 'Unmute' : 'Mute';
-        if (user.isActive) {
-            const scale = 1 + Math.min(user.audioLevel * 3, 1);
-            Object.assign(indicator.style, {
-                backgroundColor: '#2ecc71',
-                transform: `scale(${scale})`,
-                boxShadow: '0 0 5px #2ecc71',
-                transition: 'transform 0.1s ease-in-out'
-            });
-        }
-        else {
-            indicator.style.backgroundColor = '#7f8c8d';
-        }
-        return indicator;
-    }
-    createMuteButton(user) {
-        const muteButton = document.createElement('button');
-        muteButton.type = 'button'; // Important: specify type to prevent form submission behavior
-        muteButton.textContent = user.isMuted ? 'UNMUTE' : 'MUTE';
-        Object.assign(muteButton.style, {
-            backgroundColor: user.isMuted ? 'rgba(231, 76, 60, 0.8)' : 'rgba(127, 140, 141, 0.8)',
-            backdropFilter: 'blur(5px)',
-            webkitBackdropFilter: 'blur(5px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.2)',
-            color: 'white',
-            borderRadius: '6px',
-            padding: '2px 5px',
-            marginLeft: '5px',
-            cursor: 'pointer',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            minWidth: '40px'
-        });
-        muteButton.addEventListener('mouseover', () => {
-            muteButton.style.opacity = '0.8';
-        });
-        muteButton.addEventListener('mouseout', () => {
-            muteButton.style.opacity = '1';
-        });
-        const handleMuteToggle = (e) => {
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            e.preventDefault();
-            const newMutedState = !user.isMuted;
-            user.isMuted = newMutedState;
-            if (newMutedState) {
-                this.mutedUsers.add(user.username);
-            }
-            else {
-                this.mutedUsers.delete(user.username);
-            }
-            this.sendMuteState(user.username, newMutedState);
-            this.updateOverlayUI();
-            return false;
-        };
-        ['click', 'mousedown', 'pointerdown'].forEach(eventType => {
-            muteButton.addEventListener(eventType, handleMuteToggle, true);
-        });
-        muteButton.onclick = (e) => {
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            e.preventDefault();
-            const newMutedState = !user.isMuted;
-            user.isMuted = newMutedState;
-            if (newMutedState) {
-                this.mutedUsers.add(user.username);
-            }
-            else {
-                this.mutedUsers.delete(user.username);
-            }
-            this.sendMuteState(user.username, newMutedState);
-            this.updateOverlayUI();
-            return false;
-        };
-        return muteButton;
-    }
-    sendMuteState(username, isMuted) {
-        if (!this.kxsNetwork.ws || this.kxsNetwork.ws.readyState !== WebSocket.OPEN) {
-            return;
-        }
-        this.kxsNetwork.ws.send(JSON.stringify({
-            op: 100,
-            d: {
-                user: username,
-                isMuted: isMuted
-            }
-        }));
-    }
-    createLocalMuteButton() {
-        const muteButton = document.createElement('button');
-        muteButton.type = 'button';
-        muteButton.textContent = this.isLocalMuted ? 'UNMUTE' : 'MUTE';
-        muteButton.id = 'kxs-voice-chat-local-mute';
-        Object.assign(muteButton.style, {
-            backgroundColor: this.isLocalMuted ? 'rgba(231, 76, 60, 0.8)' : 'rgba(52, 152, 219, 0.8)',
-            backdropFilter: 'blur(5px)',
-            webkitBackdropFilter: 'blur(5px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.2)',
-            color: 'white',
-            borderRadius: '6px',
-            padding: '2px 5px',
-            cursor: 'pointer',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            minWidth: '55px'
-        });
-        muteButton.addEventListener('mouseover', () => {
-            muteButton.style.opacity = '0.8';
-        });
-        muteButton.addEventListener('mouseout', () => {
-            muteButton.style.opacity = '1';
-        });
-        // Utiliser un gestionnaire d'événement unique plus simple avec une vérification pour éviter les multiples déclenchements
-        muteButton.onclick = (e) => {
-            // Arrêter complètement la propagation de l'événement
-            e.stopImmediatePropagation();
-            e.stopPropagation();
-            e.preventDefault();
-            // Basculer l'état de mute
-            this.toggleLocalMute();
-            return false;
-        };
-        return muteButton;
-    }
-    toggleLocalMute() {
-        // Inverser l'état
-        this.isLocalMuted = !this.isLocalMuted;
-        // Mettre à jour l'apparence du bouton si présent
-        if (this.localMuteButton) {
-            // Définir clairement le texte et la couleur du bouton en fonction de l'état
-            this.localMuteButton.textContent = this.isLocalMuted ? 'UNMUTE' : 'MUTE';
-            this.localMuteButton.style.backgroundColor = this.isLocalMuted ? 'rgba(231, 76, 60, 0.8)' : 'rgba(52, 152, 219, 0.8)';
-        }
-        // Type de notification en fonction de si nous sommes sur error, info ou success
-        const notificationType = this.isLocalMuted ? 'error' : 'success';
-        // Notification de changement d'état
-        const message = this.isLocalMuted ? 'You are muted' : 'You are unmuted';
-        this.kxsClient.nm.showNotification(message, notificationType, 2000);
-    }
-}
-
-
 ;// ./package.json
-const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"2.10.3","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxs.rip/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
-;// ./src/SERVER/exchangeManager.ts
-
-class ExchangeManager {
-    constructor(kxsClient) {
-        this.HOST_URL = config_namespaceObject.api_url;
-        this.kxsClient = kxsClient;
-    }
-    sendGameInfo(gameId) {
-        if (!this.kxsClient.kxsDeveloperOptions.enableGameIDExchange)
-            return;
-        fetch(this.HOST_URL + "/exchange/joined/" + gameId + "/" + this.kxsClient.kxsDeveloperOptions.exchange.password, {
-            method: "GET",
-        })
-            .catch(error => {
-            this.kxsClient.logger.error(error);
-        });
-    }
-}
-
+const package_namespaceObject = /*#__PURE__*/JSON.parse('{"name":"kxsclient","version":"3.0.0-final-offline-before-archive","main":"index.js","namespace":"https://github.com/Kisakay/KxsClient","icon":"https://kxsclient.kisakay.com/assets/KysClientLogo.png","placeholder":"Kxs Client - Survev.io Client","scripts":{"test":"echo \\"Error: no test specified\\" && exit 1","commits":"oco --yes; npm version patch; git push;","build":"npx webpack -w","dev":"npx webpack -w"},"keywords":[],"author":"Kisakay","license":"AGPL-3.0","description":"A client to enhance the survev.io in-game experience with many features, as well as future features.","devDependencies":{"@types/semver":"^7.7.0","@types/tampermonkey":"^5.0.4","ts-loader":"^9.5.2","typescript":"^5.8.3","webpack":"^5.99.9","webpack-cli":"^5.1.4"},"dependencies":{"js-confetti":"^0.13.1","semver":"^7.7.2"}}');
 ;// ./src/SERVER/Ping.ts
 class PingTest {
     constructor() {
@@ -11516,7 +8939,7 @@ class GameIdHelper {
             </svg>
         `;
         const text = document.createElement("span");
-        text.textContent = this.kxsClient.kxsNetwork.actualGameId || "";
+        text.textContent = this.kxsClient.actualGameId || "";
         if (uiTopLeft) {
             content.appendChild(icon);
             content.appendChild(text);
@@ -11577,7 +9000,7 @@ class GameIdHelper {
             this.hide();
             return;
         }
-        const gameId = this.kxsClient.kxsNetwork.actualGameId;
+        const gameId = this.kxsClient.actualGameId;
         if (!gameId || gameId === "") {
             this.hide();
             return;
@@ -11607,7 +9030,7 @@ class GameIdHelper {
         // L'affichage est géré par setupRShiftListener selon l'état du menu
         // On met juste à jour le contenu si l'élément est visible
         if (this.warningElement && this.warningElement.style.display === "block") {
-            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            const gameId = this.kxsClient.actualGameId;
             const span = this.warningElement.querySelector("span");
             if (span && gameId && gameId !== "") {
                 span.textContent = `Game ID: ${gameId}`;
@@ -11623,7 +9046,7 @@ class GameIdHelper {
     copyGameIdToClipboard() {
         return GameIdHelper_awaiter(this, void 0, void 0, function* () {
             var _a, _b;
-            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            const gameId = this.kxsClient.actualGameId;
             if (!gameId || gameId === "") {
                 return;
             }
@@ -11638,7 +9061,7 @@ class GameIdHelper {
                     // Restaurer le texte original après 1.5 secondes
                     setTimeout(() => {
                         if (span && this.warningElement) {
-                            const currentGameId = this.kxsClient.kxsNetwork.actualGameId;
+                            const currentGameId = this.kxsClient.actualGameId;
                             if (currentGameId && currentGameId !== "") {
                                 span.textContent = `Game ID: ${currentGameId}`;
                             }
@@ -11667,7 +9090,7 @@ class GameIdHelper {
                         span.textContent = "✓ Copied!";
                         setTimeout(() => {
                             if (span && this.warningElement) {
-                                const currentGameId = this.kxsClient.kxsNetwork.actualGameId;
+                                const currentGameId = this.kxsClient.actualGameId;
                                 if (currentGameId && currentGameId !== "") {
                                     span.textContent = `Game ID: ${currentGameId}`;
                                 }
@@ -11718,7 +9141,7 @@ class GameIdHelper {
             return;
         const span = this.warningElement.querySelector("span");
         if (span) {
-            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            const gameId = this.kxsClient.actualGameId;
             // Ne pas mettre à jour si le texte est "✓ Copied!" (feedback de copie)
             if (span.textContent !== "✓ Copied!") {
                 span.textContent = gameId && gameId !== "" ? `Game ID: ${gameId}` : 'Game ID: Placement Mode';
@@ -11857,7 +9280,7 @@ class GameIdHelper {
                 return;
             }
             const isMenuOpen = ((_a = this.kxsClient.secondaryMenu) === null || _a === void 0 ? void 0 : _a.isOpen) || false;
-            const gameId = this.kxsClient.kxsNetwork.actualGameId;
+            const gameId = this.kxsClient.actualGameId;
             // Afficher uniquement si le module est activé, le menu est ouvert ET qu'un gameId existe
             if (isMenuOpen && gameId && gameId !== "") {
                 this.enableDragging();
@@ -12017,17 +9440,13 @@ var KxsClient_awaiter = (undefined && undefined.__awaiter) || function (thisArg,
 
 
 
-
-
-
-
-
 class KxsClient {
     constructor() {
         this.onlineMenuElement = null;
         this.onlineMenuInterval = null;
         this.backgroundInterval = null;
         this.deathObserver = null;
+        this.actualGameId = null;
         this.adBlockObserver = null;
         globalThis.kxsClient = this;
         this.pkg = package_namespaceObject;
@@ -12086,9 +9505,6 @@ class KxsClient {
             ping: { width: 100, height: 30 },
             kills: { width: 100, height: 30 },
         };
-        this.kxsNetworkSettings = {
-            nickname_anonymized: false,
-        };
         this.soundLibrary = {
             win_sound_url: win_sound,
             death_sound_url: death_sound,
@@ -12102,13 +9518,10 @@ class KxsClient {
         this.changeSurvevLogo();
         this.nm = NotificationManager.getInstance();
         this.discordRPC = new DiscordWebSocket(this, this.parseToken(this.discordToken));
-        this.updater = new UpdateChecker(this);
         this.kill_leader = new KillLeaderTracker(this);
         this.secondaryMenu = new KxsClientSecondaryMenu(this);
         this.healWarning = new HealthWarning(this);
         this.historyManager = new GameHistoryMenu(this);
-        this.kxsNetwork = new KxsNetwork(this);
-        this.exchangeManager = new ExchangeManager(this);
         this.aliveplayer = new PlayersAliveMonitor();
         this.gameIdHelper = new GameIdHelper(this);
         this.setAnimationFrameCallback();
@@ -12119,8 +9532,6 @@ class KxsClient {
         this.hud = new KxsClientHUD(this);
         this.adsBlocker = new AdBlockerBaby();
         this.discordTracker = new DiscordTracking(this, this.discordWebhookUrl);
-        this.chat = new KxsChat(this);
-        this.voiceChat = new KxsVoiceChat(this, this.kxsNetwork);
         if (this.isSpotifyPlayerEnabled) {
             this.createSimpleSpotifyPlayer();
         }
@@ -12128,9 +9539,7 @@ class KxsClient {
             this.adsBlocker.run();
         }
         this.MainMenuCleaning();
-        this.kxsNetwork.connect();
         this.createOnlineMenu();
-        this.voiceChat.startVoiceChat();
     }
     parseToken(token) {
         if (token) {
@@ -12338,60 +9747,15 @@ class KxsClient {
             const countEl = this.onlineMenuElement.querySelector('#kxs-online-count');
             const dot = this.onlineMenuElement.querySelector('#kxs-online-dot');
             const userListMenu = this.onlineMenuElement.querySelector('#kxs-online-users-menu');
-            try {
-                if (!this.kxsNetwork.connected)
-                    throw "KxsNetwork not connected";
-                if (this.kxsNetwork["1"] === true) {
-                    if (countEl)
-                        countEl.textContent = atob("WW91ciBpcCBoYXMgYmVlbiBiYW5uZWQgZnJvbSB1c2luZyBLeHNOZXR3b3Jr");
-                    if (dot) {
-                        dot.style.background = '#888';
-                        dot.style.boxShadow = 'none';
-                        dot.style.animation = '';
-                    }
-                    if (userListMenu) {
-                        userListMenu.innerHTML = `<div style="text-align:center;padding:5px;">${atob("WW91ciBpcCBoYXMgYmVlbiBiYW5uZWQgZnJvbSB1c2luZyBLeHNOZXR3b3Jr")}</div>`;
-                    }
-                    return;
-                }
-                const res = this.kxsNetwork.getOnlineCount();
-                const count = typeof res === 'number' ? res : '?';
-                if (countEl)
-                    countEl.textContent = `${count} ${client.acronym_start_upper} users`;
-                if (dot) {
-                    dot.style.background = '#3fae2a';
-                    dot.style.boxShadow = '0 0 8px #3fae2a';
-                    dot.style.animation = 'kxs-pulse 1s infinite alternate';
-                }
-                if (userListMenu) {
-                    const users = this.kxsNetwork.getKxsUsers();
-                    if (users && Array.isArray(users) && users.length > 0) {
-                        let userListHTML = '';
-                        userListHTML += '<div style="text-align:center;font-weight:bold;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.3);margin-bottom:8px;background:rgba(255,255,255,0.05);border-radius:6px;padding:8px;">Online users</div>';
-                        users.forEach(user => {
-                            userListHTML += `<div style="padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);transition:all 0.2s ease;">
-							<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fae2a;margin-right:8px;box-shadow:0 0 6px rgba(63,174,42,0.6);"></span>
-							${user}
-						</div>`;
-                        });
-                        userListMenu.innerHTML = userListHTML;
-                    }
-                    else {
-                        userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">No users online</div>';
-                    }
-                }
+            if (countEl)
+                countEl.textContent = 'API offline';
+            if (dot) {
+                dot.style.background = '#888';
+                dot.style.boxShadow = 'none';
+                dot.style.animation = '';
             }
-            catch (e) {
-                if (countEl)
-                    countEl.textContent = 'API offline';
-                if (dot) {
-                    dot.style.background = '#888';
-                    dot.style.boxShadow = 'none';
-                    dot.style.animation = '';
-                }
-                if (userListMenu) {
-                    userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">API offline</div>';
-                }
+            if (userListMenu) {
+                userListMenu.innerHTML = '<div style="text-align:center;padding:5px;">API offline</div>';
             }
         });
     }
@@ -12436,7 +9800,6 @@ class KxsClient {
             isGunBorderChromatic: this.isGunBorderChromatic,
             isVoiceChatEnabled: this.isVoiceChatEnabled,
             isKxsChatEnabled: this.isKxsChatEnabled,
-            kxsNetworkSettings: this.kxsNetworkSettings,
             isHealBarIndicatorEnabled: this.isHealBarIndicatorEnabled,
             brightness: this.brightness,
             isKxsClientLogoEnable: this.isKxsClientLogoEnable,
@@ -12478,11 +9841,9 @@ class KxsClient {
                         continue;
                     let isWin = this.isCurrentGameWin();
                     if (isWin) {
-                        this.kxsNetwork.gameEnded();
                         this.handlePlayerWin();
                     }
                     else {
-                        this.kxsNetwork.gameEnded();
                         this.handlePlayerDeath();
                     }
                 }
@@ -12753,7 +10114,7 @@ class KxsClient {
         }
     }
     loadLocalStorage() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8;
         const savedSettings = localStorage.getItem("userSettings")
             ? JSON.parse(localStorage.getItem("userSettings"))
             : null;
@@ -12778,20 +10139,19 @@ class KxsClient {
             this.isGunBorderChromatic = (_t = savedSettings.isGunBorderChromatic) !== null && _t !== void 0 ? _t : this.isGunBorderChromatic;
             this.isVoiceChatEnabled = (_u = savedSettings.isVoiceChatEnabled) !== null && _u !== void 0 ? _u : this.isVoiceChatEnabled;
             this.isKxsChatEnabled = (_v = savedSettings.isKxsChatEnabled) !== null && _v !== void 0 ? _v : this.isKxsChatEnabled;
-            this.kxsNetworkSettings = (_w = savedSettings.kxsNetworkSettings) !== null && _w !== void 0 ? _w : this.kxsNetworkSettings;
-            this.isHealBarIndicatorEnabled = (_x = savedSettings.isHealBarIndicatorEnabled) !== null && _x !== void 0 ? _x : this.isHealBarIndicatorEnabled;
-            this.isWinSoundEnabled = (_y = savedSettings.isWinSoundEnabled) !== null && _y !== void 0 ? _y : this.isWinSoundEnabled;
-            this.isDeathSoundEnabled = (_z = savedSettings.isDeathSoundEnabled) !== null && _z !== void 0 ? _z : this.isDeathSoundEnabled;
-            this.brightness = (_0 = savedSettings.brightness) !== null && _0 !== void 0 ? _0 : this.brightness;
-            this.isKxsClientLogoEnable = (_1 = savedSettings.isKxsClientLogoEnable) !== null && _1 !== void 0 ? _1 : this.isKxsClientLogoEnable;
-            this.isFocusModeEnabled = (_2 = savedSettings.isFocusModeEnabled) !== null && _2 !== void 0 ? _2 : this.isFocusModeEnabled;
-            this.kxsDeveloperOptions = (_3 = savedSettings.kxsDeveloperOptions) !== null && _3 !== void 0 ? _3 : this.kxsDeveloperOptions;
-            this.isGlassmorphismEnabled = (_4 = savedSettings.isGlassmorphismEnabled) !== null && _4 !== void 0 ? _4 : this.isGlassmorphismEnabled;
-            this.isCustomBackgroundEnabled = (_5 = savedSettings.isCustomBackgroundEnabled) !== null && _5 !== void 0 ? _5 : this.isCustomBackgroundEnabled;
-            this.used = (_6 = savedSettings.used) !== null && _6 !== void 0 ? _6 : this.used;
-            this.isGameIdHelperEnabled = (_7 = savedSettings.isGameIdHelperEnabled) !== null && _7 !== void 0 ? _7 : this.isGameIdHelperEnabled;
-            this.isCustomMusicEnabled = (_8 = savedSettings.isCustomMusicEnabled) !== null && _8 !== void 0 ? _8 : this.isCustomMusicEnabled;
-            this.isAdsBlockerEnabled = (_9 = savedSettings.isAdsBlockerEnabled) !== null && _9 !== void 0 ? _9 : this.isAdsBlockerEnabled;
+            this.isHealBarIndicatorEnabled = (_w = savedSettings.isHealBarIndicatorEnabled) !== null && _w !== void 0 ? _w : this.isHealBarIndicatorEnabled;
+            this.isWinSoundEnabled = (_x = savedSettings.isWinSoundEnabled) !== null && _x !== void 0 ? _x : this.isWinSoundEnabled;
+            this.isDeathSoundEnabled = (_y = savedSettings.isDeathSoundEnabled) !== null && _y !== void 0 ? _y : this.isDeathSoundEnabled;
+            this.brightness = (_z = savedSettings.brightness) !== null && _z !== void 0 ? _z : this.brightness;
+            this.isKxsClientLogoEnable = (_0 = savedSettings.isKxsClientLogoEnable) !== null && _0 !== void 0 ? _0 : this.isKxsClientLogoEnable;
+            this.isFocusModeEnabled = (_1 = savedSettings.isFocusModeEnabled) !== null && _1 !== void 0 ? _1 : this.isFocusModeEnabled;
+            this.kxsDeveloperOptions = (_2 = savedSettings.kxsDeveloperOptions) !== null && _2 !== void 0 ? _2 : this.kxsDeveloperOptions;
+            this.isGlassmorphismEnabled = (_3 = savedSettings.isGlassmorphismEnabled) !== null && _3 !== void 0 ? _3 : this.isGlassmorphismEnabled;
+            this.isCustomBackgroundEnabled = (_4 = savedSettings.isCustomBackgroundEnabled) !== null && _4 !== void 0 ? _4 : this.isCustomBackgroundEnabled;
+            this.used = (_5 = savedSettings.used) !== null && _5 !== void 0 ? _5 : this.used;
+            this.isGameIdHelperEnabled = (_6 = savedSettings.isGameIdHelperEnabled) !== null && _6 !== void 0 ? _6 : this.isGameIdHelperEnabled;
+            this.isCustomMusicEnabled = (_7 = savedSettings.isCustomMusicEnabled) !== null && _7 !== void 0 ? _7 : this.isCustomMusicEnabled;
+            this.isAdsBlockerEnabled = (_8 = savedSettings.isAdsBlockerEnabled) !== null && _8 !== void 0 ? _8 : this.isAdsBlockerEnabled;
             // Apply brightness setting
             this.applyBrightness(this.brightness);
             if (savedSettings.soundLibrary) {
@@ -13667,197 +11027,6 @@ class KxsClient {
         }
         return password;
     }
-    handleGBL(e, r, t, i) {
-        if (this.kxsNetwork["1"] === true)
-            return;
-        const overlay = document.createElement('div');
-        const modal = document.createElement('div');
-        const header = document.createElement('div');
-        const title = document.createElement('h2');
-        const message = document.createElement('div');
-        const reason = document.createElement('div');
-        const decorativeLine = document.createElement('div');
-        const styleElement = document.createElement('style');
-        Object.assign(overlay.style, {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            zIndex: '10000',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            animation: 'fadeIn 0.5s ease-out'
-        });
-        Object.assign(modal.style, {
-            width: '80%',
-            maxWidth: '600px',
-            backgroundColor: 'rgba(20, 12, 8, 0.95)',
-            color: '#fff',
-            borderRadius: '8px',
-            boxShadow: '0 0 30px rgba(255, 100, 0, 0.4), 0 0 60px rgba(255, 50, 0, 0.2)',
-            border: '1px solid rgba(255, 140, 0, 0.3)',
-            padding: '30px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-            animation: 'scaleIn 0.5s ease-out',
-            fontFamily: '\'Cinzel\', serif'
-        });
-        modal.style.backgroundImage = 'linear-gradient(to bottom, rgba(30, 18, 12, 0.95), rgba(20, 12, 8, 0.95))';
-        Object.assign(header.style, {
-            width: '100%',
-            textAlign: 'center',
-            marginBottom: '20px'
-        });
-        title.textContent = e;
-        Object.assign(title.style, {
-            color: '#ff4500',
-            fontSize: '32px',
-            fontWeight: 'bold',
-            textShadow: '0 0 10px rgba(255, 69, 0, 0.7)',
-            margin: '0 0 10px 0',
-            letterSpacing: '3px',
-            textTransform: 'uppercase'
-        });
-        Object.assign(decorativeLine.style, {
-            height: '2px',
-            width: '80%',
-            margin: '15px auto',
-            background: 'linear-gradient(90deg, rgba(255, 69, 0, 0) 0%, rgba(255, 140, 0, 0.8) 50%, rgba(255, 69, 0, 0) 100%)'
-        });
-        message.innerHTML = `<span>${atob("WW91ciBpcCBoYXMgYmVlbg==")} <span style="color: #ff4500; font-weight: bold;">${atob("YmFubmVk ")}</span> ${atob("ZnJvbSB1c2luZyBLeHNOZXR3b3Jr")}</span>`;
-        Object.assign(message.style, {
-            fontSize: '22px',
-            textAlign: 'center',
-            margin: '20px 0',
-            lineHeight: '1.5',
-            color: '#f0f0f0'
-        });
-        reason.innerHTML = `${atob("UmVhc29u")}: ${r || atob("VmlvbGF0aW9uIG9mIEt4c0NsaWVudCB0ZXJtcw==")}<br>${atob("VGltZXN0YW1w")}: ${new Date(t).toLocaleString()}<br>${atob("SUdO")}: ${i}`;
-        Object.assign(reason.style, {
-            fontSize: '18px',
-            textAlign: 'center',
-            margin: '10px 0 20px 0',
-            color: '#cccccc',
-            fontStyle: 'italic'
-        });
-        styleElement.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 30px rgba(255, 100, 0, 0.4), 0 0 60px rgba(255, 50, 0, 0.2); }
-            50% { box-shadow: 0 0 40px rgba(255, 120, 0, 0.6), 0 0 80px rgba(255, 70, 0, 0.3); }
-            100% { box-shadow: 0 0 30px rgba(255, 100, 0, 0.4), 0 0 60px rgba(255, 50, 0, 0.2); }
-        }
-        
-        @keyframes flicker {
-            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 0.99; }
-            20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
-        }${this.kxsNetwork["1"] = true}
-    `;
-        modal.style.animation = 'scaleIn 0.5s ease-out, pulse 3s infinite';
-        header.appendChild(title);
-        modal.appendChild(header);
-        modal.appendChild(decorativeLine);
-        new Audio(gbl_sound).play();
-        modal.appendChild(message);
-        modal.appendChild(reason);
-        overlay.appendChild(modal);
-        document.head.appendChild(styleElement);
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', (event) => {
-            event.stopPropagation();
-        });
-        const createFlameEffect = () => {
-            const flame = document.createElement('div');
-            Object.assign(flame.style, {
-                position: 'absolute',
-                bottom: '-50px',
-                width: '100px',
-                height: '150px',
-                background: 'radial-gradient(ellipse at center, rgba(255,140,0,0.4) 0%, rgba(255,69,0,0.2) 50%, rgba(255,0,0,0) 70%)',
-                borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-                filter: 'blur(10px)',
-                opacity: '0.7',
-                animation: 'flicker 3s infinite alternate',
-                zIndex: '-1'
-            });
-            const left = Math.random() * 100;
-            const size = 50 + Math.random() * 100;
-            flame.style.left = `${left}%`;
-            flame.style.width = `${size}px`;
-            flame.style.height = `${size * 1.5}px`;
-            modal.appendChild(flame);
-            setTimeout(() => {
-                if (flame.parentNode === modal) {
-                    modal.removeChild(flame);
-                }
-            }, 3000);
-        };
-        const flameInterval = setInterval(createFlameEffect, 500);
-        for (let i = 0; i < 5; i++) {
-            setTimeout(createFlameEffect, i * 200);
-        }
-        styleElement.id = 'kxs-gbl-style';
-        const cleanup = () => {
-            clearInterval(flameInterval);
-            if (document.body.contains(overlay)) {
-                document.body.removeChild(overlay);
-            }
-            if (document.head.contains(styleElement)) {
-                document.head.removeChild(styleElement);
-            }
-            const kxsStyles = document.querySelectorAll('style[id^="kxs-"]');
-            kxsStyles.forEach(style => style.remove());
-        };
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Close';
-        Object.assign(closeButton.style, {
-            marginTop: '20px',
-            padding: '10px 20px',
-            background: 'rgba(255, 69, 0, 0.2)',
-            border: '1px solid rgba(255, 140, 0, 0.5)',
-            borderRadius: '4px',
-            color: '#fff',
-            fontFamily: '\'Cinzel\', serif',
-            fontSize: '16px',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-        });
-        closeButton.addEventListener('mouseover', () => {
-            Object.assign(closeButton.style, {
-                background: 'rgba(255, 69, 0, 0.4)',
-                boxShadow: '0 0 10px rgba(255, 69, 0, 0.5)'
-            });
-        });
-        closeButton.addEventListener('mouseout', () => {
-            Object.assign(closeButton.style, {
-                background: 'rgba(255, 69, 0, 0.2)',
-                boxShadow: 'none'
-            });
-        });
-        closeButton.addEventListener('click', () => {
-            cleanup();
-        });
-        modal.appendChild(closeButton);
-    }
     getKxsJSONConfig() {
         var local_storage_key = [
             "kxs-voice-chat-position",
@@ -13895,6 +11064,156 @@ class KxsClient {
     }
 }
 
+;// ./src/creditpage.html?raw
+const creditpageraw_namespaceObject = "<!DOCTYPE html>\n<html lang=\"en\">\n\n<head>\n\t<meta charset=\"UTF-8\">\n\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\t<title>KxsClient - Credits</title>\n\t<style>\n\t\t* {\n\t\t\tmargin: 0;\n\t\t\tpadding: 0;\n\t\t\tbox-sizing: border-box;\n\t\t}\n\n\t\tbody {\n\t\t\tfont-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;\n\t\t\tbackground: #0d1117;\n\t\t\tcolor: #c9d1d9;\n\t\t\theight: 100vh;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t}\n\n\t\t.tabs {\n\t\t\tdisplay: flex;\n\t\t\tbackground: #161b22;\n\t\t\tborder-bottom: 1px solid #21262d;\n\t\t}\n\n\t\t.tab {\n\t\t\tpadding: 12px 24px;\n\t\t\tcursor: pointer;\n\t\t\tbackground: transparent;\n\t\t\tborder: none;\n\t\t\tcolor: #7d8590;\n\t\t\tfont: inherit;\n\t\t\ttransition: all 0.15s ease;\n\t\t\tborder-bottom: 2px solid transparent;\n\t\t}\n\n\t\t.tab:hover {\n\t\t\tcolor: #c9d1d9;\n\t\t\tbackground: #21262d;\n\t\t}\n\n\t\t.tab.active {\n\t\t\tcolor: #58a6ff;\n\t\t\tborder-bottom-color: #58a6ff;\n\t\t}\n\n\t\t.content-area {\n\t\t\tflex: 1;\n\t\t\toverflow: hidden;\n\t\t}\n\n\t\t.content {\n\t\t\theight: 100%;\n\t\t\tpadding: 24px;\n\t\t\toverflow-y: auto;\n\t\t\twhite-space: pre-wrap;\n\t\t\tfont-size: 13px;\n\t\t\tline-height: 1.6;\n\t\t\tdisplay: none;\n\t\t}\n\n\t\t.content.active {\n\t\t\tdisplay: block;\n\t\t}\n\n\t\t.loading {\n\t\t\tdisplay: flex;\n\t\t\tjustify-content: center;\n\t\t\talign-items: center;\n\t\t\theight: 200px;\n\t\t\tcolor: #7d8590;\n\t\t\tfont-size: 14px;\n\t\t}\n\n\t\t.error {\n\t\t\tcolor: #f85149;\n\t\t\ttext-align: center;\n\t\t\tpadding: 24px;\n\t\t\tfont-size: 14px;\n\t\t}\n\n\t\t::-webkit-scrollbar {\n\t\t\twidth: 8px;\n\t\t}\n\n\t\t::-webkit-scrollbar-track {\n\t\t\tbackground: #0d1117;\n\t\t}\n\n\t\t::-webkit-scrollbar-thumb {\n\t\t\tbackground: #30363d;\n\t\t\tborder-radius: 4px;\n\t\t}\n\n\t\t::-webkit-scrollbar-thumb:hover {\n\t\t\tbackground: #484f58;\n\t\t}\n\t</style>\n</head>\n\n<body>\n\t<div class=\"tabs\">\n\t\t<button class=\"tab active\" onclick=\"switchTab('credits', this)\">credits</button>\n\t\t<button class=\"tab\" onclick=\"switchTab('contributors', this)\">contributors</button>\n\t\t<button class=\"tab\" onclick=\"switchTab('changelogs', this)\">changelogs</button>\n\t</div>\n\n\t<div class=\"content-area\">\n\t\t<div id=\"credits-content\" class=\"content active\">\n\t\t\t<div class=\"loading\">Loading credits.txt...</div>\n\t\t</div>\n\t\t<div id=\"contributors-content\" class=\"content\">\n\t\t\t<div class=\"loading\">Loading contributors_wall.txt...</div>\n\t\t</div>\n\t\t<div id=\"changelogs-content\" class=\"content\">\n\t\t\t<div class=\"loading\">Loading changelogs.txt...</div>\n\t\t</div>\n\t</div>\n\n\t<script>\n\t\tlet loadedTabs = new Set();\n\n\t\tfunction switchTab(tabName) {\n\t\t\t// Update tab states\n\t\t\tdocument.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));\n\t\t\tdocument.querySelectorAll('.content').forEach(content => content.classList.remove('active'));\n\n\t\t\t// Activate selected tab\n\t\t\tconst tabButton = Array.from(document.querySelectorAll('.tab'))\n\t\t\t\t.find(btn => btn.textContent.toLowerCase() === tabName);\n\t\t\tif (tabButton) tabButton.classList.add('active');\n\t\t\tconst contentElement = document.getElementById(`${tabName}-content`);\n\t\t\tcontentElement.classList.add('active');\n\n\t\t\t// Load content if not already loaded\n\t\t\tif (!loadedTabs.has(tabName)) {\n\t\t\t\tloadContent(tabName);\n\t\t\t}\n\t\t}\n\n\t\tasync function loadContent(type) {\n\t\t\tconst contentElement = document.getElementById(`${type}-content`);\n\t\t\tconst urls = {\n\t\t\t\t'credits': 'https://kxsclient.kisakay.com/credits.txt',\n\t\t\t\t'contributors': 'https://kxsclient.kisakay.com/contributors_wall.txt',\n\t\t\t\t'changelogs': 'https://kxsclient.kisakay.com/changelogs.txt'\n\t\t\t};\n\n\t\t\ttry {\n\t\t\t\tconst response = await fetch(urls[type]);\n\t\t\t\tif (!response.ok) throw new Error(`Failed to load ${type}`);\n\t\t\t\tconst text = await response.text();\n\t\t\t\tcontentElement.textContent = text;\n\t\t\t\tloadedTabs.add(type);\n\t\t\t} catch (error) {\n\t\t\t\tcontentElement.innerHTML = `<div class=\"error\">Error loading ${type}: ${error.message}</div>`;\n\t\t\t}\n\t\t}\n\n\t\t// Load initial content\n\t\tswitchTab('%%FOCUS_TAB%%');\n\t</script>\n</body>\n\n</html>";
+;// ./src/UTILS/credits-helper.ts
+// @ts-ignore
+
+// Function to create and show the "Click on me" animation above the version link
+function showClickMeAnimation() {
+    // Get the position of the version link to position the animation above it
+    const startBottomMiddle = document.getElementById("start-bottom-middle");
+    if (!startBottomMiddle)
+        return;
+    const versionLink = startBottomMiddle.getElementsByTagName("a")[0];
+    if (!versionLink)
+        return;
+    // Get the position of the version link
+    const linkRect = versionLink.getBoundingClientRect();
+    // Create the animation container
+    const animationContainer = document.createElement('div');
+    animationContainer.id = 'click-me-animation';
+    animationContainer.style.cssText = `
+        position: fixed;
+        bottom: ${window.innerHeight - linkRect.top}px;
+        left: ${linkRect.left + (linkRect.width / 2)}px;
+        z-index: 10000;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeInBounce 1s ease-out;
+        transform: translateX(-50%);
+    `;
+    // Create the text element
+    const textElement = document.createElement('div');
+    textElement.textContent = 'Click on me';
+    textElement.style.cssText = `
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s infinite;
+        white-space: nowrap;
+    `;
+    // Create the arrow element pointing down to the version link
+    const arrowElement = document.createElement('div');
+    arrowElement.innerHTML = '▼';
+    arrowElement.style.cssText = `
+        color: #fff;
+        font-size: 20px;
+        animation: bounce 1.5s infinite;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        margin-top: -5px;
+    `;
+    // Add CSS animations to the document
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        @keyframes fadeInBounce {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            60% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+       
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-8px);
+            }
+            60% {
+                transform: translateY(-4px);
+            }
+        }
+       
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+       
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+    `;
+    document.head.appendChild(styleElement);
+    // Assemble the animation
+    animationContainer.appendChild(textElement);
+    animationContainer.appendChild(arrowElement);
+    document.body.appendChild(animationContainer);
+    // Auto-hide after 8 seconds
+    setTimeout(() => {
+        animationContainer.style.animation = 'fadeOut 0.5s ease-in forwards';
+        setTimeout(() => {
+            if (animationContainer.parentNode) {
+                animationContainer.parentNode.removeChild(animationContainer);
+            }
+            if (styleElement.parentNode) {
+                styleElement.parentNode.removeChild(styleElement);
+            }
+        }, 500);
+    }, 4000);
+    return animationContainer;
+}
+// Function to create and open the credits window
+function openCreditsWindow(focusTab = "credits") {
+    // Use the imported HTML content
+    const htmlContent = creditpageraw_namespaceObject.replace('%%FOCUS_TAB%%', focusTab);
+    // Create a blob URL from the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    // Open the window with the blob URL
+    const creditsWindow = window.open(blobUrl, 'KxsCredits', 'width=800,height=600,scrollbars=yes,resizable=yes');
+    if (!creditsWindow) {
+        alert('Please allow popups for this site to view credits.');
+        URL.revokeObjectURL(blobUrl); // Clean up if window couldn't open
+        return;
+    }
+    // Clean up the blob URL after the window loads
+    creditsWindow.addEventListener('load', () => {
+        URL.revokeObjectURL(blobUrl);
+    });
+}
+
+
 ;// ./src/index.ts
 let href = window.location.href;
 
@@ -13911,7 +11230,7 @@ let href = window.location.href;
 function loadKxs() {
     if (vars_client.name == "KxzClient")
         localStorage.setItem("popupHidden", String(true));
-    if (href === "https://kxs.rip/") {
+    if (href === "https://kxsclient.kisakay.com/") {
         /*
             - Injecting Easter Egg
         */
@@ -13988,4 +11307,4 @@ loadKxs();
 
 /******/ })()
 ;
-// Last modified code: 2025-12-22 13:21:21
+// Last modified code: 2026-04-11 07:35:02

@@ -1,3 +1,26 @@
+<@&1356012705919668284>  `3.0.0-final-offline-before-archive`
+
+> *The last update*
+
+After a lot of thinking, I’ve decided to officially discontinue the development of **KxsClient**.
+
+I stopped playing Survev.io back in January, and the last update to KxsClient was in December 2025. Since then, my motivation to continue maintaining or expanding the project has gradually faded. The main goal I had when creating KxsClient was to realize a childhood dream — building my own client that actually works. I achieved that, and I’m proud of it.
+
+However, over time, the perception around the project has become increasingly negative. Many people who have heard about KxsClient consider it low-quality, or even label it as a cheat. False information has spread within parts of the community, and unfortunately this wasn’t always addressed. Seeing that kind of reception toward something I invested a lot of time and passion into has been discouraging.
+
+Because of this, and because my personal interest in the project has decreased, I don’t see a reason to continue development. KxsClient is in a working state, and I prefer to leave it as it is rather than forcing updates without real motivation.
+
+The repository has now been archived, and no further updates, fixes, or features will be added.
+
+Thanks to everyone who supported the project, used it, or provided constructive feedback along the way. Despite everything, creating KxsClient was a meaningful experience for me. 🙏
+
+— Kisakay
+
+* **Entierly removed KxsNetwork, KxsVoiceChat, KxsChat, UpdateChecker**
+  * Changed endpoint from "kxs.rip" to "kxsclient.kxs.rip"
+
+---
+
 <@&1356012705919668284>  `2.10.3`
 
 > *Quality of life update (QOL)*
