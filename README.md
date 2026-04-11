@@ -1,5 +1,5 @@
 # KxsWebsite
-https://kxs.rip
+https://kxsclient.kisakay.com
 
 
  Survev.io Client Website
