@@ -586,6 +586,109 @@
       background: rgba(212, 174, 255, 0.08);
     }
 
+    .announcement-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(8, 5, 14, 0.78);
+      backdrop-filter: blur(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease;
+      z-index: 60;
+    }
+
+    .announcement-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .announcement-dialog {
+      width: min(560px, 100%);
+      border: 1px solid rgba(255, 49, 49, 0.26);
+      border-radius: 24px;
+      background: linear-gradient(160deg, rgba(40, 15, 30, 0.98), rgba(22, 12, 34, 0.98));
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+      padding: clamp(22px, 4vw, 30px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .announcement-dialog::after {
+      content: "";
+      position: absolute;
+      inset: -30% auto auto 58%;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255, 49, 49, 0.2), transparent 68%);
+      pointer-events: none;
+    }
+
+    .announcement-pill {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 49, 49, 0.24);
+      background: rgba(255, 49, 49, 0.1);
+      color: #ff9a9a;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .announcement-dialog h2 {
+      margin-top: 14px;
+      font-family: "Sora", sans-serif;
+      font-size: clamp(1.7rem, 4.4vw, 2.3rem);
+      line-height: 1.08;
+    }
+
+    .announcement-copy {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .announcement-note {
+      margin-top: 14px;
+      border: 1px solid rgba(212, 174, 255, 0.18);
+      border-radius: 14px;
+      background: rgba(212, 174, 255, 0.06);
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .announcement-actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .announcement-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(212, 174, 255, 0.18);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+    }
+
     #back-to-top {
       position: fixed;
       right: 20px;
@@ -659,6 +762,14 @@
         display: inline-flex;
       }
 
+      .announcement-actions {
+        flex-direction: column;
+      }
+
+      .announcement-actions .btn {
+        justify-content: center;
+      }
+
       .hero-stats {
         grid-template-columns: 1fr;
       }
@@ -719,12 +830,43 @@
     <a href="https://youtu.be/O5tadXq7Jok" target="_blank" rel="noreferrer" class="mobile-link">Tutorial</a>
     <a href="https://kxsclient.kisakay.com/download/latest-dev.js" class="mobile-link">Download</a>
   </div>
+  <div class="announcement-modal" id="announcement-modal" aria-hidden="true">
+    <section class="announcement-dialog" role="dialog" aria-modal="true" aria-labelledby="announcement-title">
+      <button class="announcement-close" id="announcement-close" aria-label="Close discontinued notice">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <span class="announcement-pill">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Discontinued
+      </span>
+      <h2 id="announcement-title">KxsClient is no longer in active development.</h2>
+      <div class="announcement-copy">
+        <p>
+          As noted in the latest changelog, the project has been officially discontinued and the repository is now archived.
+        </p>
+        <p>
+          KxsClient remains available in its current state, but it will not receive new updates, fixes, or features anymore.
+        </p>
+      </div>
+      <div class="announcement-note">
+        Last maintained update: <strong>December 2025</strong>. Development was officially discontinued in version <strong>3.0.0-final-offline-before-archive</strong>.
+      </div>
+      <div class="announcement-actions">
+        <button class="btn btn-primary" id="announcement-confirm" type="button">
+          <i class="fa-solid fa-check"></i>I understand
+        </button>
+        <a class="btn btn-ghost" href="https://github.com/Kisakay/KxsClient" target="_blank" rel="noreferrer">
+          <i class="fa-brands fa-github"></i>View archived repo
+        </a>
+      </div>
+    </section>
+  </div>
 
   <main id="top" class="container">
     <section class="hero">
       <article class="hero-copy">
         <span class="chip">Official KxsClient</span>
-        <span class="live-badge"><span class="live-dot"></span>KxsClient live build</span>
+        <span class="live-badge"><span class="live-dot"></span>Archived final build</span>
         <h1>A better Survev.io experience, without the bs.</h1>
         <p>
           KxsClient is built for players who want smoother fights, faster UI response, and better control in-game.
@@ -862,6 +1004,9 @@
     const backToTop = document.getElementById("back-to-top");
     const blob1 = document.getElementById("bg-blob-1");
     const blob2 = document.getElementById("bg-blob-2");
+    const announcementModal = document.getElementById("announcement-modal");
+    const announcementClose = document.getElementById("announcement-close");
+    const announcementConfirm = document.getElementById("announcement-confirm");
     const onScroll = () => {
       if (!navbar) return;
       navbar.classList.toggle("scrolled", window.scrollY > 20);
@@ -896,13 +1041,30 @@
     const mobilePanel = document.getElementById("mobile-panel");
     const mobileLinks = document.querySelectorAll(".mobile-link");
     let mobileOpen = false;
+    let announcementOpen = false;
+
+    const syncBodyLock = () => {
+      document.body.style.overflow = mobileOpen || announcementOpen ? "hidden" : "";
+    };
 
     const setMobileState = (open) => {
       mobileOpen = open;
       if (!mobilePanel || !mobileMenuIcon) return;
       mobilePanel.classList.toggle("open", mobileOpen);
       mobileMenuIcon.className = mobileOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
-      document.body.style.overflow = mobileOpen ? "hidden" : "";
+      syncBodyLock();
+    };
+
+    const setAnnouncementState = (open) => {
+      if (!announcementModal) return;
+      announcementOpen = open;
+      announcementModal.classList.toggle("open", announcementOpen);
+      announcementModal.setAttribute("aria-hidden", announcementOpen ? "false" : "true");
+      syncBodyLock();
+    };
+
+    const dismissAnnouncement = () => {
+      setAnnouncementState(false);
     };
 
     if (mobileMenuBtn) {
@@ -910,6 +1072,20 @@
     }
 
     mobileLinks.forEach((link) => link.addEventListener("click", () => setMobileState(false)));
+
+    if (announcementClose) {
+      announcementClose.addEventListener("click", dismissAnnouncement);
+    }
+
+    if (announcementConfirm) {
+      announcementConfirm.addEventListener("click", dismissAnnouncement);
+    }
+
+    if (announcementModal) {
+      announcementModal.addEventListener("click", (event) => {
+        if (event.target === announcementModal) dismissAnnouncement();
+      });
+    }
 
     if (backToTop) {
       backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -953,10 +1129,17 @@
 
     window.addEventListener("load", () => {
       document.body.classList.add("loaded");
+      setAnnouncementState(true);
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (announcementOpen) dismissAnnouncement();
+        else if (mobileOpen) setMobileState(false);
+      }
     });
 
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
-
