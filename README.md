@@ -1,5 +1,5 @@
 # KxsWebsite
-https://kxsclient.kisakay.com
+https://kxsclient.v.bzh
 
 
  Survev.io Client Website
